@@ -1,27 +1,16 @@
 package com.ftn.iss.eventPlanner.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+@Getter
+@Setter
 public class Product extends Offering {
     private ProductDetails currentDetails;
     private List<ProductDetails> detailsHistory;
 
     public Product() {
-    }
-
-    public ProductDetails getCurrentDetails() {
-        return currentDetails;
-    }
-
-    public void setCurrentDetails(ProductDetails currentDetails) {
-        this.currentDetails = currentDetails;
-    }
-
-    public List<ProductDetails> getDetailsHistory() {
-        return detailsHistory;
-    }
-
-    public void setDetailsHistory(List<ProductDetails> detailsHistory) {
-        this.detailsHistory = detailsHistory;
     }
 }
