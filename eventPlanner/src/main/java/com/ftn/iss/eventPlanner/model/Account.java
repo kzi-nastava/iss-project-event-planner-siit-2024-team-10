@@ -15,4 +15,6 @@ public class Account {
     private List<Event> acceptedEvents;
     private User user;
     private List<Offering> favouriteOfferings;
+    private List<Notification> notifications;
+    private List<Account> blockedAccounts;
 }
