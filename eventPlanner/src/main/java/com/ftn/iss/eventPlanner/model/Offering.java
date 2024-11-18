@@ -4,6 +4,7 @@ import java.util.List;
 
 public abstract class Offering {
     private int id;
+    private OfferingCategory category;
     private boolean pending;
     private boolean isDeleted;
     private Provider provider;
