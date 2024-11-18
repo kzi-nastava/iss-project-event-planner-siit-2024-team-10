@@ -16,4 +16,6 @@ public class Event {
     private boolean isDeleted;
     private Location location;
     private List<AgendaItem> agenda;
+    private List<Comment> comments;
+    private List<Rating> ratings;
 }
