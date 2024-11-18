@@ -18,4 +18,5 @@ public class Event {
     private List<AgendaItem> agenda;
     private List<Comment> comments;
     private List<Rating> ratings;
+    private List<BudgetItem> budget;
 }
