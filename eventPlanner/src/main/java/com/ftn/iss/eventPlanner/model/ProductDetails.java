@@ -8,6 +8,7 @@ public class ProductDetails {
     private String name;
     private String description;
     private double price;
+    private double discount;
     private List<String> photos;
     private boolean isVisible;
     private boolean isAvailable;
