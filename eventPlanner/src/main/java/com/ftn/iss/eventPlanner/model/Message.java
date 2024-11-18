@@ -13,6 +13,7 @@ public class Message {
     private LocalDateTime timestamp;
     private Account sender;
     private Account receiver;
+    private boolean isRead;
 
     public Message() {
     }
