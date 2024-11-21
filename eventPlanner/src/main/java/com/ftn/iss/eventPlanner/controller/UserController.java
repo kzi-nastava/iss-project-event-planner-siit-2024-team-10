@@ -112,4 +112,22 @@ public class UserController {
 
         return new ResponseEntity<Collection<GetUserDTO>>(users, HttpStatus.OK);
     }
+
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetUserDTO> getUser(@PathVariable("id") int id) {
+
+        GetUserDTO user = new GetUserDTO();
+        user.setId(id);
+        user.setEmail("user4@example.com");
+        user.setRole(Role.PROVIDER);
+        user.setFirstName("Bob");
+        user.setLastName("Brown");
+        user.setPhoneNumber("456-789-0123");
+        user.setProfilePhoto("https://example.com/photos/user4.jpg");
+        user.setLocation(new LocationDTO("Berlin", "Germany", "Kurfürstendamm", "101"));
+        user.setCompany(new CompanyDTO("hello@company3.com", "Green Energy", "789-555-0123", "Renewable energy company",
+                Arrays.asList("https://example.com/photos/company3.jpg"), new LocationDTO("Hamburg", "Germany", "Jungfernstieg", "22")));
+
+        return new ResponseEntity<GetUserDTO>(user, HttpStatus.OK);
+    }
 }
