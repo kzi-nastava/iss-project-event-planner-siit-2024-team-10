@@ -164,4 +164,9 @@ public class UserController {
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO,@PathVariable int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable("id") int id) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
