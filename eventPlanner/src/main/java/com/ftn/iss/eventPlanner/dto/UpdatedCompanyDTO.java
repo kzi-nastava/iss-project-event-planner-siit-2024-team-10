@@ -15,4 +15,12 @@ public class UpdatedCompanyDTO {
     private LocationDTO location;
 
     public UpdatedCompanyDTO() {}
+
+    public UpdatedCompanyDTO(int id, String phoneNumber, String description, List<String> photos, LocationDTO location) {
+        this.id=id;
+        this.phoneNumber = phoneNumber;
+        this.description = description;
+        this.photos = photos;
+        this.location = location;
+    }
 }

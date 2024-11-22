@@ -18,7 +18,8 @@ public class CreatedCompanyDTO {
 
     public CreatedCompanyDTO() {}
 
-    public CreatedCompanyDTO(String email, String name, String phoneNumber, String description, List<String> photos, LocationDTO location) {
+    public CreatedCompanyDTO(int id, String email, String name, String phoneNumber, String description, List<String> photos, LocationDTO location) {
+        this.id=id;
         this.email = email;
         this.name = name;
         this.phoneNumber = phoneNumber;
