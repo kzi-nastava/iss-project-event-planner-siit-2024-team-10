@@ -46,7 +46,7 @@ public class UserController {
         user1.setPhoneNumber("123-456-7890");
         user1.setProfilePhoto("https://example.com/photos/user1.jpg");
         user1.setLocation(new LocationDTO("New York", "USA", "5th Avenue", "10A"));
-        user1.setCompany(new CompanyDTO("info@company1.com", "Tech Corp", "123-555-7890", "Tech solutions company",
+        user1.setCompany(new GetCompanyDTO("info@company1.com", "Tech Corp", "123-555-7890", "Tech solutions company",
                 Arrays.asList("https://example.com/photos/company1.jpg"), new LocationDTO("San Francisco", "USA", "Market St", "101")));
 
         users.add(user1);
@@ -61,7 +61,7 @@ public class UserController {
         user2.setPhoneNumber("234-567-8901");
         user2.setProfilePhoto("https://example.com/photos/user2.jpg");
         user2.setLocation(new LocationDTO("London", "UK", "Baker Street", "221B"));
-        user2.setCompany(new CompanyDTO("contact@company2.com", "Health Solutions", "345-666-8901", "Healthcare products company",
+        user2.setCompany(new GetCompanyDTO("contact@company2.com", "Health Solutions", "345-666-8901", "Healthcare products company",
                 Arrays.asList("https://example.com/photos/company2.jpg"), new LocationDTO("Bristol", "UK", "Queen St", "42")));
 
         users.add(user2);
@@ -90,7 +90,7 @@ public class UserController {
         user4.setPhoneNumber("456-789-0123");
         user4.setProfilePhoto("https://example.com/photos/user4.jpg");
         user4.setLocation(new LocationDTO("Berlin", "Germany", "Kurfürstendamm", "101"));
-        user4.setCompany(new CompanyDTO("hello@company3.com", "Green Energy", "789-555-0123", "Renewable energy company",
+        user4.setCompany(new GetCompanyDTO("hello@company3.com", "Green Energy", "789-555-0123", "Renewable energy company",
                 Arrays.asList("https://example.com/photos/company3.jpg"), new LocationDTO("Hamburg", "Germany", "Jungfernstieg", "22")));
 
         users.add(user4);
@@ -125,7 +125,7 @@ public class UserController {
         user.setPhoneNumber("456-789-0123");
         user.setProfilePhoto("https://example.com/photos/user4.jpg");
         user.setLocation(new LocationDTO("Berlin", "Germany", "Kurfürstendamm", "101"));
-        user.setCompany(new CompanyDTO("hello@company3.com", "Green Energy", "789-555-0123", "Renewable energy company",
+        user.setCompany(new GetCompanyDTO("hello@company3.com", "Green Energy", "789-555-0123", "Renewable energy company",
                 Arrays.asList("https://example.com/photos/company3.jpg"), new LocationDTO("Hamburg", "Germany", "Jungfernstieg", "22")));
 
         return new ResponseEntity<GetUserDTO>(user, HttpStatus.OK);
