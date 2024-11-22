@@ -139,8 +139,8 @@ public class UserController {
         return new ResponseEntity<LoginResponseDTO>(loginResponse, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{id}/activate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> activateUser(@PathVariable Long id) {
+    @PutMapping(value = "/{id}/activate")
+    public ResponseEntity<?> activateUser(@PathVariable int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
