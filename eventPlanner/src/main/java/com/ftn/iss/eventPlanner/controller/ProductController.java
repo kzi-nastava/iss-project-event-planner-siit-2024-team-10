@@ -113,4 +113,23 @@ public class ProductController {
 
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
+
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedProductDTO> createProduct(@RequestBody CreateProductDTO product) throws Exception {
+        CreatedProductDTO createdProduct = new CreatedProductDTO();
+        createdProduct.setId(1);
+        createdProduct.setCategoryId(product.getCategoryId());
+        createdProduct.setPending(product.isPending());
+        createdProduct.setProviderID(product.getProviderID());
+        createdProduct.setName(product.getName());
+        createdProduct.setDescription(product.getDescription());
+        createdProduct.setPrice(product.getPrice());
+        createdProduct.setDiscount(product.getDiscount());
+        createdProduct.setPhotos(product.getPhotos());
+        createdProduct.setVisible(product.isVisible());
+        createdProduct.setAvailable(product.isAvailable());
+
+        return new ResponseEntity<CreatedProductDTO>(createdProduct, HttpStatus.CREATED);
+    }
 }
