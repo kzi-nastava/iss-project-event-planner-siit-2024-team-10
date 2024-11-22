@@ -15,7 +15,7 @@ public class GetUserDTO {
     private String phoneNumber;
     private String profilePhoto;
     private LocationDTO location;
-    private CompanyDTO company;
+    private GetCompanyDTO company;
 
     public GetUserDTO(){}
 }

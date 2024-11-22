@@ -1,6 +1,5 @@
 package com.ftn.iss.eventPlanner.dto;
 
-import com.ftn.iss.eventPlanner.model.Location;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CompanyDTO {
+public class CreatedCompanyDTO {
     private String email;
     private String name;
     private String phoneNumber;
@@ -16,9 +15,9 @@ public class CompanyDTO {
     private List<String> photos;
     private LocationDTO location;
 
-    public CompanyDTO() {}
+    public CreatedCompanyDTO() {}
 
-    public CompanyDTO(String email, String name, String phoneNumber, String description, List<String> photos, LocationDTO location) {
+    public CreatedCompanyDTO(String email, String name, String phoneNumber, String description, List<String> photos, LocationDTO location) {
         this.email = email;
         this.name = name;
         this.phoneNumber = phoneNumber;

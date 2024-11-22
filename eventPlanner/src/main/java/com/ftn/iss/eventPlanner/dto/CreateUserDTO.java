@@ -15,7 +15,7 @@ public class CreateUserDTO {
     private String phoneNumber;
     private String profilePhoto;
     private LocationDTO location;
-    private CompanyDTO company;
+    private CreateCompanyDTO company;
 
     public CreateUserDTO() {}
 
