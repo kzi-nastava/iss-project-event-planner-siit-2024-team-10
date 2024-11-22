@@ -1,8 +1,6 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.CreateProductDTO;
-import com.ftn.iss.eventPlanner.dto.CreatedProductDTO;
-import com.ftn.iss.eventPlanner.dto.GetProductDTO;
+import com.ftn.iss.eventPlanner.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -132,4 +130,20 @@ public class ProductController {
 
         return new ResponseEntity<CreatedProductDTO>(createdProduct, HttpStatus.CREATED);
     }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedProductDTO> updateProduct(@RequestBody UpdateProductDTO product, @PathVariable("id") int id) {
+        UpdatedProductDTO updatedProduct = new UpdatedProductDTO();
+        updatedProduct.setId(1);
+        updatedProduct.setName(product.getName());
+        updatedProduct.setDescription(product.getDescription());
+        updatedProduct.setPrice(product.getPrice());
+        updatedProduct.setDiscount(product.getDiscount());
+        updatedProduct.setPhotos(product.getPhotos());
+        updatedProduct.setVisible(product.isVisible());
+        updatedProduct.setAvailable(product.isAvailable());
+
+        return new ResponseEntity<UpdatedProductDTO>(updatedProduct, HttpStatus.OK);
+    }
+
 }
