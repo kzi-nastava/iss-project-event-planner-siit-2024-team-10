@@ -159,4 +159,9 @@ public class UserController {
 
         return new ResponseEntity<UpdatedUserDTO>(updatedUser, HttpStatus.OK);
     }
+
+    @PutMapping(value = "/{id}/changePassword", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO,@PathVariable int id) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
