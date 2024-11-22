@@ -27,7 +27,7 @@ public class UserController {
         savedUser.setProfilePhoto(user.getProfilePhoto());
         savedUser.setLocation(user.getLocation());
         if(savedUser.getRole()==Role.PROVIDER){
-            savedUser.setCompany(new CreatedCompanyDTO(user.getCompany().getEmail(),user.getCompany().getName(),user.getCompany().getPhoneNumber(),user.getCompany().getDescription(),user.getCompany().getPhotos(), user.getCompany().getLocation()));
+            savedUser.setCompany(new CreatedCompanyDTO(1,user.getCompany().getEmail(),user.getCompany().getName(),user.getCompany().getPhoneNumber(),user.getCompany().getDescription(),user.getCompany().getPhotos(), user.getCompany().getLocation()));
         }
 
         return new ResponseEntity<CreatedUserDTO>(savedUser, HttpStatus.CREATED);
@@ -142,5 +142,21 @@ public class UserController {
     @PutMapping(value = "/{id}/activate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> activateUser(@PathVariable Long id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedUserDTO> updateUser(@RequestBody UpdateUserDTO user, @PathVariable int id) {
+        UpdatedUserDTO updatedUser = new UpdatedUserDTO();
+        updatedUser.setId(id);
+        updatedUser.setFirstName(user.getFirstName());
+        updatedUser.setLastName(user.getLastName());
+        updatedUser.setPhoneNumber(user.getPhoneNumber());
+        updatedUser.setProfilePhoto(user.getProfilePhoto());
+        updatedUser.setLocation(user.getLocation());
+        if(updatedUser.getCompany()!=null){
+            updatedUser.setCompany(new UpdatedCompanyDTO(user.getCompany().getId(),user.getCompany().getPhoneNumber(),user.getCompany().getDescription(),user.getCompany().getPhotos(), user.getCompany().getLocation()));
+        }
+
+        return new ResponseEntity<UpdatedUserDTO>(updatedUser, HttpStatus.OK);
     }
 }
