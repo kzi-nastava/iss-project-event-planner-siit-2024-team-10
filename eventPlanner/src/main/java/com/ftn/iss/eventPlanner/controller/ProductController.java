@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -89,5 +90,22 @@ public class ProductController {
         products.add(product5);
 
         return new ResponseEntity<Collection<GetProductDTO>>(products, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetProductDTO> getProduct(@PathVariable("id") int id) {
+        GetProductDTO product = new GetProductDTO();
+        product.setCategoryId(id);
+        product.setPending(false);
+        product.setProviderID(104);
+        product.setName("Luxury Event Decoration");
+        product.setDescription("Top-tier decorations for upscale events.");
+        product.setPrice(2500.00);
+        product.setDiscount(0.0);
+        product.setPhotos(Arrays.asList("https://example.com/photos/decor1.jpg"));
+        product.setVisible(true);
+        product.setAvailable(false);
+
+        return new ResponseEntity<>(product, HttpStatus.OK);
     }
 }
