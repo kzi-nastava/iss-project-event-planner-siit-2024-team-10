@@ -27,7 +27,7 @@ public class UserController {
         savedUser.setProfilePhoto(user.getProfilePhoto());
         savedUser.setLocation(user.getLocation());
         if(savedUser.getRole()==Role.PROVIDER){
-            savedUser.setCompany(user.getCompany());
+            savedUser.setCompany(new CreatedCompanyDTO(user.getCompany().getEmail(),user.getCompany().getName(),user.getCompany().getPhoneNumber(),user.getCompany().getDescription(),user.getCompany().getPhotos(), user.getCompany().getLocation()));
         }
 
         return new ResponseEntity<CreatedUserDTO>(savedUser, HttpStatus.CREATED);
