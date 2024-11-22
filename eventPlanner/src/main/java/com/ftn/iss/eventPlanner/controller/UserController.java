@@ -130,4 +130,12 @@ public class UserController {
 
         return new ResponseEntity<GetUserDTO>(user, HttpStatus.OK);
     }
+
+    @PostMapping(value="/login",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
+        LoginResponseDTO loginResponse=new LoginResponseDTO();
+        loginResponse.setRole(Role.PROVIDER);
+
+        return new ResponseEntity<LoginResponseDTO>(loginResponse, HttpStatus.CREATED);
+    }
 }
