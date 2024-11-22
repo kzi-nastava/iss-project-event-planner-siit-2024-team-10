@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class CreatedCompanyDTO {
+    private int id;
     private String email;
     private String name;
     private String phoneNumber;

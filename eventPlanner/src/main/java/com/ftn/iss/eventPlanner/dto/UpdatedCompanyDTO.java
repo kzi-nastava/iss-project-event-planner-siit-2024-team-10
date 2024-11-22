@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class UpdatedCompanyDTO {
+    private int id;
     private String phoneNumber;
     private String description;
     private List<String> photos;
