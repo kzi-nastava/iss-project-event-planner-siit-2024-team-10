@@ -146,4 +146,8 @@ public class ProductController {
         return new ResponseEntity<UpdatedProductDTO>(updatedProduct, HttpStatus.OK);
     }
 
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable("id") int id) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
