@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class GetProductDTO {
+    private int id;
     private int categoryId;
     private boolean pending;
     private int providerID;

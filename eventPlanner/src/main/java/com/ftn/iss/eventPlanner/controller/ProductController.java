@@ -1,13 +1,12 @@
 package com.ftn.iss.eventPlanner.controller;
 
+import com.ftn.iss.eventPlanner.dto.CreateProductDTO;
+import com.ftn.iss.eventPlanner.dto.CreatedProductDTO;
 import com.ftn.iss.eventPlanner.dto.GetProductDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +20,7 @@ public class ProductController {
         Collection<GetProductDTO> products = new ArrayList<>() ;
 
         GetProductDTO product1 = new GetProductDTO();
+        product1.setId(1);
         product1.setCategoryId(1);
         product1.setPending(false);
         product1.setProviderID(101);
@@ -35,6 +35,7 @@ public class ProductController {
 
         // Product 2
         GetProductDTO product2 = new GetProductDTO();
+        product2.setId(2);
         product2.setCategoryId(2);
         product2.setPending(true);
         product2.setProviderID(102);
@@ -49,6 +50,7 @@ public class ProductController {
 
         // Product 3
         GetProductDTO product3 = new GetProductDTO();
+        product3.setId(3);
         product3.setCategoryId(3);
         product3.setPending(false);
         product3.setProviderID(103);
@@ -63,6 +65,7 @@ public class ProductController {
 
         // Product 4
         GetProductDTO product4 = new GetProductDTO();
+        product4.setId(4);
         product4.setCategoryId(4);
         product4.setPending(false);
         product4.setProviderID(104);
@@ -77,6 +80,7 @@ public class ProductController {
 
         // Product 5
         GetProductDTO product5 = new GetProductDTO();
+        product5.setId(5);
         product5.setCategoryId(5);
         product5.setPending(true);
         product5.setProviderID(105);
@@ -95,7 +99,8 @@ public class ProductController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetProductDTO> getProduct(@PathVariable("id") int id) {
         GetProductDTO product = new GetProductDTO();
-        product.setCategoryId(id);
+        product.setId(id);
+        product.setCategoryId(1);
         product.setPending(false);
         product.setProviderID(104);
         product.setName("Luxury Event Decoration");
