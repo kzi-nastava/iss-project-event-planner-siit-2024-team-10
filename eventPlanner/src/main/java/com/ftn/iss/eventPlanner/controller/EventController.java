@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
@@ -16,7 +17,7 @@ import java.util.Collection;
 @RequestMapping("/api/events")
 public class EventController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetEventDTO>> getEvents() {
+    public ResponseEntity<Collection<GetEventDTO>> getTopEvents() {
         Collection<GetEventDTO> events = new ArrayList<>();
 
         GetEventDTO event1 = new GetEventDTO();
@@ -79,6 +80,57 @@ public class EventController {
         events.add(event3);
         events.add(event4);
         events.add(event5);
+
+        return new ResponseEntity<>(events, HttpStatus.OK);
+    }
+
+    @GetMapping(value="/filter", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetEventDTO>> getEvents(
+            @RequestParam(required = false) Integer eventTypeId,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Integer maxParticipants,
+            @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate
+    ) {
+        Collection<GetEventDTO> events = new ArrayList<>();
+
+        GetEventDTO event1 = new GetEventDTO();
+        event1.setId(1);
+        event1.setOrganizerId(1001);
+        event1.setEventTypeId(2001);
+        event1.setName("Concert Night");
+        event1.setDescription("An unforgettable concert experience with top artists.");
+        event1.setMaxParticipants(500);
+        event1.setOpen(true);
+        event1.setDate(LocalDate.now().plusDays(7));
+        event1.setLocationId(3001);
+
+        GetEventDTO event2 = new GetEventDTO();
+        event2.setId(2);
+        event2.setOrganizerId(1002);
+        event2.setEventTypeId(2002);
+        event2.setName("Art Exhibition");
+        event2.setDescription("Explore stunning artworks by renowned artists.");
+        event2.setMaxParticipants(300);
+        event2.setOpen(true);
+        event2.setDate(LocalDate.now().plusDays(15));
+        event2.setLocationId(3002);
+
+        GetEventDTO event3 = new GetEventDTO();
+        event3.setId(3);
+        event3.setOrganizerId(1003);
+        event3.setEventTypeId(2003);
+        event3.setName("Tech Conference");
+        event3.setDescription("Discover the latest trends in technology.");
+        event3.setMaxParticipants(1000);
+        event3.setOpen(false);
+        event3.setDate(LocalDate.now().plusDays(30));
+        event3.setLocationId(3003);
+
+        events.add(event1);
+        events.add(event2);
+        events.add(event3);
 
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
