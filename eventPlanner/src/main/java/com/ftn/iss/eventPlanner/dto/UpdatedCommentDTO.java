@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdatedCommentDTO {
-    private Long id;
+    private int id;
     private String content;
     private Status status;
 
