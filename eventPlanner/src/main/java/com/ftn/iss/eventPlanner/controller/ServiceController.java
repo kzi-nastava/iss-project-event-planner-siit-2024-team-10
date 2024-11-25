@@ -1,6 +1,9 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.primjerZaPrvuKT.controller.Long;
+import com.ftn.iss.primjerZaPrvuKT.dto.GetBookDTO;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -124,5 +127,34 @@ public class ServiceController {
 
         return new ResponseEntity<>(services, HttpStatus.OK);
     }
+    
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<GetServiceDTO> getBook(@PathVariable("id") int id) {
+		GetServiceDTO service = new GetServiceDTO();
+
+		if (service == null) {
+			return new ResponseEntity<GetServiceDTO>(HttpStatus.NOT_FOUND);
+		}
+
+        service.setId(5);
+        service.setCategoryId(5);
+        service.setPending(false);
+        service.setProviderID(5);
+        service.setName("Interactive DJ Service");
+        service.setDescription("Make your party unforgettable with our skilled DJ.");
+        service.setSpecification("Custom playlists and top-notch audio equipment.");
+        service.setPrice(2500);
+        service.setDiscount(20);
+        service.setPhotos(Arrays.asList("https://example.com/photos/dj1.jpg", "https://example.com/photos/dj2.jpg"));
+        service.setVisible(true);
+        service.setAvailable(true);
+        service.setMaxDuration(6);
+        service.setMinDuration(3);
+        service.setCancellationPeriod(36);
+        service.setReservationPeriod(48);
+        service.setAutoConfirm(false);
+		
+        return new ResponseEntity<GetServiceDTO>(book, HttpStatus.OK);
+	}
     
 }
