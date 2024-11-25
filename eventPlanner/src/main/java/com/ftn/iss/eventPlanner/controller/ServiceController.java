@@ -1,8 +1,6 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
-import com.ftn.iss.primjerZaPrvuKT.controller.Long;
-import com.ftn.iss.primjerZaPrvuKT.dto.GetBookDTO;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -194,7 +192,7 @@ public class ServiceController {
 	        @RequestParam(required = false) Integer categoryId,
 	        @RequestParam(required = false) Double minPrice,
 	        @RequestParam(required = false) Double maxPrice,
-	        @RequestParam(required = false) Boolean isAvailable) {
+	        @RequestParam(required = false) boolean isAvailable) {
 
 	    Collection<GetServiceDTO> filteredServices = new ArrayList<>();
 	    Collection<GetServiceDTO> services = new ArrayList<>();
@@ -238,7 +236,7 @@ public class ServiceController {
 	            matches = false;
 	        }
 
-	        if (isAvailable != null && service.isAvailable() != isAvailable) {
+	        if (service.isAvailable() != isAvailable) {
 	            matches = false;
 	        }
 
