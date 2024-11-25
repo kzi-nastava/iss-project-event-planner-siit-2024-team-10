@@ -153,6 +153,42 @@ public class ServiceController {
         return new ResponseEntity<GetServiceDTO>(service, HttpStatus.OK);
 	}
 	
+	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Collection<GetServiceDTO>> getServicesByName(@RequestParam("name") String name) {
+	    Collection<GetServiceDTO> services = new ArrayList<>();
+
+	    // Example services for demonstration
+	    GetServiceDTO service1 = new GetServiceDTO();
+	    service1.setId(1);
+	    service1.setName("Bridal Makeup");
+	    service1.setDescription("Beautiful bridal makeup for the bride and her party.");
+	    service1.setSpecification("We use the best products for long-lasting results.");
+	    service1.setPrice(2000);
+	    services.add(service1);
+
+	    GetServiceDTO service2 = new GetServiceDTO();
+	    service2.setId(2);
+	    service2.setName("Wedding Photography");
+	    service2.setDescription("Capture your special moments with our expert photographers.");
+	    service2.setSpecification("Includes full-day coverage and edited photos.");
+	    service2.setPrice(5000);
+	    services.add(service2);
+
+	    // Filter services based on the provided name
+	    Collection<GetServiceDTO> filteredServices = new ArrayList<>();
+	    for (GetServiceDTO service : services) {
+	        if (service.getName().equalsIgnoreCase(name)) {
+	            filteredServices.add(service);
+	        }
+	    }
+
+	    if (filteredServices.isEmpty()) {
+	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	    }
+
+	    return new ResponseEntity<>(filteredServices, HttpStatus.OK);
+	}
+
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CreatedServiceDTO> createBook(@RequestBody CreateServiceDTO service) throws Exception {
 		CreatedServiceDTO createdService = new CreatedServiceDTO();
@@ -176,6 +212,8 @@ public class ServiceController {
         createdService.setAutoConfirm(false);
 		return new ResponseEntity<CreatedServiceDTO>(createdService, HttpStatus.CREATED);
 	}
+	
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UpdatedServiceDTO> updateBook(@RequestBody UpdateServiceDTO service, @PathVariable int id)
 			throws Exception {
 		UpdatedServiceDTO updatedService = new UpdatedServiceDTO();
