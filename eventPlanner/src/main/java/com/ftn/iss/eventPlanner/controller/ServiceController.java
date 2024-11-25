@@ -132,10 +132,6 @@ public class ServiceController {
 	public ResponseEntity<GetServiceDTO> getBook(@PathVariable("id") int id) {
 		GetServiceDTO service = new GetServiceDTO();
 
-		if (service == null) {
-			return new ResponseEntity<GetServiceDTO>(HttpStatus.NOT_FOUND);
-		}
-
         service.setId(5);
         service.setCategoryId(5);
         service.setPending(false);
@@ -154,7 +150,30 @@ public class ServiceController {
         service.setReservationPeriod(48);
         service.setAutoConfirm(false);
 		
-        return new ResponseEntity<GetServiceDTO>(book, HttpStatus.OK);
+        return new ResponseEntity<GetServiceDTO>(service, HttpStatus.OK);
 	}
-    
+	
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<CreatedServiceDTO> createBook(@RequestBody CreatedServiceDTO service) throws Exception {
+		CreatedServiceDTO createdService = new CreatedServiceDTO();
+
+		createdService.setId(5);
+		createdService.setCategoryId(5);
+		createdService.setPending(false);
+        createdService.setProviderID(5);
+        createdService.setName("Interactive DJ Service");
+        createdService.setDescription("Make your party unforgettable with our skilled DJ.");
+        createdService.setSpecification("Custom playlists and top-notch audio equipment.");
+        createdService.setPrice(2500);
+        createdService.setDiscount(20);
+        createdService.setPhotos(Arrays.asList("https://example.com/photos/dj1.jpg", "https://example.com/photos/dj2.jpg"));
+        createdService.setVisible(true);
+        createdService.setAvailable(true);
+        createdService.setMaxDuration(6);
+        createdService.setMinDuration(3);
+        createdService.setCancellationPeriod(36);
+        createdService.setReservationPeriod(48);
+        createdService.setAutoConfirm(false);
+		return new ResponseEntity<CreatedServiceDTO>(createdService, HttpStatus.CREATED);
+	}
 }
