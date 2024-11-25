@@ -188,6 +188,68 @@ public class ServiceController {
 
 	    return new ResponseEntity<>(filteredServices, HttpStatus.OK);
 	}
+	
+	@GetMapping(value = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Collection<GetServiceDTO>> filterServices(
+	        @RequestParam(required = false) Integer categoryId,
+	        @RequestParam(required = false) Double minPrice,
+	        @RequestParam(required = false) Double maxPrice,
+	        @RequestParam(required = false) Boolean isAvailable) {
+
+	    Collection<GetServiceDTO> filteredServices = new ArrayList<>();
+	    Collection<GetServiceDTO> services = new ArrayList<>();
+	    
+	    GetServiceDTO service1 = new GetServiceDTO();
+	    service1.setId(1);
+	    service1.setCategoryId(6);
+	    service1.setName("Bridal Makeup");
+	    service1.setPrice(2000.0);
+	    service1.setAvailable(true);
+	    services.add(service1);
+
+	    GetServiceDTO service2 = new GetServiceDTO();
+	    service2.setId(2);
+	    service2.setCategoryId(3);
+	    service2.setName("Wedding Photography");
+	    service2.setPrice(5000.0);
+	    service2.setAvailable(false);
+	    services.add(service2);
+
+	    GetServiceDTO service3 = new GetServiceDTO();
+	    service3.setId(3);
+	    service3.setCategoryId(6);
+	    service3.setName("Event Decoration");
+	    service3.setPrice(3000.0);
+	    service3.setAvailable(true);
+	    services.add(service3);
+	    
+	    for (GetServiceDTO service : services) {
+	        boolean matches = true;
+
+	        if (categoryId != null && service.getCategoryId() != categoryId) {
+	            matches = false;
+	        }
+
+	        if (minPrice != null && service.getPrice() < minPrice) {
+	            matches = false;
+	        }
+
+	        if (maxPrice != null && service.getPrice() > maxPrice) {
+	            matches = false;
+	        }
+
+	        if (isAvailable != null && service.isAvailable() != isAvailable) {
+	            matches = false;
+	        }
+
+	        if (matches) {
+	            filteredServices.add(service);
+	        }
+	    }
+
+	    return new ResponseEntity<>(filteredServices, HttpStatus.OK);
+	}
+
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CreatedServiceDTO> createBook(@RequestBody CreateServiceDTO service) throws Exception {
@@ -240,4 +302,5 @@ public class ServiceController {
 	public ResponseEntity<?> deleteGreeting(@PathVariable("id") int id) {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
+	
 }
