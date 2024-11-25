@@ -154,7 +154,7 @@ public class ServiceController {
 	}
 	
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CreatedServiceDTO> createBook(@RequestBody CreatedServiceDTO service) throws Exception {
+	public ResponseEntity<CreatedServiceDTO> createBook(@RequestBody CreateServiceDTO service) throws Exception {
 		CreatedServiceDTO createdService = new CreatedServiceDTO();
 
 		createdService.setId(5);
@@ -175,5 +175,31 @@ public class ServiceController {
         createdService.setReservationPeriod(48);
         createdService.setAutoConfirm(false);
 		return new ResponseEntity<CreatedServiceDTO>(createdService, HttpStatus.CREATED);
+	}
+	public ResponseEntity<UpdatedServiceDTO> updateBook(@RequestBody UpdateServiceDTO service, @PathVariable int id)
+			throws Exception {
+		UpdatedServiceDTO updatedService = new UpdatedServiceDTO();
+
+		updatedService.setId(id);
+		updatedService.setName(service.getName());
+		updatedService.setDescription(service.getDescription());
+		updatedService.setSpecification(service.getSpecification());
+		updatedService.setPhotos(service.getPhotos());
+		updatedService.setPrice(service.getPrice());
+		updatedService.setDiscount(service.getDiscount());
+		updatedService.setVisible(service.isVisible());
+		updatedService.setAvailable(service.isAvailable());
+		updatedService.setMaxDuration(service.getMaxDuration());
+		updatedService.setMinDuration(service.getMinDuration());
+		updatedService.setCancellationPeriod(service.getCancellationPeriod());
+		updatedService.setReservationPeriod(service.getReservationPeriod());
+		
+
+		return new ResponseEntity<UpdatedServiceDTO>(updatedService, HttpStatus.OK);
+	}
+
+	@DeleteMapping(value = "/{id}")
+	public ResponseEntity<?> deleteGreeting(@PathVariable("id") int id) {
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
