@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.dto;
 
+import com.ftn.iss.eventPlanner.model.Status;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,8 +9,9 @@ import lombok.Setter;
 public class CreatedAccountReportDTO {
     private int id;
     private String description;
-    private String reporterUsername;
-    private String reporteeUsername;
+    private Status status;
+    private int reporterId;
+    private int reporteeId;
 
     public CreatedAccountReportDTO() {
     }
