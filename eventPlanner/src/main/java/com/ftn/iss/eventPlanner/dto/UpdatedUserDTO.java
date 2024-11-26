@@ -1,16 +1,18 @@
-package com.ftn.iss.eventPlanner.model;
+package com.ftn.iss.eventPlanner.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public abstract class User {
+public class UpdatedUserDTO {
     private int id;
     private String firstName;
     private String lastName;
     private String phoneNumber;
     private String profilePhoto;
-    private Location location;
-    private Account account;
+    private LocationDTO location;
+    private UpdatedCompanyDTO company;
+
+    public UpdatedUserDTO() {}
 }
