@@ -25,7 +25,8 @@ public class ProductController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Double minDiscount,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) Boolean isAvailable
+            @RequestParam(required = false) Boolean isAvailable,
+            @RequestParam(required = false) String name
     ) {
         Collection<GetProductDTO> products = new ArrayList<>() ;
 
@@ -117,7 +118,8 @@ public class ProductController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Double minDiscount,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) Boolean isAvailable
+            @RequestParam(required = false) Boolean isAvailable,
+            @RequestParam(required = false) String name
     ) {
         Collection<GetProductDTO> products = new ArrayList<>() ;
 
