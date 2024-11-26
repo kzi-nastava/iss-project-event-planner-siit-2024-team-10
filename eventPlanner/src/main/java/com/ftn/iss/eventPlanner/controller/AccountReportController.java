@@ -73,7 +73,6 @@ public class AccountReportController {
         return new ResponseEntity<CreatedAccountReportDTO>(createdReport, HttpStatus.CREATED);
     }
 
-    // This endpoint will go into UserController ("api/users/{id}/suspend")
     @PostMapping("/{id}/suspend")
     public ResponseEntity<?> suspendUser(@PathVariable("id") int id) {
         return ResponseEntity.ok(HttpStatus.NO_CONTENT);
