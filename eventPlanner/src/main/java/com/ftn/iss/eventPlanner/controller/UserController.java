@@ -153,7 +153,7 @@ public class UserController {
         updatedUser.setPhoneNumber(user.getPhoneNumber());
         updatedUser.setProfilePhoto(user.getProfilePhoto());
         updatedUser.setLocation(user.getLocation());
-        if(updatedUser.getCompany()!=null){
+        if(user.getCompany()!=null){
             updatedUser.setCompany(new UpdatedCompanyDTO(user.getCompany().getId(),user.getCompany().getPhoneNumber(),user.getCompany().getDescription(),user.getCompany().getPhotos(), user.getCompany().getLocation()));
         }
 
