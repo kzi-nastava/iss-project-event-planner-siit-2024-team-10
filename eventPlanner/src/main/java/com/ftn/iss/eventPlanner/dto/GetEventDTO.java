@@ -18,7 +18,7 @@ public class GetEventDTO {
     private int maxParticipants;
     private boolean isOpen;
     private LocalDate date;
-    private int locationId;
+    private LocationDTO location;
 
     public GetEventDTO() {super();}
 }

@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.GetEventDTO;
+import com.ftn.iss.eventPlanner.dto.LocationDTO;
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ public class EventController {
         event1.setMaxParticipants(500);
         event1.setOpen(true);
         event1.setDate(LocalDate.now().plusDays(7));
-        event1.setLocationId(3001);
+        event1.setLocation(new LocationDTO("Belgrade","Serbia","Street","2"));
 
         GetEventDTO event2 = new GetEventDTO();
         event2.setId(2);
@@ -43,7 +44,7 @@ public class EventController {
         event2.setMaxParticipants(300);
         event2.setOpen(true);
         event2.setDate(LocalDate.now().plusDays(15));
-        event2.setLocationId(3002);
+        event2.setLocation(new LocationDTO("Belgrade","Serbia","Street","3"));
 
         GetEventDTO event3 = new GetEventDTO();
         event3.setId(3);
@@ -54,7 +55,7 @@ public class EventController {
         event3.setMaxParticipants(1000);
         event3.setOpen(false);
         event3.setDate(LocalDate.now().plusDays(30));
-        event3.setLocationId(3003);
+        event3.setLocation(new LocationDTO("Novi Sad","Serbia","Street","2"));
 
         GetEventDTO event4 = new GetEventDTO();
         event4.setId(4);
@@ -65,7 +66,7 @@ public class EventController {
         event4.setMaxParticipants(200);
         event4.setOpen(true);
         event4.setDate(LocalDate.now().plusDays(10));
-        event4.setLocationId(3004);
+        event4.setLocation(new LocationDTO("Novi Sad","Serbia","Street","4"));
 
         GetEventDTO event5 = new GetEventDTO();
         event5.setId(5);
@@ -76,7 +77,7 @@ public class EventController {
         event5.setMaxParticipants(2000);
         event5.setOpen(true);
         event5.setDate(LocalDate.now().plusDays(3));
-        event5.setLocationId(3005);
+        event5.setLocation(new LocationDTO("Arilje","Serbia","Street","10"));
 
         events.add(event1);
         events.add(event2);
@@ -108,7 +109,7 @@ public class EventController {
         event1.setMaxParticipants(500);
         event1.setOpen(true);
         event1.setDate(LocalDate.now().plusDays(7));
-        event1.setLocationId(3001);
+        event1.setLocation(new LocationDTO("Belgrade","Serbia","Street","2"));
 
         GetEventDTO event2 = new GetEventDTO();
         event2.setId(2);
@@ -119,18 +120,18 @@ public class EventController {
         event2.setMaxParticipants(300);
         event2.setOpen(true);
         event2.setDate(LocalDate.now().plusDays(15));
-        event2.setLocationId(3002);
+        event2.setLocation(new LocationDTO("Belgrade","Serbia","Street","3"));
 
         GetEventDTO event3 = new GetEventDTO();
         event3.setId(3);
         event3.setOrganizerId(1003);
-        event3.setEventTypeId(2003);
+        event3.setEventTypeId(2002);
         event3.setName("Tech Conference");
         event3.setDescription("Discover the latest trends in technology.");
         event3.setMaxParticipants(1000);
         event3.setOpen(false);
         event3.setDate(LocalDate.now().plusDays(30));
-        event3.setLocationId(3003);
+        event3.setLocation(new LocationDTO("Novi Sad","Serbia","Street","2"));
 
         events.add(event1);
         events.add(event2);
@@ -161,7 +162,7 @@ public class EventController {
         event1.setMaxParticipants(500);
         event1.setOpen(true);
         event1.setDate(LocalDate.now().plusDays(7));
-        event1.setLocationId(3001);
+        event1.setLocation(new LocationDTO("Belgrade","Serbia","Street","2"));
 
         GetEventDTO event2 = new GetEventDTO();
         event2.setId(2);
@@ -172,18 +173,18 @@ public class EventController {
         event2.setMaxParticipants(300);
         event2.setOpen(true);
         event2.setDate(LocalDate.now().plusDays(15));
-        event2.setLocationId(3002);
+        event2.setLocation(new LocationDTO("Belgrade","Serbia","Street","3"));
 
         GetEventDTO event3 = new GetEventDTO();
         event3.setId(3);
         event3.setOrganizerId(1003);
-        event3.setEventTypeId(2003);
+        event3.setEventTypeId(2002);
         event3.setName("Tech Conference");
         event3.setDescription("Discover the latest trends in technology.");
         event3.setMaxParticipants(1000);
         event3.setOpen(false);
         event3.setDate(LocalDate.now().plusDays(30));
-        event3.setLocationId(3003);
+        event3.setLocation(new LocationDTO("Novi Sad","Serbia","Street","2"));
 
         GetEventDTO event4 = new GetEventDTO();
         event4.setId(4);
@@ -194,7 +195,7 @@ public class EventController {
         event4.setMaxParticipants(200);
         event4.setOpen(true);
         event4.setDate(LocalDate.now().plusDays(10));
-        event4.setLocationId(3004);
+        event4.setLocation(new LocationDTO("Novi Sad","Serbia","Street","4"));
 
         GetEventDTO event5 = new GetEventDTO();
         event5.setId(5);
@@ -205,7 +206,7 @@ public class EventController {
         event5.setMaxParticipants(2000);
         event5.setOpen(true);
         event5.setDate(LocalDate.now().plusDays(3));
-        event5.setLocationId(3005);
+        event5.setLocation(new LocationDTO("Arilje","Serbia","Street","10"));
 
         events.add(event1);
         events.add(event2);
