@@ -23,7 +23,7 @@ import java.util.Collection;
 public class OfferingController {
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingDTO>> getOfferings(){
+    public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings(){
         Collection<GetOfferingDTO> offerings = new ArrayList<>();
 
         GetOfferingDTO offering1 = new GetOfferingDTO();
