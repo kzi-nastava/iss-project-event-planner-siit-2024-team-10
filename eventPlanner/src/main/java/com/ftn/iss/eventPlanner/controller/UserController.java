@@ -195,5 +195,9 @@ public class UserController {
         user.setId(userId);
         user.setFavourites(new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5)));
         return ResponseEntity.ok(user.getFavourites());
+
+    @PostMapping("/{id}/suspend")
+    public ResponseEntity<?> suspendUser(@PathVariable("id") int id) {
+        return ResponseEntity.ok(HttpStatus.NO_CONTENT);
     }
 }
