@@ -170,11 +170,12 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable("id") int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    @PostMapping("/{userID}/favorites/{offeringID}")
-    public ResponseEntity<List<Integer>> addToFavorites(@PathVariable int userID, @PathVariable int offeringID) {
-        ArrayList<Integer> favorites = new ArrayList<>();
-        favorites.add(offeringID);
-        return ResponseEntity.ok(favorites);
+    @PutMapping("/{userID}/favorites")
+    public ResponseEntity<CreatedFavoriteDTO> addToFavorites(@PathVariable int userID, @RequestBody CreateFavoriteDTO createFavoriteDTO) {
+        CreatedFavoriteDTO createdFavoriteDTO = new CreatedFavoriteDTO();
+        createdFavoriteDTO.setUserID(userID);
+        createdFavoriteDTO.setOfferingID(createFavoriteDTO.getOfferingId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdFavoriteDTO);
     }
 
     @GetMapping("/{userId}/favorites")
