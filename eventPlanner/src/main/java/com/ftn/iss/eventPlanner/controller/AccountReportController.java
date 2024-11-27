@@ -73,8 +73,4 @@ public class AccountReportController {
         return new ResponseEntity<CreatedAccountReportDTO>(createdReport, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{id}/suspend")
-    public ResponseEntity<?> suspendUser(@PathVariable("id") int id) {
-        return ResponseEntity.ok(HttpStatus.NO_CONTENT);
-    }
 }
