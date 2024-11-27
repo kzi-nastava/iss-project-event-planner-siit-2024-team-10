@@ -5,10 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UpdatePricelistDTO {
+public class UpdatePricelistItemDTO {
     private double price;
     private double discount;
 
-    public UpdatePricelistDTO() {
+    public UpdatePricelistItemDTO() {
     }
 }
