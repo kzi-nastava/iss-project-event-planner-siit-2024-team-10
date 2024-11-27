@@ -276,5 +276,14 @@ public class ProductController {
 
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
+    @PostMapping(value = "{productId}/ratings/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedRatingDTO> createRating(@RequestBody CreateRatingDTO rating, @PathVariable("id") int id) {
+        CreatedRatingDTO createdRating = new CreatedRatingDTO();
+        // id generisan u konstruktoru
+        createdRating.setId(1);
+        createdRating.setScore(rating.getScore());
+        createdRating.setAccountId(id);
 
+        return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
+    }
 }
