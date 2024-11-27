@@ -190,7 +190,6 @@ public class UserController {
     @PostMapping("/{id}/suspend")
     public ResponseEntity<?> suspendUser(@PathVariable("id") int id) {
         return ResponseEntity.ok(HttpStatus.NO_CONTENT);
-
     }
 
 }
