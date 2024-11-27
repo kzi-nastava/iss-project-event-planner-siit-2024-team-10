@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/services")
@@ -130,7 +131,7 @@ public class ServiceController {
 	public ResponseEntity<GetServiceDTO> getBook(@PathVariable("id") int id) {
 		GetServiceDTO service = new GetServiceDTO();
 
-        service.setId(5);
+        service.setId(id);
         service.setCategoryId(5);
         service.setPending(false);
         service.setProviderID(5);
@@ -247,34 +248,35 @@ public class ServiceController {
 
 	    return new ResponseEntity<>(filteredServices, HttpStatus.OK);
 	}
+	
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedServiceDTO> createService(@RequestBody CreateServiceDTO service) throws Exception {
+        CreatedServiceDTO createdService = new CreatedServiceDTO();
 
-
-	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CreatedServiceDTO> createBook(@RequestBody CreateServiceDTO service) throws Exception {
-		CreatedServiceDTO createdService = new CreatedServiceDTO();
-
-		createdService.setId(5);
-		createdService.setCategoryId(5);
-		createdService.setPending(false);
-        createdService.setProviderID(5);
-        createdService.setName("Interactive DJ Service");
-        createdService.setDescription("Make your party unforgettable with our skilled DJ.");
-        createdService.setSpecification("Custom playlists and top-notch audio equipment.");
-        createdService.setPrice(2500);
-        createdService.setDiscount(20);
-        createdService.setPhotos(Arrays.asList("https://example.com/photos/dj1.jpg", "https://example.com/photos/dj2.jpg"));
-        createdService.setVisible(true);
-        createdService.setAvailable(true);
-        createdService.setMaxDuration(6);
-        createdService.setMinDuration(3);
-        createdService.setCancellationPeriod(36);
-        createdService.setReservationPeriod(48);
-        createdService.setAutoConfirm(false);
-		return new ResponseEntity<CreatedServiceDTO>(createdService, HttpStatus.CREATED);
-	}
+        createdService.setId(service.getId());
+	    createdService.setName(service.getName());
+	    createdService.setDescription(service.getDescription());
+	    createdService.setSpecification(service.getSpecification());
+	    createdService.setPrice(service.getPrice());
+	    createdService.setPhotos(service.getPhotos());
+	    createdService.setDiscount(service.getDiscount());
+		createdService.setVisible(service.isVisible());
+		createdService.setAvailable(service.isAvailable());
+		createdService.setMaxDuration(service.getMaxDuration());
+		createdService.setMinDuration(service.getMinDuration());
+		createdService.setCancellationPeriod(service.getCancellationPeriod());
+		createdService.setReservationPeriod(service.getReservationPeriod());
+		createdService.setVisible(service.isVisible());
+		createdService.setAvailable(service.isAvailable());
+		createdService.setAutoConfirm(service.isAutoConfirm());
+		createdService.setCategoryId(service.getCategoryId());
+		createdService.setPending(service.isPending());
+		createdService.setProviderID(service.getProviderID());
+        return new ResponseEntity<CreatedServiceDTO>(createdService, HttpStatus.CREATED);
+    }
 	
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UpdatedServiceDTO> updateBook(@RequestBody UpdateServiceDTO service, @PathVariable int id)
+	public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
 			throws Exception {
 		UpdatedServiceDTO updatedService = new UpdatedServiceDTO();
 
@@ -297,7 +299,7 @@ public class ServiceController {
 	}
 
 	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<?> deleteGreeting(@PathVariable("id") int id) {
+	public ResponseEntity<?> delete(@PathVariable("id") int id) {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
