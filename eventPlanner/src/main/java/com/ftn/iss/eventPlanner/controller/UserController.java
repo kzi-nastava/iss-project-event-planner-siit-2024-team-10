@@ -169,4 +169,9 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable("id") int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @PostMapping("/{id}/suspend")
+    public ResponseEntity<?> suspendUser(@PathVariable("id") int id) {
+        return ResponseEntity.ok(HttpStatus.NO_CONTENT);
+    }
 }
