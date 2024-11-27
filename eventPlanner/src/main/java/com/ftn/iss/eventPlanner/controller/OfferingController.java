@@ -2,14 +2,13 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.UpdateCommentDTO;
+import com.ftn.iss.eventPlanner.dto.UpdatedCommentDTO;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -257,5 +256,22 @@ public class OfferingController {
         );
 
         return new ResponseEntity<PagedResponse<GetOfferingDTO>>(response, HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/{id}/comments/{id2}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int id, @PathVariable int id2)
+            throws Exception {
+        UpdatedCommentDTO updatedComment = new UpdatedCommentDTO();
+
+        updatedComment.setId(id2);
+        updatedComment.setContent(comment.getContent());
+        updatedComment.setStatus(comment.getStatus());
+
+        return new ResponseEntity<UpdatedCommentDTO>(updatedComment, HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = "/{id}/comments/{id2}")
+    public ResponseEntity<?> deleteComment(@PathVariable("id") int id, @PathVariable int id2) throws Exception {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

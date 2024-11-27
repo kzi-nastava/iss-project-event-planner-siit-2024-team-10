@@ -264,4 +264,5 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable("id") int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
 }
