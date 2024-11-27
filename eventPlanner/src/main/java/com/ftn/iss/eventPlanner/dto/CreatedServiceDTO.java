@@ -9,7 +9,6 @@ import lombok.Setter;
 public class CreatedServiceDTO {
 	private int id;
     private int categoryId;
-    private String categoryProposal;
     private boolean pending;
     private int providerID;
     private String name;
