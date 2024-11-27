@@ -1,7 +1,6 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -495,5 +494,4 @@ public class ServiceController {
 
         return ResponseEntity.ok(service);
     }
-    
 }

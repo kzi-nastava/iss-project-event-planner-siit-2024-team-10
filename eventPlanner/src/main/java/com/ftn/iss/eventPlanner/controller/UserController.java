@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -168,5 +169,31 @@ public class UserController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable("id") int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    @PostMapping("/{userID}/favorites/{offeringID}")
+    public ResponseEntity<List<Integer>> addToFavorites(@PathVariable int userID, @PathVariable int offeringID) {
+        GetUserDTO user = new GetUserDTO();
+        user.setId(userID);
+        user.setFavourites(new ArrayList<>());
+        user.getFavourites().add(offeringID);
+        return ResponseEntity.ok(user.getFavourites());
+    }
+    /*
+    druga verzija vracanja liste lajkovanih
+    @PostMapping("/{userID}/favorites/{offeringID}")
+    public ResponseEntity<List<Integer>> addToFavorites(@PathVariable int userID, @PathVariable int offeringID) {
+        // servisom nabavi korisnik
+        // dodaj offeringID u korisnikove omiljene
+        // update i vrati success
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+    }
+     */
+    @GetMapping("/{userId}/favorites")
+    public ResponseEntity<List<Integer>> getFavorites(@PathVariable int userId) {
+        GetUserDTO user = new GetUserDTO();
+        user.setId(userId);
+        user.setFavourites(new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5)));
+        return ResponseEntity.ok(user.getFavourites());
     }
 }

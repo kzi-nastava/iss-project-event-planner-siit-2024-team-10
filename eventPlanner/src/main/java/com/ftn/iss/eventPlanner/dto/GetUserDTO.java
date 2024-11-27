@@ -4,6 +4,8 @@ import com.ftn.iss.eventPlanner.model.Role;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class GetUserDTO {
@@ -16,6 +18,7 @@ public class GetUserDTO {
     private String profilePhoto;
     private LocationDTO location;
     private GetCompanyDTO company;
+    private List<Integer> favourites;
 
     public GetUserDTO(){}
 }
