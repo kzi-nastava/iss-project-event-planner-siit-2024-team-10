@@ -43,7 +43,7 @@ public class ReservationController {
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity<GetReservationDTO> getReservationById(@PathVariable("id") int id) {
+    public ResponseEntity<GetReservationDTO> getReservation(@PathVariable("id") int id) {
         GetReservationDTO reservation = new GetReservationDTO();
         reservation.setId(id);
         reservation.setStartTime(LocalDateTime.of(2024, 11, 27, 10, 0));
