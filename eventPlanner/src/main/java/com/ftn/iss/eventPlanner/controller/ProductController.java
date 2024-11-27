@@ -265,40 +265,5 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable("id") int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    @PostMapping(value = "{productId}/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment, @PathVariable("id") int id) {
-        CreatedCommentDTO createdComment = new CreatedCommentDTO();
-        createdComment.setId(1);
-        createdComment.setContent(comment.getContent());
-        createdComment.setStatus(Status.valueOf("PENDING"));
-        createdComment.setAccountId(id);
 
-        return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
-    }
-    @PostMapping(value = "{productId}/ratings/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedRatingDTO> createRating(@RequestBody CreateRatingDTO rating, @PathVariable("id") int id) {
-        CreatedRatingDTO createdRating = new CreatedRatingDTO();
-        createdRating.setId(1);
-        createdRating.setScore(rating.getScore());
-        createdRating.setAccountId(id);
-
-        return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
-    }
-    @GetMapping("/{id}/details")
-    public ResponseEntity<GetProductDTO> getServiceDetail(@PathVariable int id) {
-        GetProductDTO product1 = new GetProductDTO();
-        product1.setId(1);
-        product1.setCategoryId(1);
-        product1.setPending(false);
-        product1.setProviderID(101);
-        product1.setName("Premium Catering Service");
-        product1.setDescription("High-quality catering for weddings and large events.");
-        product1.setPrice(1200.00);
-        product1.setDiscount(10.0);
-        product1.setPhotos(Arrays.asList("https://example.com/photos/catering1.jpg", "https://example.com/photos/catering2.jpg"));
-        product1.setVisible(true);
-        product1.setAvailable(true);
-
-        return ResponseEntity.ok(product1);
-    }
 }

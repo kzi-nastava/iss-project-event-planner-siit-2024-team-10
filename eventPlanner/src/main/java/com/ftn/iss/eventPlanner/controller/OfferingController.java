@@ -1,15 +1,12 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.GetOfferingDTO;
-import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.model.Status;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -257,5 +254,25 @@ public class OfferingController {
         );
 
         return new ResponseEntity<PagedResponse<GetOfferingDTO>>(response, HttpStatus.OK);
+    }
+    @PostMapping(value = "{offeringId}/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment, @PathVariable("id") int id) {
+        CreatedCommentDTO createdComment = new CreatedCommentDTO();
+        // id generisan u konstruktoru
+        createdComment.setId(1);
+        createdComment.setContent(comment.getContent());
+        createdComment.setStatus(Status.valueOf("PENDING"));
+        createdComment.setAccountId(id);
+
+        return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
+    }
+    @PostMapping(value = "{offeringId}/ratings/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedRatingDTO> createRating(@RequestBody CreateRatingDTO rating, @PathVariable("id") int id) {
+        CreatedRatingDTO createdRating = new CreatedRatingDTO();
+        createdRating.setId(1);
+        createdRating.setScore(rating.getScore());
+        createdRating.setAccountId(id);
+
+        return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
     }
 }
