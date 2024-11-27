@@ -286,4 +286,21 @@ public class ProductController {
 
         return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
     }
+    @GetMapping("/{id}/details")
+    public ResponseEntity<GetProductDTO> getServiceDetail(@PathVariable int id) {
+        GetProductDTO product1 = new GetProductDTO();
+        product1.setId(1);
+        product1.setCategoryId(1);
+        product1.setPending(false);
+        product1.setProviderID(101);
+        product1.setName("Premium Catering Service");
+        product1.setDescription("High-quality catering for weddings and large events.");
+        product1.setPrice(1200.00);
+        product1.setDiscount(10.0);
+        product1.setPhotos(Arrays.asList("https://example.com/photos/catering1.jpg", "https://example.com/photos/catering2.jpg"));
+        product1.setVisible(true);
+        product1.setAvailable(true);
+
+        return ResponseEntity.ok(product1);
+    }
 }
