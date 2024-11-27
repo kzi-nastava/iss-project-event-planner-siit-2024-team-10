@@ -68,7 +68,7 @@ public class AccountReportController {
         createdReport.setStatus(Status.PENDING);
         createdReport.setDescription(report.getDescription());
         createdReport.setReporterId(report.getReporterId());
-        createdReport.setReporterId(report.getReporterId());
+        createdReport.setReporteeId(report.getReporteeId());
 
         return new ResponseEntity<CreatedAccountReportDTO>(createdReport, HttpStatus.CREATED);
     }
