@@ -315,6 +315,7 @@ public class OfferingController {
         createdRating.setAccountId(rating.getAccoundId());
 
         return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
+    }
 
     @PutMapping(value = "/{id}/comments/{id2}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int id, @PathVariable int id2)
