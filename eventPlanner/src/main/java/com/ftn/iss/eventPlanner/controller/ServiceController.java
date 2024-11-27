@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.model.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -493,5 +494,26 @@ public class ServiceController {
         service.setAutoConfirm(false);
 
         return ResponseEntity.ok(service);
+    }
+    @PostMapping(value = "{serviceId}/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment, @PathVariable("id") int id) {
+        CreatedCommentDTO createdComment = new CreatedCommentDTO();
+        // id generisan u konstruktoru
+        createdComment.setId(1);
+        createdComment.setContent(comment.getContent());
+        createdComment.setStatus(Status.valueOf("PENDING"));
+        createdComment.setAccountId(id);
+
+        return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
+    }
+    @PostMapping(value = "{serviceId}/ratings/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedRatingDTO> createRating(@RequestBody CreateRatingDTO rating, @PathVariable("id") int id) {
+        CreatedRatingDTO createdRating = new CreatedRatingDTO();
+        // id generisan u konstruktoru
+        createdRating.setId(1);
+        createdRating.setScore(rating.getScore());
+        createdRating.setAccountId(id);
+
+        return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
     }
 }
