@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -169,9 +170,23 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable("id") int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+    @PutMapping("/{userID}/favorites")
+    public ResponseEntity<CreatedFavoriteDTO> addToFavorites(@PathVariable int userID, @RequestBody CreateFavoriteDTO createFavoriteDTO) {
+        CreatedFavoriteDTO createdFavoriteDTO = new CreatedFavoriteDTO();
+        createdFavoriteDTO.setUserID(userID);
+        createdFavoriteDTO.setOfferingID(createFavoriteDTO.getOfferingId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdFavoriteDTO);
+    }
+
+    @GetMapping("/{userId}/favorites")
+    public ResponseEntity<List<Integer>> getFavorites(@PathVariable int userId) {
+        ArrayList<Integer> favorites = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
+        return ResponseEntity.ok(favorites);
+    }
 
     @PostMapping("/{id}/suspend")
     public ResponseEntity<?> suspendUser(@PathVariable("id") int id) {
         return ResponseEntity.ok(HttpStatus.NO_CONTENT);
     }
+
 }

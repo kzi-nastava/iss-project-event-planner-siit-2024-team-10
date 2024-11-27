@@ -1,12 +1,14 @@
 package com.ftn.iss.eventPlanner.model;
 
 import lombok.Getter;
+import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 @Getter
 @Setter
+@AllArgsConstructor
 public class Account {
     private int id;
     private String email;
