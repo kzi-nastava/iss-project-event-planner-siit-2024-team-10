@@ -265,6 +265,47 @@ public class OfferingController {
 
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
+    @GetMapping(value = "{offeringId}/comments", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetCommentDTO>> getComments(@PathVariable("offeringId") int offeringId) {
+        Collection<GetCommentDTO> comments = new ArrayList<>();
+
+        GetCommentDTO comment1 = new GetCommentDTO();
+        comment1.setId(1);
+        comment1.setContent("Great offer!");
+        comment1.setStatus(Status.valueOf("ACCEPTED"));
+        comment1.setAccountId(45);
+
+        GetCommentDTO comment2 = new GetCommentDTO();
+        comment2.setId(2);
+        comment2.setContent("Thank you!");
+        comment2.setStatus(Status.valueOf("PENDING"));
+        comment2.setAccountId(46);
+
+        comments.add(comment1);
+        comments.add(comment2);
+
+        return new ResponseEntity<>(comments, HttpStatus.OK);
+    }
+    @GetMapping(value = "{offeringId}/ratings", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetRatingDTO>> getRatings(@PathVariable("offeringId") int offeringId) {
+        Collection<GetRatingDTO> ratings = new ArrayList<>();
+
+        GetRatingDTO rating1 = new GetRatingDTO();
+        rating1.setId(1);
+        rating1.setScore(5);
+        rating1.setAccountId(45);
+
+        GetRatingDTO rating2 = new GetRatingDTO();
+        rating2.setId(2);
+        rating2.setScore(4);
+        rating2.setAccountId(46);
+
+        ratings.add(rating1);
+        ratings.add(rating2);
+
+        return new ResponseEntity<>(ratings, HttpStatus.OK);
+    }
+
     @PostMapping(value = "{offeringId}/ratings", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedRatingDTO> createRating(@RequestBody CreateRatingDTO rating) {
         CreatedRatingDTO createdRating = new CreatedRatingDTO();
