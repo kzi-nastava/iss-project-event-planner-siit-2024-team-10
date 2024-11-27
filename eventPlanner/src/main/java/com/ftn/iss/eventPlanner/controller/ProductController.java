@@ -265,5 +265,8 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable("id") int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
+    @PostMapping(value = "/{id}/buy", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> buyProduct(@PathVariable("id") int productId) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
