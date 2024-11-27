@@ -255,6 +255,7 @@ public class OfferingController {
 
         return new ResponseEntity<PagedResponse<GetOfferingDTO>>(response, HttpStatus.OK);
     }
+
     @PostMapping(value = "{offeringId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment) {
         CreatedCommentDTO createdComment = new CreatedCommentDTO();
@@ -314,5 +315,21 @@ public class OfferingController {
         createdRating.setAccountId(rating.getAccoundId());
 
         return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
+
+    @PutMapping(value = "/{id}/comments/{id2}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int id, @PathVariable int id2)
+            throws Exception {
+        UpdatedCommentDTO updatedComment = new UpdatedCommentDTO();
+
+        updatedComment.setId(id2);
+        updatedComment.setContent(comment.getContent());
+        updatedComment.setStatus(comment.getStatus());
+
+        return new ResponseEntity<UpdatedCommentDTO>(updatedComment, HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = "/{id}/comments/{id2}")
+    public ResponseEntity<?> deleteComment(@PathVariable("id") int id, @PathVariable int id2) throws Exception {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
