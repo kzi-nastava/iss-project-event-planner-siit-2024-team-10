@@ -178,17 +178,7 @@ public class UserController {
         user.getFavourites().add(offeringID);
         return ResponseEntity.ok(user.getFavourites());
     }
-    /*
-    druga verzija vracanja liste lajkovanih
-    @PostMapping("/{userID}/favorites/{offeringID}")
-    public ResponseEntity<List<Integer>> addToFavorites(@PathVariable int userID, @PathVariable int offeringID) {
-        // servisom nabavi korisnik
-        // dodaj offeringID u korisnikove omiljene
-        // update i vrati success
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
-    }
-     */
     @GetMapping("/{userId}/favorites")
     public ResponseEntity<List<Integer>> getFavorites(@PathVariable int userId) {
         GetUserDTO user = new GetUserDTO();

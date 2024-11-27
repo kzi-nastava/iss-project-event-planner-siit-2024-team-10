@@ -268,7 +268,6 @@ public class ProductController {
     @PostMapping(value = "{productId}/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment, @PathVariable("id") int id) {
         CreatedCommentDTO createdComment = new CreatedCommentDTO();
-        // id generisan u konstruktoru
         createdComment.setId(1);
         createdComment.setContent(comment.getContent());
         createdComment.setStatus(Status.valueOf("PENDING"));
@@ -279,7 +278,6 @@ public class ProductController {
     @PostMapping(value = "{productId}/ratings/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedRatingDTO> createRating(@RequestBody CreateRatingDTO rating, @PathVariable("id") int id) {
         CreatedRatingDTO createdRating = new CreatedRatingDTO();
-        // id generisan u konstruktoru
         createdRating.setId(1);
         createdRating.setScore(rating.getScore());
         createdRating.setAccountId(id);

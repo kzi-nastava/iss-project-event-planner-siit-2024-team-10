@@ -367,7 +367,7 @@ public class ServiceController {
 	public ResponseEntity<?> delete(@PathVariable("id") int id) {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
-    
+
     @PostMapping(value = "{serviceId}/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment, @PathVariable("id") int id) {
         CreatedCommentDTO createdComment = new CreatedCommentDTO();
