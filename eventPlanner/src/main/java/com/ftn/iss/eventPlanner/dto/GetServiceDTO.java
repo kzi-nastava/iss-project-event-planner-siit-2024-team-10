@@ -1,10 +1,13 @@
 package com.ftn.iss.eventPlanner.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 public class GetServiceDTO {
+	private int id;
     private int categoryId;
-    private String categoryProposal;
     private boolean pending;
     private int providerID;
     private String name;
@@ -20,9 +23,6 @@ public class GetServiceDTO {
     private int cancellationPeriod;
     private int reservationPeriod;
     private boolean autoConfirm;
-
-    private List<String> comments;
-    private double averageRating; 
 
     public GetServiceDTO() {
     	

@@ -3,6 +3,7 @@ package com.ftn.iss.eventPlanner.dto;
 import java.util.List;
 
 public class UpdatedServiceDTO {
+	private int id;
 	private String name;
     private String description;
     private String specification;
