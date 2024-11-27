@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class CreatedPricelistItemDTO {
     private int id;
+    private int offeringId;
     private String name;
     private double price;
     private double discount;

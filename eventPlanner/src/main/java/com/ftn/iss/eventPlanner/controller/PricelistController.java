@@ -38,7 +38,7 @@ public class PricelistController {
         return new ResponseEntity<PagedResponse<GetPricelistItemDTO>>(response, HttpStatus.OK);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<UpdatedPricelistItemDTO> updatePricing(@PathVariable int id, @RequestBody UpdatePricelistItemDTO updatePricingDTO) {
         Collection<GetPricelistItemDTO> pricelist = fillIn();
         for (GetPricelistItemDTO item : pricelist) {
@@ -48,6 +48,7 @@ public class PricelistController {
 
                 UpdatedPricelistItemDTO response = new UpdatedPricelistItemDTO();
                 response.setId(item.getId());
+                response.setOfferingId(item.getOfferingId());
                 response.setName(item.getName());
                 response.setPrice(item.getPrice());
                 response.setDiscount(item.getDiscount());
@@ -63,6 +64,7 @@ public class PricelistController {
         for (int i = 1; i <= 5; i++) {
             GetPricelistItemDTO item = new GetPricelistItemDTO();
             item.setId(i);
+            item.setOfferingId(i);
             item.setName("Product/Service " + i);
             item.setPrice(100.0 * i);
             item.setDiscount(10.0);
