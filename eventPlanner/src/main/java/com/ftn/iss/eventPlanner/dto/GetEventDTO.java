@@ -1,11 +1,9 @@
 package com.ftn.iss.eventPlanner.dto;
 
-import com.ftn.iss.eventPlanner.model.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Setter
 @Getter
