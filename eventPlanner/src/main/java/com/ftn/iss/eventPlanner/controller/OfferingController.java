@@ -90,7 +90,7 @@ public class OfferingController {
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getOfferings(
-            @RequestParam(required = false) boolean isServiceFilter,
+            @RequestParam(required = false) Boolean isServiceFilter,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) Integer categoryId,
@@ -102,7 +102,7 @@ public class OfferingController {
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
-            @RequestParam(required = false) boolean isAvailable
+            @RequestParam(required = false) Boolean isAvailable
     ){
         Collection<GetOfferingDTO> offerings = new ArrayList<>();
 
@@ -173,7 +173,7 @@ public class OfferingController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResponse<GetOfferingDTO>> getOfferings(
             SpringDataWebProperties.Pageable page,
-            @RequestParam(required = false) boolean isServiceFilter,
+            @RequestParam(required = false) Boolean isServiceFilter,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) Integer categoryId,
@@ -185,7 +185,7 @@ public class OfferingController {
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
-            @RequestParam(required = false) boolean isAvailable
+            @RequestParam(required = false) Boolean isAvailable
     ){
         Collection<GetOfferingDTO> offerings = new ArrayList<>();
 
