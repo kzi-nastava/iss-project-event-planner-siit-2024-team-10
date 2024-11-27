@@ -66,8 +66,8 @@ public class ReservationController {
         return new ResponseEntity<CreatedReservationDTO>(createdReservation, HttpStatus.CREATED);
     }
 
-    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedReservationDTO> updateReservation(@RequestBody UpdateReservationDTO reservation) throws Exception {
+    @PutMapping(value="/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedReservationDTO> updateReservation(@RequestBody UpdateReservationDTO reservation, @PathVariable("id") int id) throws Exception {
         UpdatedReservationDTO updatedReservation = new UpdatedReservationDTO();
         updatedReservation.setId(1);
         updatedReservation.setStatus(reservation.getStatus());
