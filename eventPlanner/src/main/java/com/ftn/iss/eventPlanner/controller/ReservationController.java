@@ -1,8 +1,6 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.CreateReservationDTO;
-import com.ftn.iss.eventPlanner.dto.CreatedReservationDTO;
-import com.ftn.iss.eventPlanner.dto.GetReservationDTO;
+import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.model.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -56,7 +54,7 @@ public class ReservationController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedReservationDTO> createProduct(@RequestBody CreateReservationDTO reservation) throws Exception {
+    public ResponseEntity<CreatedReservationDTO> createReservation(@RequestBody CreateReservationDTO reservation) throws Exception {
         CreatedReservationDTO createdReservation = new CreatedReservationDTO();
         createdReservation.setId(1);
         createdReservation.setStatus(reservation.getStatus());
@@ -66,5 +64,18 @@ public class ReservationController {
         createdReservation.setServiceId(reservation.getServiceId());
 
         return new ResponseEntity<CreatedReservationDTO>(createdReservation, HttpStatus.CREATED);
+    }
+
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedReservationDTO> updateReservation(@RequestBody UpdateReservationDTO reservation) throws Exception {
+        UpdatedReservationDTO updatedReservation = new UpdatedReservationDTO();
+        updatedReservation.setId(1);
+        updatedReservation.setStatus(reservation.getStatus());
+        updatedReservation.setStartTime(reservation.getStartTime());
+        updatedReservation.setEndTime(reservation.getEndTime());
+        updatedReservation.setEventId(reservation.getEventId());
+        updatedReservation.setServiceId(reservation.getServiceId());
+
+        return new ResponseEntity<UpdatedReservationDTO>(updatedReservation, HttpStatus.CREATED);
     }
 }
