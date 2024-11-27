@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateServiceDTO {
+	private int id;
     private int categoryId;
     private String categoryProposal;
     private boolean pending;
@@ -25,9 +26,7 @@ public class CreateServiceDTO {
     private int reservationPeriod;
     private boolean autoConfirm;
 
-    private List<String> comments;
-    private double averageRating; 
-
     public CreateServiceDTO() {
     }
+
 }

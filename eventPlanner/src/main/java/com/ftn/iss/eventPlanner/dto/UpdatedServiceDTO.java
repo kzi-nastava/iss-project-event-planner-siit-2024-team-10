@@ -1,7 +1,12 @@
 package com.ftn.iss.eventPlanner.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+@Getter
+@Setter
 public class UpdatedServiceDTO {
 	private int id;
 	private String name;
@@ -21,4 +26,5 @@ public class UpdatedServiceDTO {
     public UpdatedServiceDTO() {
     	
     }
+
 }

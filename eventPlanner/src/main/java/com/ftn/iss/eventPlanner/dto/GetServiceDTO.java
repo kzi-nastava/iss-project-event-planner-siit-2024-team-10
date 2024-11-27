@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.util.List;
 
+@Getter
+@Setter
 public class GetServiceDTO {
 	private int id;
     private int categoryId;
@@ -27,4 +29,5 @@ public class GetServiceDTO {
     public GetServiceDTO() {
     	
     }
+
 }
