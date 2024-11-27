@@ -264,4 +264,17 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable("id") int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+    @PostMapping(value = "/{id}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment, @PathVariable("id") int id) {
+        // Kreiranje novog komentara
+        CreatedCommentDTO createdComment = new CreatedCommentDTO();
+        createdComment.setId(123); // Primer ID-a (ovaj ID bi obično generisala baza)
+        createdComment.setContent(comment.getContent());
+        createdComment.setStatus("ACTIVE"); // Postavljanje default statusa
+        createdComment.setPostId(id); // Veza komentara sa postom (ili resursom)
+
+        // Vraćanje HTTP statusa 201 Created i novog komentara
+        return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
+    }
+
 }
