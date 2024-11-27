@@ -1,9 +1,5 @@
 package com.ftn.iss.eventPlanner.dto;
 
-import com.ftn.iss.eventPlanner.model.Comment;
-import com.ftn.iss.eventPlanner.model.OfferingCategory;
-import com.ftn.iss.eventPlanner.model.Provider;
-import com.ftn.iss.eventPlanner.model.Rating;
 import lombok.Getter;
 import lombok.Setter;
 
