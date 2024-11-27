@@ -20,7 +20,7 @@ public class ReservationController {
         createdReservation.setStatus(reservation.getStatus());
         createdReservation.setStartTime(reservation.getStartTime());
         createdReservation.setEndTime(reservation.getEndTime());
-        createdReservation.setServiceId(reservation.getServiceId());
+        createdReservation.setEventId(reservation.getEventId());
         createdReservation.setServiceId(reservation.getServiceId());
 
         return new ResponseEntity<CreatedReservationDTO>(createdReservation, HttpStatus.CREATED);

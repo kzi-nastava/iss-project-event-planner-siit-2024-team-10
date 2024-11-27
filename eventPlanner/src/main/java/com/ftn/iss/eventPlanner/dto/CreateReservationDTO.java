@@ -1,7 +1,5 @@
 package com.ftn.iss.eventPlanner.dto;
 
-import com.ftn.iss.eventPlanner.model.Event;
-import com.ftn.iss.eventPlanner.model.Service;
 import com.ftn.iss.eventPlanner.model.Status;
 import lombok.Getter;
 import lombok.Setter;
