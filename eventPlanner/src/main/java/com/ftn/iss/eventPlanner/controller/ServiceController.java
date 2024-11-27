@@ -471,5 +471,29 @@ public class ServiceController {
 	public ResponseEntity<?> delete(@PathVariable("id") int id) {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
-	
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<GetServiceDTO> getServiceDetail(@PathVariable int id) {
+        GetServiceDTO service = new GetServiceDTO();
+        service.setId(id);
+        service.setCategoryId(6);
+        service.setPending(true);
+        service.setProviderID(1);
+        service.setName("Bridal Makeup");
+        service.setDescription("Beautiful bridal makeup for the bride and her party.");
+        service.setSpecification("We use the best products for long-lasting results.");
+        service.setPrice(2000);
+        service.setDiscount(0);
+        service.setPhotos(Arrays.asList("https://example.com/photos/makeup1.jpg", "https://example.com/photos/makeup2.jpg"));
+        service.setVisible(true);
+        service.setAvailable(true);
+        service.setMaxDuration(4);
+        service.setMinDuration(2);
+        service.setCancellationPeriod(24);
+        service.setReservationPeriod(48);
+        service.setAutoConfirm(false);
+
+        return ResponseEntity.ok(service);
+    }
+    
 }
