@@ -255,23 +255,22 @@ public class OfferingController {
 
         return new ResponseEntity<PagedResponse<GetOfferingDTO>>(response, HttpStatus.OK);
     }
-    @PostMapping(value = "{offeringId}/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment, @PathVariable("id") int id) {
+    @PostMapping(value = "{offeringId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment) {
         CreatedCommentDTO createdComment = new CreatedCommentDTO();
-        // id generisan u konstruktoru
         createdComment.setId(1);
         createdComment.setContent(comment.getContent());
         createdComment.setStatus(Status.valueOf("PENDING"));
-        createdComment.setAccountId(id);
+        createdComment.setAccountId(comment.getAccountId());
 
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
-    @PostMapping(value = "{offeringId}/ratings/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedRatingDTO> createRating(@RequestBody CreateRatingDTO rating, @PathVariable("id") int id) {
+    @PostMapping(value = "{offeringId}/ratings", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedRatingDTO> createRating(@RequestBody CreateRatingDTO rating) {
         CreatedRatingDTO createdRating = new CreatedRatingDTO();
         createdRating.setId(1);
         createdRating.setScore(rating.getScore());
-        createdRating.setAccountId(id);
+        createdRating.setAccountId(rating.getAccoundId());
 
         return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
     }

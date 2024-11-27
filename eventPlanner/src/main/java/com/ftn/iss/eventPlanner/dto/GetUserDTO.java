@@ -18,7 +18,6 @@ public class GetUserDTO {
     private String profilePhoto;
     private LocationDTO location;
     private GetCompanyDTO company;
-    private List<Integer> favourites;
 
     public GetUserDTO(){}
 }

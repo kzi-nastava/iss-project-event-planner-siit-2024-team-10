@@ -172,19 +172,15 @@ public class UserController {
     }
     @PostMapping("/{userID}/favorites/{offeringID}")
     public ResponseEntity<List<Integer>> addToFavorites(@PathVariable int userID, @PathVariable int offeringID) {
-        GetUserDTO user = new GetUserDTO();
-        user.setId(userID);
-        user.setFavourites(new ArrayList<>());
-        user.getFavourites().add(offeringID);
-        return ResponseEntity.ok(user.getFavourites());
+        ArrayList<Integer> favorites = new ArrayList<>();
+        favorites.add(offeringID);
+        return ResponseEntity.ok(favorites);
     }
 
     @GetMapping("/{userId}/favorites")
     public ResponseEntity<List<Integer>> getFavorites(@PathVariable int userId) {
-        GetUserDTO user = new GetUserDTO();
-        user.setId(userId);
-        user.setFavourites(new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5)));
-        return ResponseEntity.ok(user.getFavourites());
+        ArrayList<Integer> favorites = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
+        return ResponseEntity.ok(favorites);
     }
 
     @PostMapping("/{id}/suspend")

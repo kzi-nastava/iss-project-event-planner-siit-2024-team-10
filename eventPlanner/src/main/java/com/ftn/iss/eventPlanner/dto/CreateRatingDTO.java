@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class CreateRatingDTO {
     public int score;
+    public int accoundId;
     public CreateRatingDTO(){
 
     }
