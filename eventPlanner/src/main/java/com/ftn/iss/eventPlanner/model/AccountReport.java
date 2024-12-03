@@ -20,18 +20,15 @@ public class AccountReport {
     @Column(nullable = false)
     private LocalDateTime processingTimestamp;
 
-    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Enumerated
     private Status status;
 
-    // COMMENTED UNTIL THE NECESSARY ENTITIES ARE MADE
+    @ManyToOne
+    private Account reporter;
 
-//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "reporter_id", nullable = false)
-//    private Account reporter;
-//
-//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "reportee_id", nullable = false)
-//    private Account reportee;
+    @ManyToOne
+    private Account reportee;
 
     public AccountReport() {
     }

@@ -25,12 +25,10 @@ public class BudgetItem {
     private boolean isDeleted;
 
     @ManyToOne
-    @JoinColumn(name="category_id", nullable = false)
     private OfferingCategory category;
 
-//    @ManyToOne
-//    @JoinColumn(name="offering_id", nullable = true)
-//    private Offering offering;
+    @ManyToOne
+    private Offering offering;
 
     public BudgetItem() {
     }

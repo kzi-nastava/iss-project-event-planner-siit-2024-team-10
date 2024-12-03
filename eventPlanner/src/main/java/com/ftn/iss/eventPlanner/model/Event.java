@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -14,10 +15,10 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    //private Organizer organizer;
+    @ManyToOne
+    private Organizer organizer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="event_type_id")
+    @ManyToOne
     private EventType eventType;
 
     @Column(nullable = false)
@@ -43,15 +44,20 @@ public class Event {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    //private Location location;
+    @ManyToOne
+    private Location location;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<AgendaItem> agenda;
-    //private List<Comment> comments;
-    //private List<Rating> ratings;
+    @OneToMany
+    private Set<AgendaItem> agenda;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<BudgetItem> budget;
+    @OneToMany
+    private Set<Comment> comments;
+
+    @OneToMany
+    private Set<Rating> ratings;
+
+    @OneToMany
+    private Set<BudgetItem> budget;
 
     public Event() {
     }

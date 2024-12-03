@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -23,8 +23,8 @@ public class EventType {
     @Column(nullable = false)
     private boolean isActive;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    private List<OfferingCategory> recommendedCategories;
+    @ManyToMany
+    private Set<OfferingCategory> recommendedCategories;
 
     public EventType() {
     }
