@@ -21,7 +21,7 @@ public class Company {
     private String phoneNumber;
     @Column(nullable = false)
     private String description;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "company_photos", joinColumns = @JoinColumn(name = "company_id"))
     @Column(name = "photo_url")
     private List<String> photos;
