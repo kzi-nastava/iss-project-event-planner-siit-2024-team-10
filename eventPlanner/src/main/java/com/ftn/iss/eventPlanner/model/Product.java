@@ -19,7 +19,7 @@ public class Product extends Offering {
     private ProductDetails currentDetails;
     @Column
     @OneToMany
-    private Set<ProductDetails> detailsHistory = new HashSet<>();;
+    private Set<ProductDetails> detailsHistory = new HashSet<>();
 
     public Product() {
     }
