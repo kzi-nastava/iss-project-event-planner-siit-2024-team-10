@@ -27,7 +27,7 @@ public class ProductDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "offering_details_photos", joinColumns = @JoinColumn(name = "offerin_details_id"))
     @Column(name = "photo_url")
-    private List<String> photos;
+    private Set<String> photos = new HashSet<>();;
     @Column(nullable = false)
     private boolean isVisible;
     @Column(nullable = false)

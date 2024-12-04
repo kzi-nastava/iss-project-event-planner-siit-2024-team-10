@@ -1,6 +1,8 @@
 package com.ftn.iss.eventPlanner.model;
 
 import jakarta.persistence.*;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.List;
 import org.modelmapper.internal.bytebuddy.dynamic.loading.InjectionClassLoader;
 
@@ -20,7 +22,7 @@ public abstract class Offering {
     @ManyToOne
     private Provider provider;
     @ManyToMany
-    private List<Comment> comments;
+    private Set<Comment> comments = new HashSet<>();
     @ManyToMany
-    private List<Rating> ratings;
+    private Set<Rating> ratings = new HashSet<>();
 }
