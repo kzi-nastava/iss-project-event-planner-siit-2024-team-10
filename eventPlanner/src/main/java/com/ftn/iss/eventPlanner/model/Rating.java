@@ -16,7 +16,6 @@ public class Rating {
     @Column(nullable = false)
 
     private int score;
-    @Column(nullable = false)
     @ManyToOne
     private Account rater;
 

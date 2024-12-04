@@ -17,7 +17,6 @@ public class Comment {
     @Column(nullable = false)
     @Enumerated
     private Status status;
-    @Column(nullable = false)
     @ManyToOne
     private Account commenter;
 

@@ -14,10 +14,8 @@ import java.util.Set;
 @Setter
 @Entity
 public class Product extends Offering {
-    @Column
     @OneToOne
     private ProductDetails currentDetails;
-    @Column
     @OneToMany
     private Set<ProductDetails> detailsHistory = new HashSet<>();
 

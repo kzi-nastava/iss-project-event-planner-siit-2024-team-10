@@ -15,10 +15,8 @@ import java.util.Set;
 @Setter
 @Entity
 public class Service extends Offering{
-    @Column
     @OneToOne
     private ServiceDetails currentDetails;
-    @Column
     @OneToMany
     private Set<ServiceDetails> detailsHistory = new HashSet<>();
 

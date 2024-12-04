@@ -18,10 +18,8 @@ public class Message {
     private String content;
     @Column(nullable = false)
     private LocalDateTime timestamp;
-    @Column(nullable = false)
     @ManyToOne
     private Account sender;
-    @Column(nullable = false)
     @ManyToOne
     private Account receiver;
     @Column(nullable = false)
