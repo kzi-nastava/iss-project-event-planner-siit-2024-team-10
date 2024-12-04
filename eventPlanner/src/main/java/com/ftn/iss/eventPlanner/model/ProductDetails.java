@@ -34,9 +34,6 @@ public class ProductDetails {
     private boolean isAvailable;
     @Column(nullable = false)
     private LocalDateTime timestamp;
-    @ManyToMany
-    private Set<EventType> eventTypes = new HashSet<>();
-
     public ProductDetails() {
     }
 

@@ -50,8 +50,6 @@ public class ServiceDetails {
     private boolean autoConfirm;
     @Column(nullable = false)
     private LocalDateTime timestamp;
-    @ManyToMany
-    private Set<EventType> eventTypes = new HashSet<>();
 
     public ServiceDetails() {
     }
