@@ -18,7 +18,7 @@ public class BudgetItem {
     @Column(nullable = false)
     private double amount;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime purchaseDate;
 
     @Column(nullable = false)

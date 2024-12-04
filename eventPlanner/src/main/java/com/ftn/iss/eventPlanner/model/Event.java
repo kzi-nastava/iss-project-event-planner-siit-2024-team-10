@@ -36,7 +36,7 @@ public class Event {
     @Column(nullable = false)
     private LocalDate date;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="guests", joinColumns = @JoinColumn(name="event_id"))
     @Column(name="guest_list")
     private List<String> guestList;
