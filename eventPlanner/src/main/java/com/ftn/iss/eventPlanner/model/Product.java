@@ -9,15 +9,15 @@ import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
-
+import jakarta.persistence.CascadeType;
 @Getter
 @Setter
 @Entity
 public class Product extends Offering {
-    @OneToOne
-    private ProductDetails currentDetails;
-    @OneToMany
-    private Set<ProductDetails> detailsHistory = new HashSet<>();
+    @OneToOne(cascade = CascadeType.ALL)
+    private OfferingDetails currentDetails;
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<OfferingDetails> detailsHistory = new HashSet<>();
 
     public Product() {
     }
