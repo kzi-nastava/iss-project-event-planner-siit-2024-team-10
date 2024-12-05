@@ -24,22 +24,22 @@ public class AccountReportController {
         report1.setId(1);
         report1.setStatus(Status.ACCEPTED);
         report1.setDescription("Reason for reporting 1");
-        report1.setReporterId(1);
-        report1.setReporteeId(2);
+        report1.setReporterName("User1");
+        report1.setReporteeName("User2");
 
         GetAccountReportDTO report2 = new GetAccountReportDTO();
         report2.setId(2);
         report2.setStatus(Status.ACCEPTED);
         report2.setDescription("Reason for reporting 2");
-        report2.setReporterId(2);
-        report2.setReporteeId(3);
+        report2.setReporterName("User2");
+        report2.setReporteeName("User3");
 
         GetAccountReportDTO report3 = new GetAccountReportDTO();
         report3.setId(3);
         report3.setStatus(Status.ACCEPTED);
         report3.setDescription("Reason for reporting 3");
-        report3.setReporterId(4);
-        report3.setReporteeId(3);
+        report3.setReporterName("User5");
+        report3.setReporteeName("User3");
 
         reports.add(report1);
         reports.add(report2);
@@ -55,8 +55,8 @@ public class AccountReportController {
         report.setId(id);
         report.setStatus(Status.PENDING);
         report.setDescription("Reason for reporting 1");
-        report.setReporterId(1);
-        report.setReporteeId(2);
+        report.setReporterName("User1");
+        report.setReporteeName("User2");
 
         return new ResponseEntity<>(report, HttpStatus.OK);
     }
@@ -67,8 +67,8 @@ public class AccountReportController {
         createdReport.setId(1);
         createdReport.setStatus(Status.PENDING);
         createdReport.setDescription(report.getDescription());
-        createdReport.setReporterId(report.getReporterId());
-        createdReport.setReporteeId(report.getReporteeId());
+        createdReport.setReporterName(report.getReporterName());
+        createdReport.setReporteeName(report.getReporteeName());
 
         return new ResponseEntity<CreatedAccountReportDTO>(createdReport, HttpStatus.CREATED);
     }

@@ -11,8 +11,8 @@ public class GetAccountReportDTO
     private int id;
     private String description;
     private Status status;
-    private int reporterId;
-    private int reporteeId;
+    private String reporterName;
+    private String reporteeName;
 
     public GetAccountReportDTO() {
     }
