@@ -317,20 +317,20 @@ public class OfferingController {
         return new ResponseEntity<>(createdRating, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{id}/comments/{id2}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int id, @PathVariable int id2)
+    @PutMapping(value = "/{offeringId}/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int offeringId, @PathVariable int commentId)
             throws Exception {
         UpdatedCommentDTO updatedComment = new UpdatedCommentDTO();
 
-        updatedComment.setId(id2);
+        updatedComment.setId(commentId);
         updatedComment.setContent(comment.getContent());
         updatedComment.setStatus(comment.getStatus());
 
         return new ResponseEntity<UpdatedCommentDTO>(updatedComment, HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/{id}/comments/{id2}")
-    public ResponseEntity<?> deleteComment(@PathVariable("id") int id, @PathVariable int id2) throws Exception {
+    @DeleteMapping(value = "/{offeringId}/comments/{commentId}")
+    public ResponseEntity<?> deleteComment(@PathVariable int offeringId, @PathVariable int commentId) throws Exception {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
