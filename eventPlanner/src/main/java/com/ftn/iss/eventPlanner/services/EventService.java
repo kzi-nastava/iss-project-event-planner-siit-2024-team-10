@@ -27,6 +27,16 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    public List<GetEventCardDTO> findTopEvents(){
+        List<Event> events = eventRepository.findAll();
+
+        // sorting by timestamp, DESC - TBD when timestamp attribute gets added
+        return events.stream()
+                .map(this::mapToGetEventCardDTO)
+                .limit(5)
+                .collect(Collectors.toList());
+    }
+
     private GetEventCardDTO mapToGetEventCardDTO(Event event) {
         GetEventCardDTO dto = new GetEventCardDTO();
 
