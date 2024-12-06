@@ -32,4 +32,20 @@ public class EventTypeController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<GetEventTypeDTO>> getAllEventTypes() {
+        List<GetEventTypeDTO> eventTypes = eventTypeService.findAll();
+        return new ResponseEntity<>(eventTypes, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetEventTypeDTO> getEventTypeById(@PathVariable int id) {
+        try {
+            GetEventTypeDTO eventType = eventTypeService.findById(id);
+            return new ResponseEntity<>(eventType, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }

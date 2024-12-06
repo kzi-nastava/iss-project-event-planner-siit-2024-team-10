@@ -35,4 +35,18 @@ public class EventTypeService {
         eventType = eventTypeRepository.save(eventType);
         return modelMapper.map(eventType,CreatedEventTypeDTO.class);
     }
+
+    public List<GetEventTypeDTO> findAll() {
+        List<EventType> eventTypes = eventTypeRepository.findAll();
+        return eventTypes.stream()
+                .filter(EventType::isActive)
+                .map(eventType -> modelMapper.map(eventType, GetEventTypeDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public GetEventTypeDTO findById(int id) {
+        EventType eventType = eventTypeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
+        return modelMapper.map(eventType, GetEventTypeDTO.class);
+    }
 }
