@@ -1,7 +1,16 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
+import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.model.Organizer;
+import com.ftn.iss.eventPlanner.repositories.AccountRepository;
+import com.ftn.iss.eventPlanner.repositories.OrganizerRepository;
+import com.ftn.iss.eventPlanner.services.EventService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,6 +24,9 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
+    @Autowired
+    private EventService eventService;
+
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetEventDTO>> getTopEvents() {
         Collection<GetEventDTO> events = new ArrayList<>();
@@ -218,11 +230,21 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedEventDTO> createEvent(@Valid @RequestBody CreateEventDTO event) {
+        try{
+            CreatedEventDTO createdEventType = eventService.create(event);
+            return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
+        }
+        catch (IllegalArgumentException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PutMapping(value = "/{eventId}/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int eventId, @PathVariable int commentId)
             throws Exception {
         UpdatedCommentDTO updatedComment = new UpdatedCommentDTO();
-
         updatedComment.setId(commentId);
         updatedComment.setContent(comment.getContent());
         updatedComment.setStatus(comment.getStatus());
