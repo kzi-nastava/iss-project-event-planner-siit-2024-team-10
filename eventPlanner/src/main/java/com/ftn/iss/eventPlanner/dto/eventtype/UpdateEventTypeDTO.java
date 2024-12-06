@@ -15,9 +15,6 @@ import java.util.List;
 public class UpdateEventTypeDTO {
     @Valid
 
-    @NotNull(message="event type name is required")
-    @NotBlank(message="event type name is required")
-    private String name;
     @NotNull(message="event type description is required")
     @NotBlank(message="event type description is required")
     private String description;
