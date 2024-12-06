@@ -1,9 +1,6 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.eventtype.CreateEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.UpdateEventTypeDTO;
+import com.ftn.iss.eventPlanner.dto.eventtype.*;
 import com.ftn.iss.eventPlanner.model.OfferingCategory;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.services.EventTypeService;
@@ -46,6 +43,16 @@ public class EventTypeController {
             return new ResponseEntity<>(eventType, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedEventTypeDTO> updateEventType(@PathVariable int id, @Valid @RequestBody UpdateEventTypeDTO updateEventTypeDTO) {
+        try {
+            UpdatedEventTypeDTO updatedEventType = eventTypeService.update(id, updateEventTypeDTO);
+            return new ResponseEntity<>(updatedEventType, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }

@@ -1,9 +1,6 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.eventtype.CreateEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.UpdateEventTypeDTO;
+import com.ftn.iss.eventPlanner.dto.eventtype.*;
 import com.ftn.iss.eventPlanner.model.EventType;
 import com.ftn.iss.eventPlanner.model.OfferingCategory;
 import com.ftn.iss.eventPlanner.repositories.EventTypeRepository;
@@ -49,4 +46,24 @@ public class EventTypeService {
                 .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
         return modelMapper.map(eventType, GetEventTypeDTO.class);
     }
+
+    public UpdatedEventTypeDTO update(int id, UpdateEventTypeDTO updateEventTypeDTO) {
+        EventType eventType = eventTypeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
+
+        modelMapper.map(updateEventTypeDTO, eventType);
+
+        if (updateEventTypeDTO.getRecommendedCategoryIds() != null) {
+            eventType.getRecommendedCategories().clear();
+            for (int categoryId : updateEventTypeDTO.getRecommendedCategoryIds()) {
+                OfferingCategory category = offeringCategoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new IllegalArgumentException("Invalid Offering Category ID: " + categoryId));
+                eventType.getRecommendedCategories().add(category);
+            }
+        }
+
+        eventType = eventTypeRepository.save(eventType);
+        return modelMapper.map(eventType, UpdatedEventTypeDTO.class);
+    }
+
 }
