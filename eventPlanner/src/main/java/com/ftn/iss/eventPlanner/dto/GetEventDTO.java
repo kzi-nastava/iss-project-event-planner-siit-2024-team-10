@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.dto;
 
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +17,7 @@ public class GetEventDTO {
     private int maxParticipants;
     private boolean isOpen;
     private LocalDate date;
-    private LocationDTO location;
+    private GetLocationDTO location;
 
     public GetEventDTO() {super();}
 }
