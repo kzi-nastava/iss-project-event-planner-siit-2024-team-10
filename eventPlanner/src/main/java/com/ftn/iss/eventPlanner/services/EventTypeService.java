@@ -66,4 +66,11 @@ public class EventTypeService {
         return modelMapper.map(eventType, UpdatedEventTypeDTO.class);
     }
 
+    public void delete(int id) {
+        EventType eventType = eventTypeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
+        eventType.setActive(false);
+        eventTypeRepository.save(eventType);
+    }
+
 }

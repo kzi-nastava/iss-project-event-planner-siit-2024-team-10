@@ -55,4 +55,14 @@ public class EventTypeController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> deleteEventType(@PathVariable int id) {
+        try {
+            eventTypeService.delete(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
