@@ -1,5 +1,6 @@
-package com.ftn.iss.eventPlanner.dto;
+package com.ftn.iss.eventPlanner.dto.event;
 
+import com.ftn.iss.eventPlanner.dto.LocationDTO;
 import lombok.Getter;
 import lombok.Setter;
 
