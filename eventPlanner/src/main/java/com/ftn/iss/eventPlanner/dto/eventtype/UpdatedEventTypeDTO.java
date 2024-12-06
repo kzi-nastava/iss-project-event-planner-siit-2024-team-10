@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.dto.eventtype;
 
+import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,5 +17,5 @@ public class UpdatedEventTypeDTO {
     private int id;
     private String name;
     private String description;
-    private List<Integer> recommendedCategoryIds;
+    private List<GetOfferingCategoryDTO> recommendedCategories;
 }
