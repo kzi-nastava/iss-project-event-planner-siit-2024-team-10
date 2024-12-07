@@ -1,23 +1,23 @@
 package com.ftn.iss.eventPlanner.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
-import jakarta.persistence.CascadeType;
+
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
 public class Product extends Offering {
     @OneToOne(cascade = CascadeType.ALL)
-    private OfferingDetails currentDetails;
+    @JoinColumn(name = "current_product_details_id")
+    private ProductDetails currentDetails;
     @OneToMany(cascade = CascadeType.ALL)
-    private Set<OfferingDetails> detailsHistory = new HashSet<>();
+    private Set<ProductDetails> detailsHistory = new HashSet<>();
 
     public Product() {
     }
