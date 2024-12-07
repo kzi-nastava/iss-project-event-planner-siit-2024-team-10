@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -23,8 +24,8 @@ public class EventType {
     @Column(nullable = false)
     private boolean isActive;
 
-    @ManyToMany
-    private Set<OfferingCategory> recommendedCategories;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<OfferingCategory> recommendedCategories = new HashSet<>();
 
     public EventType() {
     }

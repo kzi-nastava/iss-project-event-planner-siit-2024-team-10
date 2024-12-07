@@ -7,8 +7,8 @@ import lombok.Setter;
 @Setter
 public class CreateAccountReportDTO {
     private String description;
-    private int reporterId;
-    private int reporteeId;
+    private String reporterEmail;
+    private String reporteeEmail;
 
     public CreateAccountReportDTO() {
     }
