@@ -1,10 +1,6 @@
 package com.ftn.iss.eventPlanner.dto.event;
 
-<<<<<<< HEAD:eventPlanner/src/main/java/com/ftn/iss/eventPlanner/dto/event/GetEventDTO.java
-import com.ftn.iss.eventPlanner.dto.location.LocationDTO;
-=======
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
->>>>>>> develop:eventPlanner/src/main/java/com/ftn/iss/eventPlanner/dto/GetEventDTO.java
 import lombok.Getter;
 import lombok.Setter;
 

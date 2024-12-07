@@ -1,12 +1,7 @@
 package com.ftn.iss.eventPlanner.dto.user;
 
-<<<<<<< HEAD:eventPlanner/src/main/java/com/ftn/iss/eventPlanner/dto/user/CreateUserDTO.java
-import com.ftn.iss.eventPlanner.dto.location.LocationDTO;
 import com.ftn.iss.eventPlanner.dto.company.CreateCompanyDTO;
-=======
 import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
-import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
->>>>>>> develop:eventPlanner/src/main/java/com/ftn/iss/eventPlanner/dto/CreateUserDTO.java
 import com.ftn.iss.eventPlanner.model.Role;
 import lombok.Getter;
 import lombok.Setter;
