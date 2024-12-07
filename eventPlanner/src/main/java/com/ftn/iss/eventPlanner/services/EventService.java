@@ -41,13 +41,13 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
-    public List<GetEventCardDTO> findTopEvents(){
+    public List<GetEventCardDTO> findTopEvents() {
         List<Event> events = eventRepository.findAll();
 
-        // sorting by timestamp, DESC - TBD when timestamp attribute gets added
         return events.stream()
-                .map(this::mapToGetEventCardDTO)
+                .sorted((e1, e2) -> e2.getDateCreated().compareTo(e1.getDateCreated()))
                 .limit(5)
+                .map(this::mapToGetEventCardDTO)
                 .collect(Collectors.toList());
     }
 
@@ -65,16 +65,7 @@ public class EventService {
             dto.setLocation(locationDTO);
         }
 
-//        if (event.getRatings() != null && !event.getRatings().isEmpty()) {
-//            double averageRating = event.getRatings()
-//                    .stream()
-//                    .mapToInt(Rating::getScore)
-//                    .average()
-//                    .orElse(0.0);
-//            dto.setAverageRating(averageRating);
-//        } else {
-//            dto.setAverageRating(0.0);
-//        }
+        dto.setAverageRating(calculateAverageRating(event));
         return dto;
     }
 
@@ -104,4 +95,20 @@ public class EventService {
         locationDTO.setHouseNumber(event.getLocation().getHouseNumber());
         return locationDTO;
     }
+
+    private double calculateAverageRating(Event event){
+        if (event.getStats() != null) {
+            EventStats eventStats = event.getStats();
+            double averageRating = (double) (eventStats.getFiveStarCount() +
+                    eventStats.getFourStarCount() +
+                    eventStats.getThreeStarCount() +
+                    eventStats.getTwoStarCount() +
+                    eventStats.getOneStarCount()) /
+                    eventStats.getParticipantsCount();
+            return averageRating;
+        } else {
+            return 0.0;
+        }
+    }
+
 }
