@@ -1,13 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.service.CreateServiceDTO;
-import com.ftn.iss.eventPlanner.dto.service.CreatedServiceDTO;
-import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
-import com.ftn.iss.eventPlanner.model.EventType;
-import com.ftn.iss.eventPlanner.model.Offering;
-import com.ftn.iss.eventPlanner.model.OfferingCategory;
-import com.ftn.iss.eventPlanner.model.Service;
+import com.ftn.iss.eventPlanner.dto.service.*;
+import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import org.modelmapper.ModelMapper;
@@ -60,5 +54,27 @@ public class ServiceService {
         return services.stream()
                 .map(service -> modelMapper.map(service, GetServiceDTO.class))
                 .collect(Collectors.toList());
+    }
+    public GetServiceDTO findById(int id) {
+        Service service = (Service) offeringRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+        return modelMapper.map(service, GetServiceDTO.class);
+    }
+    /*
+    add current details to history and set new current
+     */
+    public UpdatedServiceDTO update(int id, UpdateServiceDTO updateServiceDTO) {
+        Service service = (Service) offeringRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+        service.getDetailsHistory().add(service.getCurrentDetails());
+        modelMapper.map(updateServiceDTO, service.getCurrentDetails());
+        service = offeringRepository.save(service);
+        return modelMapper.map(service, UpdatedServiceDTO.class);
+    }
+    public void delete(int id) {
+        Service service = (Service) offeringRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+        service.setDeleted(true);
+        offeringRepository.save(service);
     }
 }
