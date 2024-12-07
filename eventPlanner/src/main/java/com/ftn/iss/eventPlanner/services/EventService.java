@@ -2,7 +2,11 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.model.Event;
+import com.ftn.iss.eventPlanner.model.Location;
+import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.EventStatsRepository;
 import com.ftn.iss.eventPlanner.repositories.EventTypeRepository;
@@ -53,26 +57,29 @@ public class EventService {
         dto.setId(event.getId());
         dto.setName(event.getName());
         dto.setDate(event.getDate());
-        dto.setOrganizer(event.getOrganizer().getFirstName()+" "+event.getOrganizer().getLastName());
+        dto.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());
         dto.setEventType(event.getEventType().getName());
 
         if (event.getLocation() != null) {
-            LocationDTO locationDTO = setLocationDTO(event);
+            GetLocationDTO locationDTO = setGetLocationDTO(event);
             dto.setLocation(locationDTO);
         }
 
-        if (event.getRatings() != null && !event.getRatings().isEmpty()) {
-            double averageRating = event.getRatings()
-                    .stream()
-                    .mapToInt(Rating::getScore)
-                    .average()
-                    .orElse(0.0);
-            dto.setAverageRating(averageRating);
-        } else {
-            dto.setAverageRating(0.0);
-        }
+//        if (event.getRatings() != null && !event.getRatings().isEmpty()) {
+//            double averageRating = event.getRatings()
+//                    .stream()
+//                    .mapToInt(Rating::getScore)
+//                    .average()
+//                    .orElse(0.0);
+//            dto.setAverageRating(averageRating);
+//        } else {
+//            dto.setAverageRating(0.0);
+//        }
+        return dto;
+    }
 
-    public CreatedEventDTO create(CreateEventDTO createEventDTO) {
+
+    public CreatedEventDTO create (CreateEventDTO createEventDTO){
         Event event = modelMapper.map(createEventDTO, Event.class);
         event.setId(0);
         Location location = modelMapper.map(locationService.create(createEventDTO.getLocation()), Location.class);
@@ -89,13 +96,12 @@ public class EventService {
         return modelMapper.map(event, CreatedEventDTO.class);
     }
 
-    private LocationDTO setLocationDTO(Event event){
-        LocationDTO locationDTO = new LocationDTO();
+    private GetLocationDTO setGetLocationDTO (Event event){
+        GetLocationDTO locationDTO = new GetLocationDTO();
         locationDTO.setCountry(event.getLocation().getCountry());
         locationDTO.setCity(event.getLocation().getCity());
         locationDTO.setStreet(event.getLocation().getStreet());
         locationDTO.setHouseNumber(event.getLocation().getHouseNumber());
         return locationDTO;
     }
-
 }

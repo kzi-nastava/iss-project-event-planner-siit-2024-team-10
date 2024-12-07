@@ -1,6 +1,6 @@
 package com.ftn.iss.eventPlanner.dto.event;
 
-import com.ftn.iss.eventPlanner.dto.LocationDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +14,7 @@ public class GetEventCardDTO {
     private String eventType;
     private String name;
     private LocalDate date;
-    private LocationDTO location;
+    private GetLocationDTO location;
     private double averageRating;
 
     public GetEventCardDTO() {super();}
