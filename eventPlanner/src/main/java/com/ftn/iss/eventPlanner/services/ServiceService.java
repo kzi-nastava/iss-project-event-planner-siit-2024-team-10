@@ -1,13 +1,20 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.service.CreateServiceDTO;
 import com.ftn.iss.eventPlanner.dto.service.CreatedServiceDTO;
+import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
+import com.ftn.iss.eventPlanner.model.EventType;
+import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.model.OfferingCategory;
 import com.ftn.iss.eventPlanner.model.Service;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class ServiceService {
@@ -47,5 +54,11 @@ public class ServiceService {
         Service savedService = offeringRepository.save(service);
 
         return modelMapper.map(savedService, CreatedServiceDTO.class);
+    }
+    public List<GetServiceDTO> findAll() {
+        List<Service> services = offeringRepository.findAllServices();
+        return services.stream()
+                .map(service -> modelMapper.map(service, GetServiceDTO.class))
+                .collect(Collectors.toList());
     }
 }
