@@ -1,7 +1,12 @@
 package com.ftn.iss.eventPlanner.dto.user;
 
+<<<<<<< HEAD:eventPlanner/src/main/java/com/ftn/iss/eventPlanner/dto/user/UpdatedUserDTO.java
 import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.LocationDTO;
+=======
+import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+>>>>>>> develop:eventPlanner/src/main/java/com/ftn/iss/eventPlanner/dto/UpdatedUserDTO.java
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +18,7 @@ public class UpdatedUserDTO {
     private String lastName;
     private String phoneNumber;
     private String profilePhoto;
-    private LocationDTO location;
+    private CreatedLocationDTO location;
     private UpdatedCompanyDTO company;
 
     public UpdatedUserDTO() {}

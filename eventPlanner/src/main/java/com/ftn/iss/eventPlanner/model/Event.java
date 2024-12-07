@@ -51,13 +51,13 @@ public class Event {
     private Set<AgendaItem> agenda;
 
     @OneToMany
-    private Set<Comment> comments;
-
-    @OneToMany
-    private Set<Rating> ratings;
-
-    @OneToMany
     private Set<BudgetItem> budget;
+
+    @OneToOne
+    private EventStats stats;
+
+    @Column
+    private LocalDate dateCreated;
 
     public Event() {
     }

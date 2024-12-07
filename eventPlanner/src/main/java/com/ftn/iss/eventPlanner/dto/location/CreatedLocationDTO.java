@@ -5,16 +5,16 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GetLocationDTO {
+public class CreatedLocationDTO {
     private int id;
     private String city;
     private String country;
     private String street;
     private String houseNumber;
 
-    public GetLocationDTO() {}
+    public CreatedLocationDTO() {}
 
-    public GetLocationDTO(String city, String country, String street, String houseNumber) {
+    public CreatedLocationDTO(String city, String country, String street, String houseNumber) {
         this.city = city;
         this.country = country;
         this.street = street;

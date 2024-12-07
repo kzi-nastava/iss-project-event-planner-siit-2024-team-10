@@ -1,6 +1,10 @@
 package com.ftn.iss.eventPlanner.dto.event;
 
+<<<<<<< HEAD:eventPlanner/src/main/java/com/ftn/iss/eventPlanner/dto/event/GetEventDTO.java
 import com.ftn.iss.eventPlanner.dto.location.LocationDTO;
+=======
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+>>>>>>> develop:eventPlanner/src/main/java/com/ftn/iss/eventPlanner/dto/GetEventDTO.java
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +21,7 @@ public class GetEventDTO {
     private int maxParticipants;
     private boolean isOpen;
     private LocalDate date;
-    private LocationDTO location;
+    private GetLocationDTO location;
 
     public GetEventDTO() {super();}
 }
