@@ -1,8 +1,11 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.services.ServiceService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
@@ -56,80 +59,43 @@ public class ServiceController {
     }
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<GetServiceDTO> getService(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
-		GetServiceDTO service = new GetServiceDTO();
-
-        service.setId(id);
-        service.setCategoryId(5);
-        service.setPending(false);
-        service.setProviderID(5);
-        service.setName("Interactive DJ Service");
-        service.setDescription("Make your party unforgettable with our skilled DJ.");
-        service.setSpecification("Custom playlists and top-notch audio equipment.");
-        service.setPrice(2500);
-        service.setDiscount(20);
-        service.setPhotos(Arrays.asList("https://example.com/photos/dj1.jpg", "https://example.com/photos/dj2.jpg"));
-        service.setVisible(true);
-        service.setAvailable(true);
-        service.setMaxDuration(6);
-        service.setMinDuration(3);
-        service.setCancellationPeriod(36);
-        service.setReservationPeriod(48);
-        service.setAutoConfirm(false);
-		
-        return new ResponseEntity<GetServiceDTO>(service, HttpStatus.OK);
+        try {
+            GetServiceDTO serviceDTO = serviceService.findById(id);
+            return new ResponseEntity<>(serviceDTO, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 	}
 	
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedServiceDTO> createService(@RequestBody CreateServiceDTO service) throws Exception {
-        CreatedServiceDTO createdService = new CreatedServiceDTO();
-
-        createdService.setId(service.getId());
-	    createdService.setName(service.getName());
-	    createdService.setDescription(service.getDescription());
-	    createdService.setSpecification(service.getSpecification());
-	    createdService.setPrice(service.getPrice());
-	    createdService.setPhotos(service.getPhotos());
-	    createdService.setDiscount(service.getDiscount());
-		createdService.setVisible(service.isVisible());
-		createdService.setAvailable(service.isAvailable());
-		createdService.setMaxDuration(service.getMaxDuration());
-		createdService.setMinDuration(service.getMinDuration());
-		createdService.setCancellationPeriod(service.getCancellationPeriod());
-		createdService.setReservationPeriod(service.getReservationPeriod());
-		createdService.setVisible(service.isVisible());
-		createdService.setAvailable(service.isAvailable());
-		createdService.setAutoConfirm(service.isAutoConfirm());
-		createdService.setCategoryId(service.getCategoryId());
-		createdService.setPending(service.isPending());
-		createdService.setProviderID(service.getProviderID());
-        return new ResponseEntity<CreatedServiceDTO>(createdService, HttpStatus.CREATED);
+    public ResponseEntity<CreatedServiceDTO> createService(@Valid @RequestBody CreateServiceDTO service) throws Exception {
+        try{
+            CreatedServiceDTO createdServiceDTO = serviceService.create(service);
+            return new ResponseEntity<>(createdServiceDTO, HttpStatus.CREATED);
+        }
+        catch (IllegalArgumentException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 	
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
 			throws Exception {
-		UpdatedServiceDTO updatedService = new UpdatedServiceDTO();
-
-        updatedService.setId(id);
-        updatedService.setName(service.getName());
-        updatedService.setDescription(service.getDescription());
-        updatedService.setSpecification(service.getSpecification());
-        updatedService.setPhotos(service.getPhotos());
-        updatedService.setPrice(service.getPrice());
-        updatedService.setDiscount(service.getDiscount());
-        updatedService.setVisible(service.isVisible());
-        updatedService.setAvailable(service.isAvailable());
-        updatedService.setMaxDuration(service.getMaxDuration());
-        updatedService.setMinDuration(service.getMinDuration());
-        updatedService.setCancellationPeriod(service.getCancellationPeriod());
-        updatedService.setReservationPeriod(service.getReservationPeriod());
-		
-
-		return new ResponseEntity<UpdatedServiceDTO>(updatedService, HttpStatus.OK);
-	}
+        try{
+            UpdatedServiceDTO updatedServiceDTO = serviceService.update(id,service);
+            return new ResponseEntity<>(updatedServiceDTO, HttpStatus.CREATED);
+        }
+        catch (IllegalArgumentException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }}
 
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> delete(@PathVariable("id") int id) {
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        try {
+            serviceService.delete(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 	}
 }
