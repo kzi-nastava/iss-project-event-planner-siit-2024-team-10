@@ -1,4 +1,4 @@
-package com.ftn.iss.eventPlanner.dto;
+package com.ftn.iss.eventPlanner.dto.event;
 
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import lombok.Getter;
