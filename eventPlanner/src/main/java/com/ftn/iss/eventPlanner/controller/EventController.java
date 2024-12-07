@@ -1,6 +1,10 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
+import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
+import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
+import com.ftn.iss.eventPlanner.dto.location.LocationDTO;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
