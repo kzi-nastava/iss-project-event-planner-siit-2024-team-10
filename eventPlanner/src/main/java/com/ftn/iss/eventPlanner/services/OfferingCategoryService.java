@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class OfferingCategoryService {
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
+    @Autowired
     private ModelMapper modelMapper = new ModelMapper();
 
     public List<GetOfferingCategoryDTO> findAll(){
