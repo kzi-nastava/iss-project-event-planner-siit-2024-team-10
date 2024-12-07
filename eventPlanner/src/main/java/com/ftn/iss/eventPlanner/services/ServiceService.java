@@ -7,6 +7,7 @@ import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,12 @@ public class ServiceService {
      */
     public CreatedServiceDTO create(CreateServiceDTO serviceDTO) {
         Service service = new Service();
+        ServiceDetails currentDetails = new ServiceDetails();
+        currentDetails.setTimestamp(LocalDateTime.now());
+
         modelMapper.map(serviceDTO, service);
+        modelMapper.map(serviceDTO, currentDetails);
+        service.setCurrentDetails(currentDetails);
 
         // Check if the category is pending
         // TODO: category will be created and added with id but not yet approved
