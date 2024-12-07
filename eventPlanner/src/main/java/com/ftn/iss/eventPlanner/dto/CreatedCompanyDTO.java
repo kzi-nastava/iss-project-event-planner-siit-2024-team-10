@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.dto;
 
+import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,11 +15,11 @@ public class CreatedCompanyDTO {
     private String phoneNumber;
     private String description;
     private List<String> photos;
-    private LocationDTO location;
+    private CreatedLocationDTO location;
 
     public CreatedCompanyDTO() {}
 
-    public CreatedCompanyDTO(int id, String email, String name, String phoneNumber, String description, List<String> photos, LocationDTO location) {
+    public CreatedCompanyDTO(int id, String email, String name, String phoneNumber, String description, List<String> photos, CreatedLocationDTO location) {
         this.id=id;
         this.email = email;
         this.name = name;

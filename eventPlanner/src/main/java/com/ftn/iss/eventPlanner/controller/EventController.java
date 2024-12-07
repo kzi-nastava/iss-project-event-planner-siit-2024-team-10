@@ -1,6 +1,16 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
+import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.model.Organizer;
+import com.ftn.iss.eventPlanner.repositories.AccountRepository;
+import com.ftn.iss.eventPlanner.repositories.OrganizerRepository;
+import com.ftn.iss.eventPlanner.services.EventService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,6 +24,9 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
+    @Autowired
+    private EventService eventService;
+
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetEventDTO>> getTopEvents() {
         Collection<GetEventDTO> events = new ArrayList<>();
@@ -27,7 +40,7 @@ public class EventController {
         event1.setMaxParticipants(500);
         event1.setOpen(true);
         event1.setDate(LocalDate.now().plusDays(7));
-        event1.setLocation(new LocationDTO("Belgrade","Serbia","Street","2"));
+        event1.setLocation(new GetLocationDTO("Belgrade","Serbia","Street","2"));
 
         GetEventDTO event2 = new GetEventDTO();
         event2.setId(2);
@@ -38,7 +51,7 @@ public class EventController {
         event2.setMaxParticipants(300);
         event2.setOpen(true);
         event2.setDate(LocalDate.now().plusDays(15));
-        event2.setLocation(new LocationDTO("Belgrade","Serbia","Street","3"));
+        event2.setLocation(new GetLocationDTO("Belgrade","Serbia","Street","3"));
 
         GetEventDTO event3 = new GetEventDTO();
         event3.setId(3);
@@ -49,7 +62,7 @@ public class EventController {
         event3.setMaxParticipants(1000);
         event3.setOpen(false);
         event3.setDate(LocalDate.now().plusDays(30));
-        event3.setLocation(new LocationDTO("Novi Sad","Serbia","Street","2"));
+        event3.setLocation(new GetLocationDTO("Novi Sad","Serbia","Street","2"));
 
         GetEventDTO event4 = new GetEventDTO();
         event4.setId(4);
@@ -60,7 +73,7 @@ public class EventController {
         event4.setMaxParticipants(200);
         event4.setOpen(true);
         event4.setDate(LocalDate.now().plusDays(10));
-        event4.setLocation(new LocationDTO("Novi Sad","Serbia","Street","4"));
+        event4.setLocation(new GetLocationDTO("Novi Sad","Serbia","Street","4"));
 
         GetEventDTO event5 = new GetEventDTO();
         event5.setId(5);
@@ -71,7 +84,7 @@ public class EventController {
         event5.setMaxParticipants(2000);
         event5.setOpen(true);
         event5.setDate(LocalDate.now().plusDays(3));
-        event5.setLocation(new LocationDTO("Arilje","Serbia","Street","10"));
+        event5.setLocation(new GetLocationDTO("Arilje","Serbia","Street","10"));
 
         events.add(event1);
         events.add(event2);
@@ -103,7 +116,7 @@ public class EventController {
         event1.setMaxParticipants(500);
         event1.setOpen(true);
         event1.setDate(LocalDate.now().plusDays(7));
-        event1.setLocation(new LocationDTO("Belgrade","Serbia","Street","2"));
+        event1.setLocation(new GetLocationDTO("Belgrade","Serbia","Street","2"));
 
         GetEventDTO event2 = new GetEventDTO();
         event2.setId(2);
@@ -114,7 +127,7 @@ public class EventController {
         event2.setMaxParticipants(300);
         event2.setOpen(true);
         event2.setDate(LocalDate.now().plusDays(15));
-        event2.setLocation(new LocationDTO("Belgrade","Serbia","Street","3"));
+        event2.setLocation(new GetLocationDTO("Belgrade","Serbia","Street","3"));
 
         GetEventDTO event3 = new GetEventDTO();
         event3.setId(3);
@@ -125,7 +138,7 @@ public class EventController {
         event3.setMaxParticipants(1000);
         event3.setOpen(false);
         event3.setDate(LocalDate.now().plusDays(30));
-        event3.setLocation(new LocationDTO("Novi Sad","Serbia","Street","2"));
+        event3.setLocation(new GetLocationDTO("Novi Sad","Serbia","Street","2"));
 
         events.add(event1);
         events.add(event2);
@@ -156,7 +169,7 @@ public class EventController {
         event1.setMaxParticipants(500);
         event1.setOpen(true);
         event1.setDate(LocalDate.now().plusDays(7));
-        event1.setLocation(new LocationDTO("Belgrade","Serbia","Street","2"));
+        event1.setLocation(new GetLocationDTO("Belgrade","Serbia","Street","2"));
 
         GetEventDTO event2 = new GetEventDTO();
         event2.setId(2);
@@ -167,7 +180,7 @@ public class EventController {
         event2.setMaxParticipants(300);
         event2.setOpen(true);
         event2.setDate(LocalDate.now().plusDays(15));
-        event2.setLocation(new LocationDTO("Belgrade","Serbia","Street","3"));
+        event2.setLocation(new GetLocationDTO("Belgrade","Serbia","Street","3"));
 
         GetEventDTO event3 = new GetEventDTO();
         event3.setId(3);
@@ -178,7 +191,7 @@ public class EventController {
         event3.setMaxParticipants(1000);
         event3.setOpen(false);
         event3.setDate(LocalDate.now().plusDays(30));
-        event3.setLocation(new LocationDTO("Novi Sad","Serbia","Street","2"));
+        event3.setLocation(new GetLocationDTO("Novi Sad","Serbia","Street","2"));
 
         GetEventDTO event4 = new GetEventDTO();
         event4.setId(4);
@@ -189,7 +202,7 @@ public class EventController {
         event4.setMaxParticipants(200);
         event4.setOpen(true);
         event4.setDate(LocalDate.now().plusDays(10));
-        event4.setLocation(new LocationDTO("Novi Sad","Serbia","Street","4"));
+        event4.setLocation(new GetLocationDTO("Novi Sad","Serbia","Street","4"));
 
         GetEventDTO event5 = new GetEventDTO();
         event5.setId(5);
@@ -200,7 +213,7 @@ public class EventController {
         event5.setMaxParticipants(2000);
         event5.setOpen(true);
         event5.setDate(LocalDate.now().plusDays(3));
-        event5.setLocation(new LocationDTO("Arilje","Serbia","Street","10"));
+        event5.setLocation(new GetLocationDTO("Arilje","Serbia","Street","10"));
 
         events.add(event1);
         events.add(event2);
@@ -217,11 +230,21 @@ public class EventController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedEventDTO> createEvent(@Valid @RequestBody CreateEventDTO event) {
+        try{
+            CreatedEventDTO createdEventType = eventService.create(event);
+            return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
+        }
+        catch (IllegalArgumentException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PutMapping(value = "/{eventId}/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int eventId, @PathVariable int commentId)
             throws Exception {
         UpdatedCommentDTO updatedComment = new UpdatedCommentDTO();
-
         updatedComment.setId(commentId);
         updatedComment.setContent(comment.getContent());
         updatedComment.setStatus(comment.getStatus());
