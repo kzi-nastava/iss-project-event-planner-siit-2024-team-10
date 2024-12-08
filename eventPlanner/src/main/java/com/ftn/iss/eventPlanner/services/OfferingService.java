@@ -1,15 +1,25 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
 import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.model.Product;
+import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
+import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
+import com.ftn.iss.eventPlanner.repositories.ProductRepository;
+import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.ftn.iss.eventPlanner.model.Service;
 import com.ftn.iss.eventPlanner.model.Rating;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -20,8 +30,13 @@ import java.util.stream.Collectors;
 public class OfferingService {
     @Autowired
     private OfferingRepository offeringRepository;
+    @Autowired
+    private ServiceRepository serviceRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
+
 
     public List<GetOfferingCardDTO> findAll(){
         List<Offering> offerings = offeringRepository.findAll();
@@ -31,8 +46,120 @@ public class OfferingService {
                 .collect(Collectors.toList());
     }
 
+    public List<GetOfferingCardDTO> getAllOfferings(
+            Boolean isServiceFilter,
+            String name,
+            Integer eventTypeId,
+            Integer categoryId,
+            String location,
+            Integer minPrice,
+            Integer maxPrice,
+            Integer minDiscount,
+            Integer serviceDuration,
+            Double minRating,
+            LocalDate serviceStartDate,
+            LocalDate serviceEndDate,
+            Boolean searchByAvailability
+    ) {
+
+        if (isServiceFilter == Boolean.TRUE) {
+            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
+                    .and(ServiceSpecification.hasEventTypeId(eventTypeId))
+                    .and(ServiceSpecification.hasCategoryId(categoryId))
+                    .and(ServiceSpecification.hasLocation(location))
+                    .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
+                    .and(ServiceSpecification.minDiscount(minDiscount))
+                    .and(ServiceSpecification.minRating(minRating))
+                    .and(ServiceSpecification.betweenDates(serviceStartDate, serviceEndDate))
+                    .and(ServiceSpecification.hasServiceDuration(serviceDuration))
+                    .and(ServiceSpecification.isAvailable(searchByAvailability));
+
+            return serviceRepository.findAll(serviceSpecification).stream()
+                    .map(this::mapToGetOfferingCardDTO)
+                    .collect(Collectors.toList());
+        } else if (isServiceFilter == Boolean.FALSE) {
+            Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
+                    .and(ProductSpecification.hasEventTypeId(eventTypeId))
+                    .and(ProductSpecification.hasCategoryId(categoryId))
+                    .and(ProductSpecification.hasLocation(location))
+                    .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
+                    .and(ProductSpecification.minDiscount(minDiscount))
+                    .and(ProductSpecification.minRating(minRating));
+
+            return productRepository.findAll(productSpecification).stream()
+                    .map(this::mapToGetOfferingCardDTO)
+                    .collect(Collectors.toList());
+        } else {
+            return offeringRepository.findAll().stream()
+                    .map(this::mapToGetOfferingCardDTO)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public PagedResponse<GetOfferingCardDTO> getAllOfferings(
+            Pageable pagable,
+            Boolean isServiceFilter,
+            String name,
+            Integer eventTypeId,
+            Integer categoryId,
+            String location,
+            Integer minPrice,
+            Integer maxPrice,
+            Integer minDiscount,
+            Integer serviceDuration,
+            Double minRating,
+            LocalDate serviceStartDate,
+            LocalDate serviceEndDate,
+            Boolean searchByAvailability
+    ) {
+        if (isServiceFilter == Boolean.TRUE) {
+            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
+                    .and(ServiceSpecification.hasEventTypeId(eventTypeId))
+                    .and(ServiceSpecification.hasCategoryId(categoryId))
+                    .and(ServiceSpecification.hasLocation(location))
+                    .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
+                    .and(ServiceSpecification.minDiscount(minDiscount))
+                    .and(ServiceSpecification.minRating(minRating))
+                    .and(ServiceSpecification.betweenDates(serviceStartDate, serviceEndDate))
+                    .and(ServiceSpecification.hasServiceDuration(serviceDuration))
+                    .and(ServiceSpecification.isAvailable(searchByAvailability));
+
+            Page<Service> pagedOfferings = serviceRepository.findAll(serviceSpecification, pagable);
+
+            List<GetOfferingCardDTO> offeringDTOs = pagedOfferings.getContent().stream()
+                    .map(this::mapToGetOfferingCardDTO)
+                    .collect(Collectors.toList());
+
+            return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
+        } else if (isServiceFilter == Boolean.FALSE) {
+            Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
+                    .and(ProductSpecification.hasEventTypeId(eventTypeId))
+                    .and(ProductSpecification.hasCategoryId(categoryId))
+                    .and(ProductSpecification.hasLocation(location))
+                    .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
+                    .and(ProductSpecification.minDiscount(minDiscount))
+                    .and(ProductSpecification.minRating(minRating));
+
+            Page<Product> pagedOfferings = productRepository.findAll(productSpecification, pagable);
+
+            List<GetOfferingCardDTO> offeringDTOs = pagedOfferings.getContent().stream()
+                    .map(this::mapToGetOfferingCardDTO)
+                    .collect(Collectors.toList());
+
+            return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
+        } else {
+            Page<Offering> pagedOfferings = offeringRepository.findAll(pagable);
+
+            List<GetOfferingCardDTO> offeringDTOs = pagedOfferings.getContent().stream()
+                    .map(this::mapToGetOfferingCardDTO)
+                    .collect(Collectors.toList());
+
+            return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
+        }
+    }
 
 
+    // HELPER FUNCTIONS
 
     private GetOfferingCardDTO mapToGetOfferingCardDTO(Offering offering) {
         GetOfferingCardDTO dto = new GetOfferingCardDTO();
