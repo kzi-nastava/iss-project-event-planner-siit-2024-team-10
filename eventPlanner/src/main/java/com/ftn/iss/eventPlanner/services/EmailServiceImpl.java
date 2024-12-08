@@ -33,10 +33,11 @@ public class EmailServiceImpl implements EmailService {
             mailMessage.setSubject(details.getSubject());
 
             javaMailSender.send(mailMessage);
-            return "Mail Sent Successfully...";
-        }
-        catch (Exception e) {
-            return "Error while Sending Mail";
+            return "Mail Sent Successfully to " + details.getRecipient();
+        } catch (IllegalArgumentException e) {
+            return "Error: Invalid email address provided: " + e.getMessage();
+        } catch (Exception e) {
+            return "Error while sending email: " + e.getMessage();
         }
     }
 
