@@ -5,15 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @Entity
-public class OfferingDetails {
+public class ServiceDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -30,16 +29,16 @@ public class OfferingDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "offering_details_photos", joinColumns = @JoinColumn(name = "offerin_details_id"))
     @Column(name = "photo_url")
-    private Set<String> photos = new HashSet<>();
-    @Column
+    private List<String> photos;
+    @Column(nullable = false)
     private boolean fixedTime;
-    @Column
+    @Column(nullable = false)
     private int maxDuration;
-    @Column
+    @Column(nullable = false)
     private int minDuration;
-    @Column
+    @Column(nullable = false)
     private int cancellationPeriod;
-    @Column
+    @Column(nullable = false)
     private int reservationPeriod;
     @Column(nullable = false)
     private boolean isVisible;
@@ -50,7 +49,6 @@ public class OfferingDetails {
     @Column(nullable = false)
     private LocalDateTime timestamp;
 
-    public OfferingDetails() {
+    public ServiceDetails() {
     }
-
 }

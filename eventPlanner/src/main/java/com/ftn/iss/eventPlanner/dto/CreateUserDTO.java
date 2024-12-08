@@ -1,10 +1,10 @@
 package com.ftn.iss.eventPlanner.dto;
 
+import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.model.Role;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -16,7 +16,7 @@ public class CreateUserDTO {
     private String lastName;
     private String phoneNumber;
     private String profilePhoto;
-    private LocationDTO location;
+    private CreateLocationDTO location;
     private CreateCompanyDTO company;
 
     public CreateUserDTO() {}
