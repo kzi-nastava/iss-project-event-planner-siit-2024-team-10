@@ -17,4 +17,6 @@ public class GetOfferingCardDTO {
     private double price;
     private String coverPicture;
     private double averageRating;
+
+    public GetOfferingCardDTO() {super();}
 }
