@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class ServiceService {
 
     @Autowired
-    private OfferingRepository offeringRepository;
+    private ServiceRepository serviceRepository;
 
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
@@ -51,18 +51,18 @@ public class ServiceService {
             service.setPending(false);
         }
 
-        Service savedService = offeringRepository.save(service);
+        Service savedService = serviceRepository.save(service);
 
         return modelMapper.map(savedService, CreatedServiceDTO.class);
     }
     public List<GetServiceDTO> findAll() {
-        List<Service> services = offeringRepository.findAllServices();
+        List<Service> services = serviceRepository.findAll();
         return services.stream()
                 .map(service -> modelMapper.map(service, GetServiceDTO.class))
                 .collect(Collectors.toList());
     }
     public GetServiceDTO findById(int id) {
-        Service service = (Service) offeringRepository.findById(id)
+        Service service = (Service) serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
         return modelMapper.map(service, GetServiceDTO.class);
     }
@@ -70,17 +70,18 @@ public class ServiceService {
     add current details to history and set new current
      */
     public UpdatedServiceDTO update(int id, UpdateServiceDTO updateServiceDTO) {
-        Service service = (Service) offeringRepository.findById(id)
+        Service service = (Service) serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
         service.getDetailsHistory().add(service.getCurrentDetails());
         modelMapper.map(updateServiceDTO, service.getCurrentDetails());
-        service = offeringRepository.save(service);
+        service.getCurrentDetails().setTimestamp(LocalDateTime.now());
+        service = serviceRepository.save(service);
         return modelMapper.map(service, UpdatedServiceDTO.class);
     }
     public void delete(int id) {
-        Service service = (Service) offeringRepository.findById(id)
+        Service service = (Service) serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
         service.setDeleted(true);
-        offeringRepository.save(service);
+        serviceRepository.save(service);
     }
 }
