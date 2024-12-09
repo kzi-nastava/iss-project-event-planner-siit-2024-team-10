@@ -1,7 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.eventtype.*;
+import com.ftn.iss.eventPlanner.dto.offeringcategory.*;
 import com.ftn.iss.eventPlanner.model.EventType;
 import com.ftn.iss.eventPlanner.model.OfferingCategory;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
@@ -24,5 +24,34 @@ public class OfferingCategoryService {
         return offeringCategorys.stream()
                 .map(offeringCategory -> modelMapper.map(offeringCategory, GetOfferingCategoryDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    public GetOfferingCategoryDTO findById(int id) {
+        OfferingCategory category = offeringCategoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
+        return modelMapper.map(category, GetOfferingCategoryDTO.class);
+    }
+    public CreatedOfferingCategoryDTO create(CreateOfferingCategoryDTO createOfferingCategoryDTO){
+        OfferingCategory offeringCategory = new OfferingCategory();
+        modelMapper.map(createOfferingCategoryDTO,offeringCategory);
+        offeringCategory.setDeleted(false);
+        offeringCategory.setPending(true);
+        offeringCategory = offeringCategoryRepository.save(offeringCategory);
+        return modelMapper.map(offeringCategory,CreatedOfferingCategoryDTO.class);
+    }
+    public UpdatedOfferingCategoryDTO update(int id, UpdateOfferingCategoryDTO updateEventTypeDTO) {
+        OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
+
+        modelMapper.map(updateEventTypeDTO, offeringCategory);
+        offeringCategory = offeringCategoryRepository.save(offeringCategory);
+        return modelMapper.map(offeringCategory, UpdatedOfferingCategoryDTO.class);
+    }
+
+    public void delete(int id) {
+        OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
+        offeringCategory.setDeleted(true);
+        offeringCategoryRepository.save(offeringCategory);
     }
 }
