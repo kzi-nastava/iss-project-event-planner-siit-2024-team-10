@@ -1,8 +1,12 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
+import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
+import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;

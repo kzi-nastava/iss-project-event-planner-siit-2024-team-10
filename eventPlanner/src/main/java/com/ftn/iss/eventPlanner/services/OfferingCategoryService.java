@@ -25,6 +25,7 @@ public class OfferingCategoryService {
                 .map(offeringCategory -> modelMapper.map(offeringCategory, GetOfferingCategoryDTO.class))
                 .collect(Collectors.toList());
     }
+
     public GetOfferingCategoryDTO findById(int id) {
         OfferingCategory category = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));

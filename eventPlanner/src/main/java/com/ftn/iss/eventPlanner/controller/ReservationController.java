@@ -1,6 +1,6 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.reservation.*;
 import com.ftn.iss.eventPlanner.model.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
