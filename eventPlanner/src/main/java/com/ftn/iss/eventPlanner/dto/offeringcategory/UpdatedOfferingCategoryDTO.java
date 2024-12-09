@@ -9,6 +9,6 @@ import lombok.Setter;
 public class UpdatedOfferingCategoryDTO {
     private int id;
     private String name;
-    private Status description;
+    private String description;
     public UpdatedOfferingCategoryDTO(){}
 }

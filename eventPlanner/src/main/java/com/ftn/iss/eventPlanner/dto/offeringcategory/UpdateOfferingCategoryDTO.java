@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 public class UpdateOfferingCategoryDTO {
     private String name;
-    private Status description;
+    private String description;
     public UpdateOfferingCategoryDTO(){}
 }
