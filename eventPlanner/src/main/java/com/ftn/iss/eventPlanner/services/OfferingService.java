@@ -1,9 +1,9 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
-import com.ftn.iss.eventPlanner.model.Offering;
-import com.ftn.iss.eventPlanner.model.Product;
+import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
@@ -11,8 +11,6 @@ import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.ftn.iss.eventPlanner.model.Service;
-import com.ftn.iss.eventPlanner.model.Rating;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -158,6 +156,16 @@ public class OfferingService {
         }
     }
 
+    public List<GetOfferingCardDTO> findTopOfferings() {
+        List<Offering> offerings = offeringRepository.findAll();
+
+        return offerings.stream()
+                .sorted((o1, o2) -> Double.compare(
+                        calculateAverageRating(o2), calculateAverageRating(o1)))
+                .limit(5)
+                .map(this::mapToGetOfferingCardDTO)
+                .collect(Collectors.toList());
+    }
 
     // HELPER FUNCTIONS
 
