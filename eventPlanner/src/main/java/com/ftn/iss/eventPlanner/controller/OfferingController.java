@@ -30,9 +30,16 @@ public class OfferingController {
     }
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingCardDTO>> getTopOfferings(){
-        List<GetOfferingCardDTO> offerings = offeringService.findTopOfferings();
-        return new ResponseEntity<>(offerings, HttpStatus.OK);
+    public ResponseEntity<Collection<GetOfferingCardDTO>> getTopOfferings() {
+        try {
+            List<GetOfferingCardDTO> offerings = offeringService.findTopOfferings();
+            if (offerings.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(offerings);
+            }
+            return ResponseEntity.ok(offerings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,24 +58,19 @@ public class OfferingController {
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) Boolean isAvailable
     ){
-        List<GetOfferingCardDTO> offerings = offeringService.getAllOfferings(
-                isServiceFilter,
-                name,
-                eventTypeId,
-                categoryId,
-                location,
-                minPrice,
-                maxPrice,
-                minDiscount,
-                duration,
-                minRating,
-                startDate,
-                endDate,
-                isAvailable
-        );
+        try {
+            List<GetOfferingCardDTO> offerings = offeringService.getAllOfferings(
+                    isServiceFilter, name, eventTypeId, categoryId, location, minPrice, maxPrice,
+                    minDiscount, duration, minRating, startDate, endDate, isAvailable);
 
-        return new ResponseEntity<Collection<GetOfferingCardDTO>>(offerings, HttpStatus.OK);
+            if (offerings.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(offerings);
+            }
+            return ResponseEntity.ok(offerings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
+    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResponse<GetOfferingCardDTO>> getOfferings(
@@ -87,24 +89,20 @@ public class OfferingController {
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) Boolean isAvailable
     ){
-        PagedResponse<GetOfferingCardDTO> offerings = offeringService.getAllOfferings(
-                pageable,
-                isServiceFilter,
-                name,
-                eventTypeId,
-                categoryId,
-                location,
-                minPrice,
-                maxPrice,
-                minDiscount,
-                duration,
-                minRating,
-                startDate,
-                endDate,
-                isAvailable
-        );
+        try{
+            PagedResponse<GetOfferingCardDTO> offerings = offeringService.getAllOfferings(
+                    pageable, isServiceFilter, name, eventTypeId, categoryId, location, minPrice,
+                    maxPrice, minDiscount, duration, minRating, startDate, endDate, isAvailable);
 
-        return ResponseEntity.ok(offerings);
+            if (offerings.getContent().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(offerings);
+            }
+
+            return ResponseEntity.ok(offerings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new PagedResponse<>(List.of(), 0, 0));
+        }
     }
 
     @PostMapping(value = "{offeringId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

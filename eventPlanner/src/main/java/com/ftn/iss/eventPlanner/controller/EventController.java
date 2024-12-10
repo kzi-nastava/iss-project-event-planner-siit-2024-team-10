@@ -3,10 +3,8 @@ package com.ftn.iss.eventPlanner.controller;
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
-import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
-import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,8 +28,15 @@ public class EventController {
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetEventCardDTO>> getTopEvents() {
-        List<GetEventCardDTO> events = eventService.findTopEvents();
-        return new ResponseEntity<>(events, HttpStatus.OK);
+        try {
+            List<GetEventCardDTO> events = eventService.findTopEvents();
+            if (events.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(events);
+            }
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -43,17 +49,18 @@ public class EventController {
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) String name
     ) {
-        List<GetEventCardDTO> events = eventService.getAllEvents(
-                eventTypeId,
-                location,
-                maxParticipants,
-                minRating,
-                startDate,
-                endDate,
-                name
-        );
+        try {
+            List<GetEventCardDTO> events = eventService.getAllEvents(
+                    eventTypeId, location, maxParticipants, minRating, startDate, endDate, name);
 
-        return new ResponseEntity<>(events, HttpStatus.OK);
+            if (events.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(events);
+            }
+
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
     }
 
 
@@ -68,11 +75,19 @@ public class EventController {
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) String name
     ) {
-        PagedResponse<GetEventCardDTO> response = eventService.getAllEvents(
-                pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name
-        );
+        try {
+            PagedResponse<GetEventCardDTO> response = eventService.getAllEvents(
+                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name);
 
-        return ResponseEntity.ok(response);
+            if (response.getContent().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new PagedResponse<>(List.of(), 0, 0));
+        }
     }
 
 
