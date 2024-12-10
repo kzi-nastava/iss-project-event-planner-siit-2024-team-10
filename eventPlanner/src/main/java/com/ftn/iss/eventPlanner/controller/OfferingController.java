@@ -2,9 +2,7 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
-import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.CreateRatingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.CreatedRatingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.GetRatingDTO;
@@ -18,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
