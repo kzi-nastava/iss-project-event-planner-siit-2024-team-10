@@ -11,6 +11,8 @@ import org.modelmapper.internal.bytebuddy.dynamic.loading.InjectionClassLoader;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Getter
+@Setter
 @Table(name = "offerings")
 @Getter
 @Setter

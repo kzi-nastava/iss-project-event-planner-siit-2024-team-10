@@ -1,8 +1,8 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.CreateAccountReportDTO;
-import com.ftn.iss.eventPlanner.dto.CreatedAccountReportDTO;
-import com.ftn.iss.eventPlanner.dto.GetAccountReportDTO;
+import com.ftn.iss.eventPlanner.dto.accountreport.CreateAccountReportDTO;
+import com.ftn.iss.eventPlanner.dto.accountreport.CreatedAccountReportDTO;
+import com.ftn.iss.eventPlanner.dto.accountreport.GetAccountReportDTO;
 import com.ftn.iss.eventPlanner.model.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

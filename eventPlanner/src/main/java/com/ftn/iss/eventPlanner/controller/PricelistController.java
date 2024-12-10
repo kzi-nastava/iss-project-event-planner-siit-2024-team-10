@@ -1,6 +1,9 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.pricelistitem.GetPricelistItemDTO;
+import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
+import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -8,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 @RestController
