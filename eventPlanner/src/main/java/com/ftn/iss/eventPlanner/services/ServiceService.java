@@ -4,6 +4,7 @@ import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
+import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
