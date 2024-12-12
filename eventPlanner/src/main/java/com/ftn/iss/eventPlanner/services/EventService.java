@@ -136,7 +136,7 @@ public class EventService {
         dto.setId(event.getId());
         dto.setName(event.getName());
         dto.setDate(event.getDate());
-        dto.setOrganizer(modelMapper.map(event.getOrganizer(), GetOrganizerDTO.class));
+        dto.setOrganizer(setGetOrganizerDTO(event));
         dto.setEventType(modelMapper.map(event.getEventType(), GetEventTypeDTO.class));
 
         if (event.getLocation() != null) {
@@ -144,6 +144,7 @@ public class EventService {
             dto.setLocation(locationDTO);
         }
 
+        dto.setMaxParticipants(event.getMaxParticipants());
         dto.setAverageRating(calculateAverageRating(event));
         dto.setDescription(event.getDescription());
         dto.setOpen(event.isOpen());
@@ -157,6 +158,18 @@ public class EventService {
         locationDTO.setStreet(event.getLocation().getStreet());
         locationDTO.setHouseNumber(event.getLocation().getHouseNumber());
         return locationDTO;
+    }
+
+    private GetOrganizerDTO setGetOrganizerDTO(Event event){
+        GetOrganizerDTO organizerDTO = new GetOrganizerDTO();
+        organizerDTO.setId(event.getOrganizer().getId());
+        organizerDTO.setEmail(event.getOrganizer().getAccount().getEmail());
+        organizerDTO.setFirstName(event.getOrganizer().getFirstName());
+        organizerDTO.setLastName(event.getOrganizer().getLastName());
+        organizerDTO.setPhoneNumber(event.getOrganizer().getPhoneNumber());
+        organizerDTO.setProfilePhoto(event.getOrganizer().getProfilePhoto());
+        organizerDTO.setLocation(modelMapper.map(event.getOrganizer().getLocation(), GetLocationDTO.class));
+        return organizerDTO;
     }
 
     private double calculateAverageRating(Event event){
