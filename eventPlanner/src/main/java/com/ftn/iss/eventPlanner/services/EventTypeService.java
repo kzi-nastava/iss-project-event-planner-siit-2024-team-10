@@ -36,7 +36,6 @@ public class EventTypeService {
     public List<GetEventTypeDTO> findAll() {
         List<EventType> eventTypes = eventTypeRepository.findAll();
         return eventTypes.stream()
-                .filter(EventType::isActive)
                 .map(eventType -> modelMapper.map(eventType, GetEventTypeDTO.class))
                 .collect(Collectors.toList());
     }
@@ -70,6 +69,13 @@ public class EventTypeService {
         EventType eventType = eventTypeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
         eventType.setActive(false);
+        eventTypeRepository.save(eventType);
+    }
+
+    public void activate(int id){
+        EventType eventType = eventTypeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
+        eventType.setActive(true);
         eventTypeRepository.save(eventType);
     }
 

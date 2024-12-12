@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/event-types")
 public class EventTypeController {
@@ -60,6 +61,16 @@ public class EventTypeController {
     public ResponseEntity<Void> deleteEventType(@PathVariable int id) {
         try {
             eventTypeService.delete(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping(value = "/{id}/activate")
+    public ResponseEntity<Void> activateEventType(@PathVariable int id) {
+        try {
+            eventTypeService.activate(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
