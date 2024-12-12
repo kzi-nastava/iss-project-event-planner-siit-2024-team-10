@@ -3,11 +3,14 @@ package com.ftn.iss.eventPlanner.services;
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
-import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
+import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
+import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
 import com.ftn.iss.eventPlanner.model.Event;
 import com.ftn.iss.eventPlanner.model.Location;
 import com.ftn.iss.eventPlanner.model.EventStats;
+import com.ftn.iss.eventPlanner.model.Organizer;
 import com.ftn.iss.eventPlanner.model.specification.EventSpecification;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.EventStatsRepository;
@@ -39,15 +42,15 @@ public class EventService {
 
     private ModelMapper modelMapper = new ModelMapper();
 
-    public List<GetEventCardDTO> findAll() {
+    public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
 
         return events.stream()
-                .map(this::mapToGetEventCardDTO)
+                .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<GetEventCardDTO> getAllEvents(
+    public List<GetEventDTO> getAllEvents(
             Integer eventTypeId,
             String location,
             Integer maxParticipants,
@@ -66,12 +69,12 @@ public class EventService {
         List<Event> events = eventRepository.findAll(specification);
 
         return events.stream()
-                .map(this::mapToGetEventCardDTO)
+                .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
 
 
-    public PagedResponse<GetEventCardDTO> getAllEvents(
+    public PagedResponse<GetEventDTO> getAllEvents(
             Pageable pageable,
             Integer eventTypeId,
             String location,
@@ -90,20 +93,20 @@ public class EventService {
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
-        List<GetEventCardDTO> eventDTOs = pagedEvents.getContent().stream()
-                .map(this::mapToGetEventCardDTO)
+        List<GetEventDTO> eventDTOs = pagedEvents.getContent().stream()
+                .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
 
         return new PagedResponse<>(eventDTOs, pagedEvents.getTotalPages(), pagedEvents.getTotalElements());
     }
 
-    public List<GetEventCardDTO> findTopEvents() {
+    public List<GetEventDTO> findTopEvents() {
         List<Event> events = eventRepository.findAll();
 
         return events.stream()
                 .sorted((e1, e2) -> e2.getDateCreated().compareTo(e1.getDateCreated()))
                 .limit(5)
-                .map(this::mapToGetEventCardDTO)
+                .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
 
@@ -127,14 +130,14 @@ public class EventService {
 
     // HELPER FUNCTIONS
 
-    private GetEventCardDTO mapToGetEventCardDTO(Event event) {
-        GetEventCardDTO dto = new GetEventCardDTO();
+    private GetEventDTO mapToGetEventDTO(Event event) {
+        GetEventDTO dto = new GetEventDTO();
 
         dto.setId(event.getId());
         dto.setName(event.getName());
         dto.setDate(event.getDate());
-        dto.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());
-        dto.setEventType(event.getEventType().getName());
+        dto.setOrganizer(modelMapper.map(event.getOrganizer(), GetOrganizerDTO.class));
+        dto.setEventType(modelMapper.map(event.getEventType(), GetEventTypeDTO.class));
 
         if (event.getLocation() != null) {
             GetLocationDTO locationDTO = setGetLocationDTO(event);
@@ -142,6 +145,8 @@ public class EventService {
         }
 
         dto.setAverageRating(calculateAverageRating(event));
+        dto.setDescription(event.getDescription());
+        dto.setOpen(event.isOpen());
         return dto;
     }
 

@@ -5,7 +5,7 @@ import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
-import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
+import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
@@ -27,9 +28,9 @@ public class EventController {
     private EventService eventService;
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetEventCardDTO>> getTopEvents() {
+    public ResponseEntity<Collection<GetEventDTO>> getTopEvents() {
         try {
-            List<GetEventCardDTO> events = eventService.findTopEvents();
+            List<GetEventDTO> events = eventService.findTopEvents();
             if (events.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(events);
             }
@@ -40,7 +41,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetEventCardDTO>> getEvents(
+    public ResponseEntity<Collection<GetEventDTO>> getEvents(
             @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Integer maxParticipants,
@@ -50,7 +51,7 @@ public class EventController {
             @RequestParam(required = false) String name
     ) {
         try {
-            List<GetEventCardDTO> events = eventService.getAllEvents(
+            List<GetEventDTO> events = eventService.getAllEvents(
                     eventTypeId, location, maxParticipants, minRating, startDate, endDate, name);
 
             if (events.isEmpty()) {
@@ -65,7 +66,7 @@ public class EventController {
 
 
     @GetMapping
-    public ResponseEntity<PagedResponse<GetEventCardDTO>> getEvents(
+    public ResponseEntity<PagedResponse<GetEventDTO>> getEvents(
             Pageable pageable,
             @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) String location,
@@ -76,7 +77,7 @@ public class EventController {
             @RequestParam(required = false) String name
     ) {
         try {
-            PagedResponse<GetEventCardDTO> response = eventService.getAllEvents(
+            PagedResponse<GetEventDTO> response = eventService.getAllEvents(
                     pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name);
 
             if (response.getContent().isEmpty()) {

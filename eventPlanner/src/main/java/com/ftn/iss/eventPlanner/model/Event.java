@@ -56,7 +56,7 @@ public class Event {
     @OneToOne
     private EventStats stats;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate dateCreated;
 
     public Event() {
