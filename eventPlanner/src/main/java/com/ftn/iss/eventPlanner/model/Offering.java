@@ -14,8 +14,6 @@ import org.modelmapper.internal.bytebuddy.dynamic.loading.InjectionClassLoader;
 @Getter
 @Setter
 @Table(name = "offerings")
-@Getter
-@Setter
 public abstract class Offering {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
