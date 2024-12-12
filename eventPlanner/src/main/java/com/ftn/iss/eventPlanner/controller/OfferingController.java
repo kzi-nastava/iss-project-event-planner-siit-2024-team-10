@@ -8,6 +8,7 @@ import com.ftn.iss.eventPlanner.dto.rating.CreatedRatingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.GetRatingDTO;
 import com.ftn.iss.eventPlanner.model.Status;
 import com.ftn.iss.eventPlanner.services.OfferingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequestMapping("/api/offerings")
 public class OfferingController {
 
+    @Autowired
     private final OfferingService offeringService;
 
     public OfferingController(OfferingService offeringService) {
