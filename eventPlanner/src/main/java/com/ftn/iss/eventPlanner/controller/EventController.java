@@ -31,9 +31,7 @@ public class EventController {
     public ResponseEntity<Collection<GetEventDTO>> getTopEvents() {
         try {
             List<GetEventDTO> events = eventService.findTopEvents();
-            if (events.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(events);
-            }
+
             return ResponseEntity.ok(events);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
@@ -79,10 +77,6 @@ public class EventController {
         try {
             PagedResponse<GetEventDTO> response = eventService.getAllEvents(
                     pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name);
-
-            if (response.getContent().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
