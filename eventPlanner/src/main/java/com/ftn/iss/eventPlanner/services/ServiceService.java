@@ -4,6 +4,7 @@ import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
+import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +21,11 @@ public class ServiceService {
 
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
-
+    @Autowired
+    private ProviderRepository providerRepository;
     @Autowired
     private ModelMapper modelMapper;
+
 
     /**
      * Creates a new service based on the provided DTO.
@@ -33,17 +36,23 @@ public class ServiceService {
      * @return A DTO representing the created service.
      */
     public CreatedServiceDTO create(CreateServiceDTO serviceDTO) {
-        Service service = new Service();
-        ServiceDetails currentDetails = new ServiceDetails();
+        Service service = modelMapper.map(serviceDTO,Service.class);
+        ServiceDetails currentDetails = modelMapper.map(serviceDTO,ServiceDetails.class);
+        service.setId(0);
+
+        // set current details and history
         currentDetails.setTimestamp(LocalDateTime.now());
 
-        modelMapper.map(serviceDTO, service);
-        modelMapper.map(serviceDTO, currentDetails);
+        // modelMapper.map(serviceDTO, service);
         service.setCurrentDetails(currentDetails);
 
         // Check if the category is pending
         // TODO: category will be created and added with id but not yet approved
-        OfferingCategory category = offeringCategoryRepository.findById(serviceDTO.getCategoryId()).get();
+        OfferingCategory category = offeringCategoryRepository.findById(serviceDTO.getCategory()).get();
+        service.setCategory(category);
+
+        Provider provider = providerRepository.findById(serviceDTO.getProvider()).get();
+        service.setProvider(provider);
 
         if (category.isPending()) {
             service.setPending(true);
