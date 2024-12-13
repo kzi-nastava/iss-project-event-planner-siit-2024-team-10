@@ -188,7 +188,7 @@ public class OfferingService {
             dto.setDiscount(pr.getCurrentDetails().getDiscount());
             dto.setLocation(modelMapper.map(pr.getProvider().getLocation(), GetLocationDTO.class));
 
-            dto.setService(false);
+            dto.setProduct(true);
         }
         else{
             Service service = (Service) offering;
@@ -199,7 +199,7 @@ public class OfferingService {
             dto.setLocation(modelMapper.map(service.getProvider().getLocation(), GetLocationDTO.class));
             dto.setSpecification(service.getCurrentDetails().getSpecification());
 
-            dto.setService(false);
+            dto.setProduct(false);
         }
         return dto;
     }
