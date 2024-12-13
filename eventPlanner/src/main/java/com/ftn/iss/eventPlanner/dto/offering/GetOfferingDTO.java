@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.dto.offering;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
@@ -21,6 +22,7 @@ public class GetOfferingDTO {
     private double price;
     private double discount;
     private double averageRating;
+    @JsonProperty("isProduct")
     private boolean isProduct;
 
     public GetOfferingDTO() {
