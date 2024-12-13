@@ -8,6 +8,7 @@ import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
 import com.ftn.iss.eventPlanner.model.Event;
+import com.ftn.iss.eventPlanner.model.EventType;
 import com.ftn.iss.eventPlanner.model.Location;
 import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.model.Organizer;
@@ -115,8 +116,12 @@ public class EventService {
         event.setId(0);
         Location location = modelMapper.map(locationService.create(createEventDTO.getLocation()), Location.class);
         event.setLocation(location);
-        event.setEventType(eventTypeRepository.findById(createEventDTO.getEventTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + createEventDTO.getEventTypeId() + " not found")));
+        EventType eventType = null;
+        if(createEventDTO.getEventTypeId()!=0) {
+            eventType=eventTypeRepository.findById(createEventDTO.getEventTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + createEventDTO.getEventTypeId() + " not found"));
+        }
+        event.setEventType(eventType);
         event.setStats(eventStatsRepository.save(new EventStats()));
         event.setOrganizer(organizerRepository.findById(createEventDTO.getOrganizerId())
                 .orElseThrow(() -> new IllegalArgumentException("Organizer with ID " + createEventDTO.getOrganizerId() + " not found")));
