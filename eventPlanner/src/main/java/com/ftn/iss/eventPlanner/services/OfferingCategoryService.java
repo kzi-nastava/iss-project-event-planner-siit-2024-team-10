@@ -17,7 +17,7 @@ public class OfferingCategoryService {
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
     @Autowired
-    private ModelMapper modelMapper = new ModelMapper();
+    private ModelMapper modelMapper;
 
     public List<GetOfferingCategoryDTO> findAll(){
         List<OfferingCategory> offeringCategorys = offeringCategoryRepository.findAll();
@@ -28,7 +28,7 @@ public class OfferingCategoryService {
 
     public GetOfferingCategoryDTO findById(int id) {
         OfferingCategory category = offeringCategoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
         return modelMapper.map(category, GetOfferingCategoryDTO.class);
     }
     public CreatedOfferingCategoryDTO create(CreateOfferingCategoryDTO createOfferingCategoryDTO){
