@@ -68,4 +68,13 @@ public class OfferingCategoryController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    @PutMapping(value = "/{id}/approve")
+    public ResponseEntity<Void> approve(@PathVariable int id) {
+        try {
+            offeringCategoryService.approve(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }

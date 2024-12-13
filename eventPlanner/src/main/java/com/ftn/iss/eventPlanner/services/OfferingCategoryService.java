@@ -54,4 +54,10 @@ public class OfferingCategoryService {
         offeringCategory.setDeleted(true);
         offeringCategoryRepository.save(offeringCategory);
     }
+    public void approve(int id){
+        OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
+        offeringCategory.setPending(false);
+        offeringCategoryRepository.save(offeringCategory);
+    }
 }
