@@ -1,11 +1,13 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
@@ -177,7 +179,7 @@ public class OfferingService {
         GetOfferingDTO dto = new GetOfferingDTO();
 
         dto.setId(offering.getId());
-        dto.setProvider(modelMapper.map(offering.getProvider(), GetProviderDTO.class));
+        dto.setProvider(setGetProviderDTO(offering));
         dto.setCategory(modelMapper.map(offering.getCategory(), GetOfferingCategoryDTO.class));
         dto.setAverageRating(calculateAverageRating(offering));
         if (offering.getClass().equals(Product.class)) {
@@ -213,5 +215,30 @@ public class OfferingService {
                 .average();
 
         return average.orElse(0.0);
+    }
+
+    private GetProviderDTO setGetProviderDTO(Offering offering){
+        GetProviderDTO providerDTO = new GetProviderDTO();
+        providerDTO.setId(offering.getProvider().getId());
+        providerDTO.setEmail(offering.getProvider().getAccount().getEmail());
+        providerDTO.setFirstName(offering.getProvider().getFirstName());
+        providerDTO.setLastName(offering.getProvider().getLastName());
+        providerDTO.setPhoneNumber(offering.getProvider().getPhoneNumber());
+        providerDTO.setProfilePhoto(offering.getProvider().getProfilePhoto());
+        providerDTO.setLocation(modelMapper.map(offering.getProvider().getLocation(), GetLocationDTO.class));
+        providerDTO.setCompany(setGetCompanyDTO(offering));
+        return providerDTO;
+    }
+
+    private GetCompanyDTO setGetCompanyDTO(Offering offering){
+        GetCompanyDTO companyDTO = new GetCompanyDTO();
+        companyDTO.setName(offering.getProvider().getCompany().getName());
+        companyDTO.setEmail(offering.getProvider().getAccount().getEmail());
+        companyDTO.setDescription(offering.getProvider().getCompany().getDescription());
+        companyDTO.setPhoneNumber(offering.getProvider().getCompany().getPhoneNumber());
+        companyDTO.setPhotos(offering.getProvider().getCompany().getPhotos());
+        companyDTO.setLocation(modelMapper.map(offering.getProvider().getCompany().getLocation(), GetLocationDTO.class));
+
+        return companyDTO;
     }
 }
