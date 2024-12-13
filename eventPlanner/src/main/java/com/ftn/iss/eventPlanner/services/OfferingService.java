@@ -238,6 +238,7 @@ public class OfferingService {
         companyDTO.setPhoneNumber(offering.getProvider().getCompany().getPhoneNumber());
         companyDTO.setPhotos(offering.getProvider().getCompany().getPhotos());
         companyDTO.setLocation(modelMapper.map(offering.getProvider().getCompany().getLocation(), GetLocationDTO.class));
+        companyDTO.setPhoneNumber(offering.getProvider().getCompany().getPhoneNumber());
 
         return companyDTO;
     }
