@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@CrossOrigin
 @RestController
 @CrossOrigin
 @RequestMapping("/api/events")

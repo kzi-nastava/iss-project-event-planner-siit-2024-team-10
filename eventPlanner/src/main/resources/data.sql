@@ -50,20 +50,54 @@ INSERT INTO notification (id, is_read, content) VALUES
                                                     (2, TRUE, 'Event registration confirmed.');
 
 INSERT INTO product_details (id, name, description, price, discount, is_visible, is_available, timestamp) VALUES
-                                                                                                              (1, 'Smartphone', 'Latest model smartphone.', 999.99, 0.0, TRUE, TRUE, '2023-10-10 12:00:00'),
-                                                                                                              (2, 'Laptop', 'High-performance laptop.', 1499.99, 100.0, TRUE, TRUE, '2023-10-11 13:00:00');
+                                                                                                              (1, 'Wedding Decoration Set', 'Complete set of decorations for weddings, including table centerpieces and backdrops.', 200.00, 10.0, TRUE, FALSE, '2023-10-20 15:00:00'),
+                                                                                                              (2, 'Conference Projector', 'High-resolution projector for conferences and business meetings.', 1200.00, 10.0, TRUE, TRUE, '2023-10-25 10:30:00'),
+                                                                                                              (3, 'Sound System', 'Professional sound system for parties and celebrations.', 850.00, 50.0, TRUE, TRUE, '2023-10-28 11:45:00'),
+                                                                                                              (4, 'Banquet Chairs', 'Comfortable and elegant chairs for formal events.', 25.00, 20.0, TRUE, FALSE, '2023-11-01 09:15:00'),
+                                                                                                              (5, 'Table Linens', 'High-quality linens for event tables.', 15.00, 10.0, TRUE, TRUE, '2023-11-05 14:00:00'),
+                                                                                                              (6, 'Stage Lighting Kit', 'Adjustable lighting kit for stage events.', 500.00, 0.0, TRUE, TRUE, '2023-11-08 16:30:00'),
+                                                                                                              (7, 'Wedding Cake Topper', 'Customizable cake toppers for weddings.', 50.00, 50.0, TRUE, TRUE, '2023-11-12 13:20:00'),
+                                                                                                              (8, 'Portable Dance Floor', 'Easy-to-assemble dance floor for events.', 700.00, 70.0, TRUE, FALSE, '2023-11-15 17:00:00'),
+                                                                                                              (9, 'Photo Booth', 'Self-service photo booth with props for celebrations.', 1500.00, 10.0, TRUE, TRUE, '2023-11-18 12:00:00'),
+                                                                                                              (10, 'Funeral Memorial Kit', 'Set of candles, floral arrangements, and remembrance cards.', 120.00, 10.0, TRUE, TRUE, '2023-11-20 18:45:00');
+
 
 INSERT INTO service_details (id, name, description, specification, price, discount, fixed_time, max_duration, min_duration, cancellation_period, reservation_period, is_visible, is_available, auto_confirm, timestamp) VALUES
-    (1, 'Cleaning Service', 'Home cleaning package.', 'Standard package for small apartments.', 50.0, 5.0, TRUE, 4, 2, 24, 48, TRUE, TRUE, FALSE, '2023-10-15 14:00:00'),
-    (2, 'Gardening Service', 'Lawn care and garden maintenance.', 'Includes lawn mowing, trimming, and plant care for medium-sized gardens.', 75.0, 6.0, TRUE, 3, 1, 30, 60, TRUE, TRUE, TRUE, '2023-11-20 10:00:00');
+                                                                                                                                                                                                                            (1, 'Wedding Photography', 'Professional photography for weddings.', 'Includes pre-event shoot, event coverage, and photo album.', 1200.00, 100.0, TRUE, 8, 6, 48, 72, TRUE, TRUE, TRUE, '2023-10-30 09:00:00'),
+                                                                                                                                                                                                                            (2, 'Event Catering', 'Complete catering service for events.', 'Includes setup, serving, and cleanup for up to 200 guests.', 5000.00, 500.0, TRUE, 10, 4, 72, 96, TRUE, TRUE, FALSE, '2023-11-03 11:30:00'),
+                                                                                                                                                                                                                            (3, 'DJ Service', 'Professional DJ for weddings and parties.', 'Includes sound system and personalized playlist.', 700.00, 50.0, TRUE, 6, 3, 24, 48, TRUE, TRUE, TRUE, '2023-11-06 19:00:00'),
+                                                                                                                                                                                                                            (4, 'Conference Setup', 'Venue setup for business conferences.', 'Includes table arrangements, projector setup, and refreshments.', 1500.00, 150.0, TRUE, 5, 3, 48, 72, TRUE, TRUE, FALSE, '2023-11-10 08:00:00'),
+                                                                                                                                                                                                                            (5, 'Event Security', 'Security personnel for large events.', 'Up to 5 guards equipped for crowd management.', 1000.00, 100.0, TRUE, 8, 4, 24, 48, TRUE, TRUE, TRUE, '2023-11-14 20:15:00'),
+                                                                                                                                                                                                                            (6, 'Floral Arrangement', 'Custom floral arrangements for weddings or funerals.', 'Includes bouquets, table arrangements, and venue decor.', 300.00, 25.0, TRUE, 6, 2, 24, 48, TRUE, TRUE, FALSE, '2023-11-16 10:10:00'),
+                                                                                                                                                                                                                            (7, 'Master of Ceremonies', 'Experienced MC for formal events.', 'Includes script preparation and event hosting.', 400.00, 40.0, TRUE, 6, 3, 24, 48, TRUE, TRUE, TRUE, '2023-11-19 14:25:00'),
+                                                                                                                                                                                                                            (8, 'Funeral Planning', 'Comprehensive funeral arrangement services.', 'Includes venue setup, catering, and floral decor.', 2000.00, 200.0, TRUE, 10, 6, 72, 96, TRUE, TRUE, FALSE, '2023-11-22 09:50:00'),
+                                                                                                                                                                                                                            (9, 'Party Balloon Setup', 'Balloon decorations for birthdays and celebrations.', 'Includes customized balloon arches and centerpieces.', 250.00, 20.0, TRUE, 4, 2, 24, 48, TRUE, TRUE, TRUE, '2023-11-25 13:40:00'),
+                                                                                                                                                                                                                            (10, 'Event Clean-Up', 'Post-event cleanup service.', 'Includes garbage disposal and venue tidying.', 500.00, 50.0, TRUE, 5, 2, 24, 48, TRUE, TRUE, FALSE, '2023-11-28 18:00:00');
+
 
 INSERT INTO offerings (id, dtype, current_product_details_id, is_deleted, pending) VALUES
-                                                         (1, 'Product', 1, FALSE, FALSE),
-                                                         (2,'Product', 2, FALSE, FALSE);
+                                                                                       (1, 'Product', 1, FALSE, FALSE),
+                                                                                       (2, 'Product', 2, FALSE, FALSE),
+                                                                                       (3, 'Product', 3, FALSE, FALSE),
+                                                                                       (4, 'Product', 4, FALSE, FALSE),
+                                                                                       (5, 'Product', 5, FALSE, FALSE),
+                                                                                       (6, 'Product', 6, FALSE, FALSE),
+                                                                                       (7, 'Product', 7, FALSE, FALSE),
+                                                                                       (8, 'Product', 8, FALSE, FALSE),
+                                                                                       (9, 'Product', 9, FALSE, FALSE),
+                                                                                       (10, 'Product', 10, FALSE, FALSE);
 
-INSERT INTO offerings (id,dtype, current_service_details_id, is_deleted, pending) VALUES
-                                                         (3,'Service', 1, FALSE, FALSE),
-                                                         (4,'Service', 2, FALSE, FALSE);
+INSERT INTO offerings (id, dtype, current_service_details_id, is_deleted, pending) VALUES
+                                                                                       (11, 'Service', 1, FALSE, FALSE),
+                                                                                       (12, 'Service', 2, FALSE, FALSE),
+                                                                                       (13, 'Service', 3, FALSE, FALSE),
+                                                                                       (14, 'Service', 4, FALSE, FALSE),
+                                                                                       (15, 'Service', 5, FALSE, FALSE),
+                                                                                       (16, 'Service', 6, FALSE, FALSE),
+                                                                                       (17, 'Service', 7, FALSE, FALSE),
+                                                                                       (18, 'Service', 8, FALSE, FALSE),
+                                                                                       (19, 'Service', 9, FALSE, FALSE),
+                                                                                       (20, 'Service', 10, FALSE, FALSE);
 
 INSERT INTO rating (id, score, rater_id) VALUES
                                              (1, 5, 1),
