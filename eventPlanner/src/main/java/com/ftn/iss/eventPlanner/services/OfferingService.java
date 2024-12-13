@@ -2,7 +2,11 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
+import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
+import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
@@ -36,15 +40,15 @@ public class OfferingService {
     private ModelMapper modelMapper = new ModelMapper();
 
 
-    public List<GetOfferingCardDTO> findAll(){
+    public List<GetOfferingDTO> findAll(){
         List<Offering> offerings = offeringRepository.findAll();
 
         return offerings.stream()
-                .map(this::mapToGetOfferingCardDTO)
+                .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<GetOfferingCardDTO> getAllOfferings(
+    public List<GetOfferingDTO> getAllOfferings(
             Boolean isServiceFilter,
             String name,
             Integer eventTypeId,
@@ -73,7 +77,7 @@ public class OfferingService {
                     .and(ServiceSpecification.isAvailable(searchByAvailability));
 
             return serviceRepository.findAll(serviceSpecification).stream()
-                    .map(this::mapToGetOfferingCardDTO)
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
         } else if (isServiceFilter == Boolean.FALSE) {
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
@@ -85,16 +89,16 @@ public class OfferingService {
                     .and(ProductSpecification.minRating(minRating));
 
             return productRepository.findAll(productSpecification).stream()
-                    .map(this::mapToGetOfferingCardDTO)
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
         } else {
             return offeringRepository.findAll().stream()
-                    .map(this::mapToGetOfferingCardDTO)
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
         }
     }
 
-    public PagedResponse<GetOfferingCardDTO> getAllOfferings(
+    public PagedResponse<GetOfferingDTO> getAllOfferings(
             Pageable pagable,
             Boolean isServiceFilter,
             String name,
@@ -124,8 +128,8 @@ public class OfferingService {
 
             Page<Service> pagedOfferings = serviceRepository.findAll(serviceSpecification, pagable);
 
-            List<GetOfferingCardDTO> offeringDTOs = pagedOfferings.getContent().stream()
-                    .map(this::mapToGetOfferingCardDTO)
+            List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
 
             return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
@@ -140,65 +144,62 @@ public class OfferingService {
 
             Page<Product> pagedOfferings = productRepository.findAll(productSpecification, pagable);
 
-            List<GetOfferingCardDTO> offeringDTOs = pagedOfferings.getContent().stream()
-                    .map(this::mapToGetOfferingCardDTO)
+            List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
 
             return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
         } else {
             Page<Offering> pagedOfferings = offeringRepository.findAll(pagable);
 
-            List<GetOfferingCardDTO> offeringDTOs = pagedOfferings.getContent().stream()
-                    .map(this::mapToGetOfferingCardDTO)
+            List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
 
             return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
         }
     }
 
-    public List<GetOfferingCardDTO> findTopOfferings() {
+    public List<GetOfferingDTO> findTopOfferings() {
         List<Offering> offerings = offeringRepository.findAll();
 
         return offerings.stream()
                 .sorted((o1, o2) -> Double.compare(
                         calculateAverageRating(o2), calculateAverageRating(o1)))
                 .limit(5)
-                .map(this::mapToGetOfferingCardDTO)
+                .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
 
     // HELPER FUNCTIONS
 
-    private GetOfferingCardDTO mapToGetOfferingCardDTO(Offering offering) {
-        GetOfferingCardDTO dto = new GetOfferingCardDTO();
-        dto.setId(offering.getId());
-        dto.setName(offering.getProvider().getFirstName()+" "+offering.getProvider().getLastName());
-        dto.setCategory(offering.getCategory().getName());
-        dto.setAverageRating(calculateAverageRating(offering));
+    private GetOfferingDTO mapToGetOfferingDTO(Offering offering) {
+        GetOfferingDTO dto = new GetOfferingDTO();
 
+        dto.setId(offering.getId());
+        dto.setProvider(modelMapper.map(offering.getProvider(), GetProviderDTO.class));
+        dto.setCategory(modelMapper.map(offering.getCategory(), GetOfferingCategoryDTO.class));
+        dto.setAverageRating(calculateAverageRating(offering));
         if (offering.getClass().equals(Product.class)) {
             Product pr = (Product) offering;
             dto.setName(pr.getCurrentDetails().getName());
+            dto.setDescription(pr.getCurrentDetails().getDescription());
             dto.setPrice(pr.getCurrentDetails().getPrice());
+            dto.setDiscount(pr.getCurrentDetails().getDiscount());
+            dto.setLocation(modelMapper.map(pr.getProvider().getLocation(), GetLocationDTO.class));
 
-            // TO BE CHANGED WHEN PHOTOS ATTRIBUTE IS CHANGED TO A SET
-            Set<String> photos = pr.getCurrentDetails().getPhotos();
-            if (photos != null && !photos.isEmpty()) {
-                String coverPicture = new ArrayList<>(photos).getFirst();
-                dto.setCoverPicture(coverPicture);
-            }
-            dto.setIsService(false);
+            dto.setService(false);
         }
         else{
             Service service = (Service) offering;
             dto.setName(service.getCurrentDetails().getName());
+            dto.setDescription(service.getCurrentDetails().getDescription());
             dto.setPrice(service.getCurrentDetails().getPrice());
-            List<String> photos = service.getCurrentDetails().getPhotos();
-            if (photos != null && !photos.isEmpty()) {
-                String coverPicture = new ArrayList<>(photos).getFirst();
-                dto.setCoverPicture(coverPicture);
-            }
-            dto.setIsService(true);
+            dto.setDiscount(service.getCurrentDetails().getDiscount());
+            dto.setLocation(modelMapper.map(service.getProvider().getLocation(), GetLocationDTO.class));
+            dto.setSpecification(service.getCurrentDetails().getSpecification());
+
+            dto.setService(false);
         }
         return dto;
     }

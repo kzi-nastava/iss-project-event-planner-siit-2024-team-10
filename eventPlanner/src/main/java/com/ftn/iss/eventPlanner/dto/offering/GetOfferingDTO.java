@@ -21,6 +21,7 @@ public class GetOfferingDTO {
     private double price;
     private double discount;
     private double averageRating;
+    private boolean isService;
 
     public GetOfferingDTO() {
     }
