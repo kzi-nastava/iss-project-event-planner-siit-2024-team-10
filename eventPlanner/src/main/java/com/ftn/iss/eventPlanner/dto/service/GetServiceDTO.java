@@ -27,6 +27,7 @@ public class GetServiceDTO {
     private int cancellationPeriod;
     private int reservationPeriod;
     private boolean autoConfirm;
+    private boolean deleted;
 
     public GetServiceDTO() {
     	

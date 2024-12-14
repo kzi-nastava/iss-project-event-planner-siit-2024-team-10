@@ -154,6 +154,7 @@ public class ServiceService {
         dto.setDiscount(service.getCurrentDetails().getDiscount());
         dto.setPhotos(service.getCurrentDetails().getPhotos());
         dto.setAvailable(service.getCurrentDetails().isAvailable());
+        dto.setDeleted(service.isDeleted());
         dto.setVisible(service.getCurrentDetails().isVisible());
         dto.setMaxDuration(service.getCurrentDetails().getMaxDuration());
         dto.setMinDuration(service.getCurrentDetails().getMinDuration());
