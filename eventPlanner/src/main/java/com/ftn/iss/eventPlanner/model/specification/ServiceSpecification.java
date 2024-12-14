@@ -34,7 +34,7 @@ public class ServiceSpecification {
                         : criteriaBuilder.conjunction();
     }
 
-    public static Specification<Service> betweenPrices(Integer minPrice, Integer maxPrice) {
+    public static Specification<Service> betweenPrices(Double minPrice, Double maxPrice) {
         return (root, query, criteriaBuilder) -> {
             if (minPrice == null && maxPrice == null) return criteriaBuilder.conjunction();
             if (minPrice != null && maxPrice != null) {

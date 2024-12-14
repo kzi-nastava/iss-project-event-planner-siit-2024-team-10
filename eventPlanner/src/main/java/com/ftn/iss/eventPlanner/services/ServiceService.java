@@ -1,14 +1,23 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
+import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.model.*;
+import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,11 +74,46 @@ public class ServiceService {
 
         return modelMapper.map(savedService, CreatedServiceDTO.class);
     }
-    public List<GetServiceDTO> findAll() {
-        List<Service> services = serviceRepository.findAll();
-        return services.stream()
+    public List<GetServiceDTO> findAll(
+        String name,
+        Integer eventTypeId,
+        Integer categoryId,
+        Double minPrice,
+        Double maxPrice,
+        Boolean searchByAvailability
+    ) {
+        Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
+                .and(ServiceSpecification.hasEventTypeId(eventTypeId))
+                .and(ServiceSpecification.hasCategoryId(categoryId))
+                .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
+                .and(ServiceSpecification.isAvailable(searchByAvailability));
+
+        return serviceRepository.findAll(serviceSpecification).stream()
                 .map(service -> modelMapper.map(service, GetServiceDTO.class))
                 .collect(Collectors.toList());
+    }
+    public PagedResponse<GetServiceDTO> findAll(
+            Pageable pagable,
+            String name,
+            Integer eventTypeId,
+            Integer categoryId,
+            Double minPrice,
+            Double maxPrice,
+            Boolean searchByAvailability
+    ) {
+        Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
+                .and(ServiceSpecification.hasEventTypeId(eventTypeId))
+                .and(ServiceSpecification.hasCategoryId(categoryId))
+                .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
+                .and(ServiceSpecification.isAvailable(searchByAvailability));
+
+        Page<Service> pagedServices = serviceRepository.findAll(serviceSpecification, pagable);
+
+        List<GetServiceDTO> serviceDTOs = pagedServices.getContent().stream()
+                .map(this::mapToGetServiceDTO)
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(serviceDTOs,pagedServices.getTotalPages(),pagedServices.getTotalElements());
     }
     public GetServiceDTO findById(int id) {
         Service service = (Service) serviceRepository.findById(id)
@@ -93,5 +137,27 @@ public class ServiceService {
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
         service.setDeleted(true);
         serviceRepository.save(service);
+    }
+    private GetServiceDTO mapToGetServiceDTO(Service service) {
+        GetServiceDTO dto = new GetServiceDTO();
+
+        dto.setId(service.getId());
+        dto.setCategoryId(service.getCategory().getId());
+        dto.setPending(service.isPending());
+        dto.setProviderID(service.getProvider().getId());
+        dto.setName(service.getCurrentDetails().getName());
+        dto.setDescription(service.getCurrentDetails().getDescription());
+        dto.setSpecification(service.getCurrentDetails().getSpecification());
+        dto.setPrice(service.getCurrentDetails().getPrice());
+        dto.setDiscount(service.getCurrentDetails().getDiscount());
+        dto.setPhotos(service.getCurrentDetails().getPhotos());
+        dto.setAvailable(service.getCurrentDetails().isAvailable());
+        dto.setVisible(service.getCurrentDetails().isVisible());
+        dto.setMaxDuration(service.getCurrentDetails().getMaxDuration());
+        dto.setMinDuration(service.getCurrentDetails().getMinDuration());
+        dto.setCancellationPeriod(service.getCurrentDetails().getCancellationPeriod());
+        dto.setReservationPeriod(service.getCurrentDetails().getReservationPeriod());
+        dto.setAutoConfirm(service.getCurrentDetails().isAutoConfirm());
+        return dto;
     }
 }
