@@ -1,10 +1,12 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.service.*;
+import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
@@ -142,9 +144,9 @@ public class ServiceService {
         GetServiceDTO dto = new GetServiceDTO();
 
         dto.setId(service.getId());
-        dto.setCategoryId(service.getCategory().getId());
+        dto.setCategory(modelMapper.map(service.getCategory(), GetOfferingCategoryDTO.class));
         dto.setPending(service.isPending());
-        dto.setProviderID(service.getProvider().getId());
+        dto.setProvider(setGetProviderDTO(service));
         dto.setName(service.getCurrentDetails().getName());
         dto.setDescription(service.getCurrentDetails().getDescription());
         dto.setSpecification(service.getCurrentDetails().getSpecification());
@@ -159,5 +161,29 @@ public class ServiceService {
         dto.setReservationPeriod(service.getCurrentDetails().getReservationPeriod());
         dto.setAutoConfirm(service.getCurrentDetails().isAutoConfirm());
         return dto;
+    }
+    private GetProviderDTO setGetProviderDTO(Offering offering){
+        GetProviderDTO providerDTO = new GetProviderDTO();
+        providerDTO.setId(offering.getProvider().getId());
+        providerDTO.setEmail(offering.getProvider().getAccount().getEmail());
+        providerDTO.setFirstName(offering.getProvider().getFirstName());
+        providerDTO.setLastName(offering.getProvider().getLastName());
+        providerDTO.setPhoneNumber(offering.getProvider().getPhoneNumber());
+        providerDTO.setProfilePhoto(offering.getProvider().getProfilePhoto());
+        providerDTO.setLocation(modelMapper.map(offering.getProvider().getLocation(), GetLocationDTO.class));
+        providerDTO.setCompany(setGetCompanyDTO(offering));
+        return providerDTO;
+    }
+    private GetCompanyDTO setGetCompanyDTO(Offering offering){
+        GetCompanyDTO companyDTO = new GetCompanyDTO();
+        companyDTO.setName(offering.getProvider().getCompany().getName());
+        companyDTO.setEmail(offering.getProvider().getAccount().getEmail());
+        companyDTO.setDescription(offering.getProvider().getCompany().getDescription());
+        companyDTO.setPhoneNumber(offering.getProvider().getCompany().getPhoneNumber());
+        companyDTO.setPhotos(offering.getProvider().getCompany().getPhotos());
+        companyDTO.setLocation(modelMapper.map(offering.getProvider().getCompany().getLocation(), GetLocationDTO.class));
+        companyDTO.setPhoneNumber(offering.getProvider().getCompany().getPhoneNumber());
+
+        return companyDTO;
     }
 }
