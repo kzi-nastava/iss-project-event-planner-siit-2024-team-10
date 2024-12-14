@@ -28,6 +28,6 @@ public abstract class Offering {
     private Provider provider;
     @ManyToMany
     private Set<Comment> comments = new HashSet<>();
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Rating> ratings = new HashSet<>();
 }
