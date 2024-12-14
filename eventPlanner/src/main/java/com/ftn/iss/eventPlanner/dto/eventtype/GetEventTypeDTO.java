@@ -13,4 +13,5 @@ public class GetEventTypeDTO {
     private String name;
     private String description;
     private boolean active;
+    private List<GetOfferingCategoryDTO> recommendedCategories;
 }

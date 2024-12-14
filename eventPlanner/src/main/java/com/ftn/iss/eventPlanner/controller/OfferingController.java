@@ -3,6 +3,7 @@ package com.ftn.iss.eventPlanner.controller;
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
+import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.CreateRatingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.CreatedRatingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.GetRatingDTO;
@@ -21,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/offerings")
 public class OfferingController {
 
@@ -32,12 +34,10 @@ public class OfferingController {
     }
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingCardDTO>> getTopOfferings() {
+    public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings() {
         try {
-            List<GetOfferingCardDTO> offerings = offeringService.findTopOfferings();
-            if (offerings.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(offerings);
-            }
+            List<GetOfferingDTO> offerings = offeringService.findTopOfferings();
+
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
@@ -45,7 +45,7 @@ public class OfferingController {
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingCardDTO>> getOfferings(
+    public ResponseEntity<Collection<GetOfferingDTO>> getOfferings(
             @RequestParam(required = false) Boolean isServiceFilter,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer eventTypeId,
@@ -61,13 +61,10 @@ public class OfferingController {
             @RequestParam(required = false) Boolean isAvailable
     ){
         try {
-            List<GetOfferingCardDTO> offerings = offeringService.getAllOfferings(
+            List<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     isServiceFilter, name, eventTypeId, categoryId, location, minPrice, maxPrice,
                     minDiscount, duration, minRating, startDate, endDate, isAvailable);
 
-            if (offerings.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(offerings);
-            }
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
@@ -75,7 +72,7 @@ public class OfferingController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResponse<GetOfferingCardDTO>> getOfferings(
+    public ResponseEntity<PagedResponse<GetOfferingDTO>> getOfferings(
             Pageable pageable,
             @RequestParam(required = false) Boolean isServiceFilter,
             @RequestParam(required = false) String name,
@@ -92,13 +89,10 @@ public class OfferingController {
             @RequestParam(required = false) Boolean isAvailable
     ){
         try{
-            PagedResponse<GetOfferingCardDTO> offerings = offeringService.getAllOfferings(
+            PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     pageable, isServiceFilter, name, eventTypeId, categoryId, location, minPrice,
                     maxPrice, minDiscount, duration, minRating, startDate, endDate, isAvailable);
 
-            if (offerings.getContent().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(offerings);
-            }
 
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
