@@ -184,7 +184,7 @@ public class OfferingService {
             // TO BE CHANGED WHEN PHOTOS ATTRIBUTE IS CHANGED TO A SET
             Set<String> photos = pr.getCurrentDetails().getPhotos();
             if (photos != null && !photos.isEmpty()) {
-                String coverPicture = new ArrayList<>(photos).getFirst();
+                String coverPicture = new ArrayList<>(photos).get(0);
                 dto.setCoverPicture(coverPicture);
             }
             dto.setIsService(false);
@@ -195,7 +195,7 @@ public class OfferingService {
             dto.setPrice(service.getCurrentDetails().getPrice());
             List<String> photos = service.getCurrentDetails().getPhotos();
             if (photos != null && !photos.isEmpty()) {
-                String coverPicture = new ArrayList<>(photos).getFirst();
+                String coverPicture = new ArrayList<>(photos).get(0);
                 dto.setCoverPicture(coverPicture);
             }
             dto.setIsService(true);
