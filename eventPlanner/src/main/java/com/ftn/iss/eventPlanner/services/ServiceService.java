@@ -118,9 +118,9 @@ public class ServiceService {
         return new PagedResponse<>(serviceDTOs,pagedServices.getTotalPages(),pagedServices.getTotalElements());
     }
     public GetServiceDTO findById(int id) {
-        Service service = (Service) serviceRepository.findById(id)
+        Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
-        return modelMapper.map(service, GetServiceDTO.class);
+        return mapToGetServiceDTO(service);
     }
     /*
     add current details to history and set new current
