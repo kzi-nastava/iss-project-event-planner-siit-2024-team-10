@@ -15,28 +15,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/categories")
 public class OfferingCategoryController {
     @Autowired
     private OfferingCategoryService offeringCategoryService;
-    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingCategoryDTO>> getCategories(){
         List<GetOfferingCategoryDTO> categories = offeringCategoryService.findAll();
         return new ResponseEntity<>(categories, HttpStatus.OK);
-    }
-    @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResponse<GetOfferingCategoryDTO>> getCategoriesPage(SpringDataWebProperties.Pageable page) {
-        Collection<GetOfferingCategoryDTO> categories = new ArrayList<>() ;
-
-        PagedResponse<GetOfferingCategoryDTO> response = new PagedResponse<>(
-                categories,
-                1,
-                5
-        );
-
-        return new ResponseEntity<PagedResponse<GetOfferingCategoryDTO>>(response, HttpStatus.OK);
     }
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetOfferingCategoryDTO> getCategory(@PathVariable("id") int id) {
@@ -75,6 +63,15 @@ public class OfferingCategoryController {
     public ResponseEntity<?> delete(@PathVariable("id") int id) {
         try {
             offeringCategoryService.delete(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    @PutMapping(value = "/{id}/approve")
+    public ResponseEntity<Void> approve(@PathVariable int id) {
+        try {
+            offeringCategoryService.approve(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
