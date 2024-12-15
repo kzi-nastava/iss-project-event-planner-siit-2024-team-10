@@ -16,14 +16,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping(value = "api/auth")
+@CrossOrigin
 public class AuthenticationController {
     @Autowired
     private TokenUtils tokenUtils;
@@ -33,11 +32,14 @@ public class AuthenticationController {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
 
     @PostMapping(value="/login",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginResponseDTO> createAuthenticationToken(
             @RequestBody LoginRequestDTO authenticationRequest, HttpServletResponse response) {
+        String password=passwordEncoder.encode(authenticationRequest.getPassword());
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 authenticationRequest.getEmail(), authenticationRequest.getPassword()));
 
@@ -48,4 +50,6 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(new LoginResponseDTO(jwt, expiresIn));
     }
+
+
 }
