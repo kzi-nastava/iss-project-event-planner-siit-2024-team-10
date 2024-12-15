@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/services")
+@CrossOrigin
 public class ServiceController {
     @Autowired
     private ServiceService serviceService;
@@ -66,7 +68,8 @@ public class ServiceController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 	}
-	
+
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedServiceDTO> createService(@Valid @RequestBody CreateServiceDTO service) throws Exception {
         try{
@@ -77,7 +80,8 @@ public class ServiceController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
-	
+
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
 			throws Exception {
@@ -89,6 +93,7 @@ public class ServiceController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }}
 
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> delete(@PathVariable("id") int id) {
         try {

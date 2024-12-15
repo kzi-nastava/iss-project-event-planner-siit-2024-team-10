@@ -82,7 +82,13 @@ public class WebSecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers(HttpMethod.GET, "/", "/webjars/*", "/*.html", "favicon.ico",
-                        "/*/*.html", "/*/*.css", "/*/*.js");
+                        "/*/*.html", "/*/*.css", "/*/*.js",
+                        "/api/events*","/api/events/*",
+                        "/api/event-types*","/api/event-types/*",
+                        "api/services*","api/services/*",
+                        "api/products*","api/products/*",
+                        "api/categories*","api/categories/*",
+                        "api/offerings*","api/offerings/*");
 
     }
 
