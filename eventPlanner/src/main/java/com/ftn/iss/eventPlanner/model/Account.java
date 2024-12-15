@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.AllArgsConstructor;
@@ -59,32 +60,38 @@ public class Account implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.name());
         return Collections.singletonList(authority);
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
         return email;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return status!=AccountStatus.INACTIVE;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return status!=AccountStatus.SUSPENDED;
     }
 
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return status == AccountStatus.ACTIVE;
     }
