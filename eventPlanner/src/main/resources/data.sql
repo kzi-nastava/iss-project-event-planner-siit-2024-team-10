@@ -3,10 +3,11 @@ INSERT INTO location (id, city, country, street, house_number) VALUES
                                                                    (2, 'London', 'UK', 'Baker Street', '221B'),
                                                                    (3, 'Berlin', 'Germany', 'Unter den Linden', '50');
 
-INSERT INTO account (id, email, password, role, registration_timestamp, notifications_silenced, status, user_id) VALUES
-                                                                                                                     (1, 'john.doe@example.com', 'password123', 0, '2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     (2, 'jane.smith@example.com', 'password456', 1, '2023-12-02 11:00:00', TRUE, 0, null),
-                                                                                                                     (3, 'jacob.smith@example.com', 'password456', 2, '2023-12-02 11:00:00', TRUE, 0, null);
+INSERT INTO account (id, email, password, role, registration_timestamp, last_password_reset_date,notifications_silenced, status, user_id) VALUES
+                                                                                                                     (1, 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0, '2023-12-01 10:00:00','2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                     (2, 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null),
+                                                                                                                     (3, 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null),
+                                                                                                                     (4, 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null);
 
 
 INSERT INTO company (id, email, name, phone_number, description, location_id) VALUES
