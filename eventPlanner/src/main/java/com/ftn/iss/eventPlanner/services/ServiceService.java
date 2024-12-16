@@ -5,6 +5,7 @@ import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
@@ -187,4 +188,19 @@ public class ServiceService {
 
         return companyDTO;
     }
+    public UpdatedServiceDTO updatePrice(int id, UpdatePricelistItemDTO updateServiceDTO) {
+        Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+
+        service.getDetailsHistory().add(service.getCurrentDetails());
+        service.getCurrentDetails().setPrice(updateServiceDTO.getPrice());
+        service.getCurrentDetails().setDiscount(updateServiceDTO.getDiscount());
+        service.getCurrentDetails().setTimestamp(LocalDateTime.now());
+        service.getCurrentDetails().setTimestamp(LocalDateTime.now());
+
+        service = serviceRepository.save(service);
+
+        return modelMapper.map(service, UpdatedServiceDTO.class);
+    }
+
 }
