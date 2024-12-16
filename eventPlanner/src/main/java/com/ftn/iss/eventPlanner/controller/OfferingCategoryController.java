@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,7 @@ public class OfferingCategoryController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedOfferingCategoryDTO> createCategory(@Valid @RequestBody CreateOfferingCategoryDTO category) throws Exception {
         try{
@@ -45,6 +47,8 @@ public class OfferingCategoryController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedOfferingCategoryDTO> updateCategory(@RequestBody UpdateOfferingCategoryDTO category, @PathVariable int id)
             throws Exception {
@@ -59,6 +63,7 @@ public class OfferingCategoryController {
     /*
     TODO: delete only if there are no offerings
      */
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") int id) {
         try {
@@ -68,6 +73,8 @@ public class OfferingCategoryController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value = "/{id}/approve")
     public ResponseEntity<Void> approve(@PathVariable int id) {
         try {
