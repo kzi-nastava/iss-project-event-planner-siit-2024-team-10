@@ -24,18 +24,17 @@ import java.util.List;
 @CrossOrigin
 @RestController
 @RequestMapping("/api/services")
-@CrossOrigin
 public class ServiceController {
     @Autowired
     private ServiceService serviceService;
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetServiceDTO>> getServices(
-        @RequestParam(required = false) Integer categoryId,
-        @RequestParam(required = false) Integer eventTypeId,
-        @RequestParam(required = false) Double minPrice,
-        @RequestParam(required = false) Double maxPrice,
-        @RequestParam(required = false) Boolean isAvailable,
-        @RequestParam(required = false) String name
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Integer eventTypeId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Boolean isAvailable,
+            @RequestParam(required = false) String name
     ){
         List<GetServiceDTO> services = serviceService.findAll(name,eventTypeId,categoryId,minPrice,maxPrice,isAvailable);
         return new ResponseEntity<>(services, HttpStatus.OK);
@@ -53,15 +52,15 @@ public class ServiceController {
         PagedResponse<GetServiceDTO> response = serviceService.findAll(pageable, name, categoryId, eventTypeId, minPrice, maxPrice, isAvailable);
         return new ResponseEntity<PagedResponse<GetServiceDTO>>(response, HttpStatus.OK);
     }
-	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<GetServiceDTO> getService(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetServiceDTO> getService(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
         try {
             GetServiceDTO serviceDTO = serviceService.findById(id);
             return new ResponseEntity<>(serviceDTO, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-	}
+    }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -77,8 +76,8 @@ public class ServiceController {
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
-			throws Exception {
+    public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
+            throws Exception {
         try{
             UpdatedServiceDTO updatedServiceDTO = serviceService.update(id,service);
             return new ResponseEntity<>(updatedServiceDTO, HttpStatus.CREATED);
@@ -88,13 +87,13 @@ public class ServiceController {
         }}
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<?> delete(@PathVariable("id") int id) {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") int id) {
         try {
             serviceService.delete(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-	}
+    }
 }
