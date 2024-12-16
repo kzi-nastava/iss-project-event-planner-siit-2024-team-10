@@ -45,8 +45,8 @@ public class EventController {
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Integer maxParticipants,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
             @RequestParam(required = false) String name
     ) {
         try {
@@ -71,8 +71,8 @@ public class EventController {
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Integer maxParticipants,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
             @RequestParam(required = false) String name
     ) {
         try {

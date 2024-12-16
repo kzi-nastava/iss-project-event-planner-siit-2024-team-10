@@ -56,14 +56,13 @@ public class EventService {
             String location,
             Integer maxParticipants,
             Double minRating,
-            LocalDate startDate,
-            LocalDate endDate,
+            String startDate,
+            String endDate,
             String name
     ) {
         Specification<Event> specification = Specification.where(EventSpecification.hasEventTypeId(eventTypeId))
                 .and(EventSpecification.hasLocation(location))
                 .and(EventSpecification.maxParticipants(maxParticipants))
-                .and(EventSpecification.minRating(minRating))
                 .and(EventSpecification.betweenDates(startDate, endDate))
                 .and(EventSpecification.hasName(name));
 
@@ -81,20 +80,26 @@ public class EventService {
             String location,
             Integer maxParticipants,
             Double minRating,
-            LocalDate startDate,
-            LocalDate endDate,
+            String startDate,
+            String endDate,
             String name
     ) {
         Specification<Event> specification = Specification.where(EventSpecification.hasEventTypeId(eventTypeId))
                 .and(EventSpecification.hasLocation(location))
                 .and(EventSpecification.maxParticipants(maxParticipants))
-                .and(EventSpecification.minRating(minRating))
                 .and(EventSpecification.betweenDates(startDate, endDate))
                 .and(EventSpecification.hasName(name));
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
-        List<GetEventDTO> eventDTOs = pagedEvents.getContent().stream()
+        List<Event> filteredEvents = pagedEvents.getContent();
+        if (minRating != null) {
+            filteredEvents = filteredEvents.stream()
+                    .filter(event -> event.getStats() != null && event.getStats().getAverageRating() >= minRating)
+                    .collect(Collectors.toList());
+        }
+
+        List<GetEventDTO> eventDTOs = filteredEvents.stream().limit(10)
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
 

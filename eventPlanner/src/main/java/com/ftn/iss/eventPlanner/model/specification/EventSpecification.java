@@ -3,6 +3,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.ftn.iss.eventPlanner.model.Event;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class EventSpecification {
 
@@ -21,12 +22,13 @@ public class EventSpecification {
                 maxParticipants == null ? null : criteriaBuilder.lessThanOrEqualTo(root.get("maxParticipants"), maxParticipants);
     }
 
-    public static Specification<Event> minRating(Double minRating) {
-        return (root, query, criteriaBuilder) ->
-                minRating == null ? null : criteriaBuilder.greaterThanOrEqualTo(root.get("stats").get("averageRating"), minRating);
-    }
 
-    public static Specification<Event> betweenDates(LocalDate startDate, LocalDate endDate) {
+    public static Specification<Event> betweenDates(String startDateStr, String endDateStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+
+        LocalDate startDate = startDateStr != null ? LocalDate.parse(startDateStr, formatter) : null;
+        LocalDate endDate = endDateStr != null ? LocalDate.parse(endDateStr, formatter) : null;
+
         return (root, query, criteriaBuilder) -> {
             if (startDate == null && endDate == null) {
                 return null;
