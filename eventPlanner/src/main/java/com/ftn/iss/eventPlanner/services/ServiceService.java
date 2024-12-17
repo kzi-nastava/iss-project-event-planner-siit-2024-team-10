@@ -176,7 +176,6 @@ public class ServiceService {
 
         service.setCurrentDetails(newCurrent);
 
-        // Sačuvaj uslugu
         Service savedService = serviceRepository.save(service);
 
         return modelMapper.map(savedService, UpdatedServiceDTO.class);

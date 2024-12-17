@@ -34,7 +34,7 @@ public class ProductService {
     private ProductRepository productRepository;
     @Autowired
     private ModelMapper modelMapper;
-    public List<GetServiceDTO> findAll(
+    public List<GetProductDTO> findAll(
             String name,
             Integer eventTypeId,
             Integer categoryId,
@@ -49,7 +49,7 @@ public class ProductService {
                 .and(ProductSpecification.betweenPrices(minPrice, maxPrice));
 
         return productRepository.findAll(productSpecification).stream()
-                .map(service -> modelMapper.map(service, GetServiceDTO.class))
+                .map(product -> modelMapper.map(product, GetProductDTO.class))
                 .collect(Collectors.toList());
     }
     public PagedResponse<GetProductDTO> findAll(
