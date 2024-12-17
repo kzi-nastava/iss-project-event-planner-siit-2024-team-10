@@ -5,9 +5,11 @@ import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.GetPricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
+import com.ftn.iss.eventPlanner.dto.service.UpdatedServiceDTO;
 import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.model.Service;
 import com.ftn.iss.eventPlanner.services.OfferingService;
+import com.ftn.iss.eventPlanner.services.ServiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,8 @@ public class PricelistController {
     @Autowired
 
     private OfferingService offeringService;
+    @Autowired
+    private ServiceService serviceService;
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetPricelistItemDTO>> getPricelist() {
         List<GetOfferingDTO> offerings = offeringService.findAll();
@@ -46,25 +50,21 @@ public class PricelistController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UpdatedPricelistItemDTO> updatePricing(@PathVariable int id, @RequestBody UpdatePricelistItemDTO updatePricingDTO) {
-        Collection<GetPricelistItemDTO> pricelist = fillIn();
-        for (GetPricelistItemDTO item : pricelist) {
-            if (item.getId() == id) {
-                item.setPrice(updatePricingDTO.getPrice());
-                item.setDiscount(updatePricingDTO.getDiscount());
+        try {
+            UpdatedServiceDTO updatedService = serviceService.updatePrice(id, updatePricingDTO);
 
-                UpdatedPricelistItemDTO response = new UpdatedPricelistItemDTO();
-                response.setId(item.getId());
-                response.setOfferingId(item.getOfferingId());
-                response.setName(item.getName());
-                response.setPrice(item.getPrice());
-                response.setDiscount(item.getDiscount());
+            UpdatedPricelistItemDTO response = new UpdatedPricelistItemDTO();
+            response.setId(updatedService.getId());
+            response.setName(updatedService.getName());
+            response.setPrice(updatedService.getPrice());
+            response.setDiscount(updatedService.getDiscount());
 
-                return ResponseEntity.ok(response);
-            }
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
         }
-
-        return ResponseEntity.notFound().build();
     }
+
     public Collection<GetPricelistItemDTO> fillIn() {
         Collection<GetPricelistItemDTO> pricelist = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {

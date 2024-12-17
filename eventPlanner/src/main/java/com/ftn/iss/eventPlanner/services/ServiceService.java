@@ -15,6 +15,7 @@ import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +23,10 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @org.springframework.stereotype.Service
 public class ServiceService {
@@ -127,14 +130,73 @@ public class ServiceService {
     add current details to history and set new current
      */
     public UpdatedServiceDTO update(int id, UpdateServiceDTO updateServiceDTO) {
-        Service service = (Service) serviceRepository.findById(id)
+        Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
-        service.getDetailsHistory().add(service.getCurrentDetails());
+
+        // Create a copy of current details before adding to history
+        ServiceDetails historicalDetails = new ServiceDetails();
+        BeanUtils.copyProperties(service.getCurrentDetails(), historicalDetails);
+
+        service.getDetailsHistory().add(historicalDetails);
         modelMapper.map(updateServiceDTO, service.getCurrentDetails());
         service.getCurrentDetails().setTimestamp(LocalDateTime.now());
-        service = serviceRepository.save(service);
-        return modelMapper.map(service, UpdatedServiceDTO.class);
+
+        return modelMapper.map(serviceRepository.save(service), UpdatedServiceDTO.class);
     }
+
+    public UpdatedServiceDTO updatePrice(int id, UpdatePricelistItemDTO updateServiceDTO) {
+        Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+
+        ServiceDetails newCurrent = new ServiceDetails();
+        newCurrent.setName(service.getCurrentDetails().getName());
+        newCurrent.setDescription(service.getCurrentDetails().getDescription());
+        newCurrent.setSpecification(service.getCurrentDetails().getSpecification());
+        newCurrent.setPrice(updateServiceDTO.getPrice());
+        newCurrent.setDiscount(updateServiceDTO.getDiscount());
+
+        newCurrent.setPhotos(
+                service.getCurrentDetails().getPhotos() != null
+                        ? new ArrayList<>(service.getCurrentDetails().getPhotos())
+                        : new ArrayList<>()
+        );
+
+        newCurrent.setFixedTime(service.getCurrentDetails().isFixedTime());
+        newCurrent.setMaxDuration(service.getCurrentDetails().getMaxDuration());
+        newCurrent.setMinDuration(service.getCurrentDetails().getMinDuration());
+        newCurrent.setCancellationPeriod(service.getCurrentDetails().getCancellationPeriod());
+        newCurrent.setReservationPeriod(service.getCurrentDetails().getReservationPeriod());
+        newCurrent.setVisible(service.getCurrentDetails().isVisible());
+        newCurrent.setAvailable(service.getCurrentDetails().isAvailable());
+        newCurrent.setAutoConfirm(service.getCurrentDetails().isAutoConfirm());
+        newCurrent.setTimestamp(LocalDateTime.now());
+
+        ServiceDetails historicalDetails = service.getCurrentDetails();
+        service.getDetailsHistory().add(historicalDetails);
+
+        service.setCurrentDetails(newCurrent);
+
+        // Sačuvaj uslugu
+        Service savedService = serviceRepository.save(service);
+
+        return modelMapper.map(savedService, UpdatedServiceDTO.class);
+    }
+
+    public int findMaxDetailsIdAcrossAllServices() {
+        return serviceRepository.findAll().stream()
+                .flatMap(service -> {
+                    Stream<Integer> historyIds = service.getDetailsHistory().stream()
+                            .map(ServiceDetails::getId);
+                    Stream<Integer> currentId = service.getCurrentDetails() != null
+                            ? Stream.of(service.getCurrentDetails().getId())
+                            : Stream.empty();
+                    return Stream.concat(historyIds, currentId);
+                })
+                .mapToInt(id -> id) // Konvertujemo u int stream
+                .max()
+                .orElse(0); // Vraćamo 0 ako nema elemenata
+    }
+
     public void delete(int id) {
         Service service = (Service) serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
@@ -188,19 +250,4 @@ public class ServiceService {
 
         return companyDTO;
     }
-    public UpdatedServiceDTO updatePrice(int id, UpdatePricelistItemDTO updateServiceDTO) {
-        Service service = serviceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
-
-        service.getDetailsHistory().add(service.getCurrentDetails());
-        service.getCurrentDetails().setPrice(updateServiceDTO.getPrice());
-        service.getCurrentDetails().setDiscount(updateServiceDTO.getDiscount());
-        service.getCurrentDetails().setTimestamp(LocalDateTime.now());
-        service.getCurrentDetails().setTimestamp(LocalDateTime.now());
-
-        service = serviceRepository.save(service);
-
-        return modelMapper.map(service, UpdatedServiceDTO.class);
-    }
-
 }
