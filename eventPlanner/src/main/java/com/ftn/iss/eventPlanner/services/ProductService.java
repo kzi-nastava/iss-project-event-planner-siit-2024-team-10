@@ -6,6 +6,7 @@ import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.product.GetProductDTO;
+import com.ftn.iss.eventPlanner.dto.product.UpdatedProductDTO;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.dto.service.UpdatedServiceDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
@@ -79,7 +80,7 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
         return mapToGetProductDTO(product);
     }
-    public UpdatedServiceDTO updatePrice(int id, UpdatePricelistItemDTO updateServiceDTO) {
+    public UpdatedProductDTO updatePrice(int id, UpdatePricelistItemDTO updateServiceDTO) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product with ID " + id + " not found"));
 
@@ -100,13 +101,13 @@ public class ProductService {
         newCurrent.setTimestamp(LocalDateTime.now());
 
         ProductDetails historicalDetails = product.getCurrentDetails();
-        product.getDetailsHistory().add(historicalDetails);
+        product.getProductDetailsHistory().add(historicalDetails);
 
         product.setCurrentDetails(newCurrent);
 
         Product productSaved = productRepository.save(product);
 
-        return modelMapper.map(productSaved, UpdatedServiceDTO.class);
+        return modelMapper.map(productSaved, UpdatedProductDTO.class);
     }
     private GetProductDTO mapToGetProductDTO(Product product) {
         GetProductDTO dto = new GetProductDTO();

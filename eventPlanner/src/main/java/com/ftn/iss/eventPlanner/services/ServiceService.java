@@ -137,7 +137,7 @@ public class ServiceService {
         ServiceDetails historicalDetails = new ServiceDetails();
         BeanUtils.copyProperties(service.getCurrentDetails(), historicalDetails);
 
-        service.getDetailsHistory().add(historicalDetails);
+        service.getServiceDetailsHistory().add(historicalDetails);
         modelMapper.map(updateServiceDTO, service.getCurrentDetails());
         service.getCurrentDetails().setTimestamp(LocalDateTime.now());
 
@@ -172,7 +172,7 @@ public class ServiceService {
         newCurrent.setTimestamp(LocalDateTime.now());
 
         ServiceDetails historicalDetails = service.getCurrentDetails();
-        service.getDetailsHistory().add(historicalDetails);
+        service.getServiceDetailsHistory().add(historicalDetails);
 
         service.setCurrentDetails(newCurrent);
 

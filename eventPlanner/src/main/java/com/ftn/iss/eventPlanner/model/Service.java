@@ -19,5 +19,5 @@ public class Service extends Offering {
     private ServiceDetails currentDetails;
 
     @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER, orphanRemoval = true)
-    private Set<ServiceDetails> detailsHistory = new HashSet<>();
+    private Set<ServiceDetails> serviceDetailsHistory = new HashSet<>();
 }

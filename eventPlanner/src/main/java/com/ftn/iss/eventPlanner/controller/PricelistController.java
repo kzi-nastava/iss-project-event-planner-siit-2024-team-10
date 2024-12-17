@@ -5,10 +5,12 @@ import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.GetPricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
+import com.ftn.iss.eventPlanner.dto.product.UpdatedProductDTO;
 import com.ftn.iss.eventPlanner.dto.service.UpdatedServiceDTO;
 import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.model.Service;
 import com.ftn.iss.eventPlanner.services.OfferingService;
+import com.ftn.iss.eventPlanner.services.ProductService;
 import com.ftn.iss.eventPlanner.services.ServiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/api/pricelist")
@@ -29,6 +33,8 @@ public class PricelistController {
     private OfferingService offeringService;
     @Autowired
     private ServiceService serviceService;
+    @Autowired
+    private ProductService productService;
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetPricelistItemDTO>> getPricelist() {
         List<GetOfferingDTO> offerings = offeringService.findAll();
@@ -61,9 +67,23 @@ public class PricelistController {
 
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            try {
+                UpdatedProductDTO updatedProduct = productService.updatePrice(id, updatePricingDTO);
+
+                UpdatedPricelistItemDTO response = new UpdatedPricelistItemDTO();
+                response.setId(updatedProduct.getId());
+                response.setName(updatedProduct.getName());
+                response.setPrice(updatedProduct.getPrice());
+                response.setDiscount(updatedProduct.getDiscount());
+
+
+                return ResponseEntity.ok(response);
+            } catch (NoSuchElementException ex) {
+                return ResponseEntity.notFound().build();
+            }
         }
     }
+
 
     public Collection<GetPricelistItemDTO> fillIn() {
         Collection<GetPricelistItemDTO> pricelist = new ArrayList<>();
