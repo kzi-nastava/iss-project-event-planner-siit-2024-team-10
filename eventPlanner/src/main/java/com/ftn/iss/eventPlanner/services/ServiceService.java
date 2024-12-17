@@ -182,21 +182,6 @@ public class ServiceService {
         return modelMapper.map(savedService, UpdatedServiceDTO.class);
     }
 
-    public int findMaxDetailsIdAcrossAllServices() {
-        return serviceRepository.findAll().stream()
-                .flatMap(service -> {
-                    Stream<Integer> historyIds = service.getDetailsHistory().stream()
-                            .map(ServiceDetails::getId);
-                    Stream<Integer> currentId = service.getCurrentDetails() != null
-                            ? Stream.of(service.getCurrentDetails().getId())
-                            : Stream.empty();
-                    return Stream.concat(historyIds, currentId);
-                })
-                .mapToInt(id -> id) // Konvertujemo u int stream
-                .max()
-                .orElse(0); // Vraćamo 0 ako nema elemenata
-    }
-
     public void delete(int id) {
         Service service = (Service) serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
