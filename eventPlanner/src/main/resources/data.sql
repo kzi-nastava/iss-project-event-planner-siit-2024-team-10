@@ -3,30 +3,28 @@ INSERT INTO location (id, city, country, street, house_number) VALUES
                                                                    (2, 'London', 'UK', 'Baker Street', '221B'),
                                                                    (3, 'Berlin', 'Germany', 'Unter den Linden', '50');
 
-INSERT INTO account (id, email, password, role, registration_timestamp, last_password_reset_date,notifications_silenced, status, user_id) VALUES
-                                                                                                                     (1, 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0, '2023-12-01 10:00:00','2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     (2, 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null),
-                                                                                                                     (3, 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null),
-                                                                                                                     (4, 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null);
+INSERT INTO account (email, password, role, last_password_reset_date,notifications_silenced, status, user_id) VALUES
+                                                                                                                     ( 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                     ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', TRUE, 0, null),
+                                                                                                                     ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', TRUE, 0, null),
+                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', TRUE, 0, null);
 
 
-INSERT INTO company (id, email, name, phone_number, description, location_id) VALUES
-                                                                                  (1, 'info@techcorp.com', 'TechCorp', '555-1234', 'Leading tech company.', 1),
-                                                                                  (2, 'hello@greenworld.com', 'GreenWorld', '555-5678', 'Sustainable solutions provider.', 2);
+INSERT INTO company ( email, name, phone_number, description, location_id) VALUES
+                                                                                  ( 'info@techcorp.com', 'TechCorp', '555-1234', 'Leading tech company.', 1);
 
-INSERT INTO users (id, dtype, first_name, last_name, phone_number, profile_photo, location_id, account_id, company_id) VALUES
-                                                                                                                           (1,'Provider', 'John', 'Doe', '123-456-7890', NULL, 1, 1,1),
-                                                                                                                           (2,'Organizer', 'Jane', 'Smith', '987-654-3210', NULL, 2, 2, NULL),
-                                                                                                                           (3,'Provider', 'John', 'Doe', '123-456-7890', NULL, 3, 3,2);
+INSERT INTO users ( dtype, first_name, last_name, phone_number, profile_photo, location_id, account_id, company_id) VALUES
+                                                                                                                           ('Provider', 'John', 'Doe', '123-456-7890', NULL, 1, 3,1),
+                                                                                                                           ('Organizer', 'Jane', 'Smith', '987-654-3210', NULL, 2, 2, NULL);
 
 
 INSERT INTO offering_category (id, name, description, is_deleted, pending) VALUES
                                                                                (1, 'Electronics', 'Category for electronic items.', FALSE, FALSE),
                                                                                (2, 'Home Services', 'Category for home-related services.', FALSE, TRUE);
 
-INSERT INTO event_type (id, name, description, is_active) VALUES
-                                                              (1, 'Workshop', 'Hands-on learning sessions.', TRUE),
-                                                              (2, 'Conference', 'Large gatherings for presentations and discussions.', TRUE);
+INSERT INTO event_type ( name, description, is_active) VALUES
+                                                              ( 'Workshop', 'Hands-on learning sessions.', TRUE),
+                                                              ( 'Conference', 'Large gatherings for presentations and discussions.', TRUE);
 
 INSERT INTO event (id, organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created) VALUES
                                                                                                                                                    (1, 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2024-01-15', FALSE, 1, '2024-03-10'),
@@ -84,25 +82,25 @@ INSERT INTO offerings (id, dtype, category_id, provider_id, current_product_deta
                                                                                        (1, 'Product',1 ,1, 1, FALSE, FALSE),
                                                                                        (2, 'Product',2 ,1,  2, FALSE, FALSE),
                                                                                        (3, 'Product',1 ,1,  3, FALSE, FALSE),
-                                                                                       (4, 'Product',1 ,3,  4, FALSE, FALSE),
+                                                                                       (4, 'Product',1 ,1,  4, FALSE, FALSE),
                                                                                        (5, 'Product',1 ,1,  5, FALSE, FALSE),
                                                                                        (6, 'Product',2 ,1,  6, FALSE, FALSE),
                                                                                        (7, 'Product',1 ,1,  7, FALSE, FALSE),
                                                                                        (8, 'Product',1 ,1,  8, FALSE, FALSE),
-                                                                                       (9, 'Product',2 ,3,  9, FALSE, FALSE),
-                                                                                       (10, 'Product',1 ,3,  10, FALSE, FALSE);
+                                                                                       (9, 'Product',2 ,1,  9, FALSE, FALSE),
+                                                                                       (10, 'Product',1 ,1,  10, FALSE, FALSE);
 
 INSERT INTO offerings (id, dtype, category_id, provider_id, current_service_details_id, is_deleted, pending) VALUES
                                                                                        (11, 'Service',1 ,1,  1, FALSE, FALSE),
-                                                                                       (12, 'Service',2 ,3,  2, FALSE, FALSE),
+                                                                                       (12, 'Service',2 ,1,  2, FALSE, FALSE),
                                                                                        (13, 'Service',1 ,1,  3, FALSE, FALSE),
                                                                                        (14, 'Service',1 ,1,  4, FALSE, FALSE),
-                                                                                       (15, 'Service',2 ,3,  5, FALSE, FALSE),
+                                                                                       (15, 'Service',2 ,1,  5, FALSE, FALSE),
                                                                                        (16, 'Service',1 ,1,  6, FALSE, FALSE),
                                                                                        (17, 'Service',1 ,1,  7, FALSE, FALSE),
-                                                                                       (18, 'Service',1 ,3,  8, FALSE, FALSE),
+                                                                                       (18, 'Service',1 ,1,  8, FALSE, FALSE),
                                                                                        (19, 'Service',1 ,1,  9, FALSE, FALSE),
-                                                                                       (20, 'Service',2 ,3,  10, FALSE, FALSE);
+                                                                                       (20, 'Service',2 ,1,  10, FALSE, FALSE);
 
 INSERT INTO rating (id, score, rater_id) VALUES
                                              (1, 5, 1),
