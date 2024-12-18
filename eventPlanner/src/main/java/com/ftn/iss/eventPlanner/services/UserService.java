@@ -2,14 +2,13 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.user.CreateUserDTO;
 import com.ftn.iss.eventPlanner.dto.user.CreatedUserDTO;
+import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.*;
-import jakarta.validation.constraints.Email;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -47,10 +46,9 @@ public class UserService {
 
     public CreatedUserDTO create(CreateUserDTO userDTO, boolean roleUpgrade) {
         Account account = accountRepository.findByEmail(userDTO.getEmail());
-        //TODO if verification token is expired allow new registration
         if(roleUpgrade){
             if(account==null)
-                throw new IllegalArgumentException("Account with this email doesn't exist");
+                throw new IllegalArgumentException("Account with given email doesn't exist");
         }
         else {
             if(account!=null)
@@ -67,7 +65,7 @@ public class UserService {
                     accountRepository.delete(account);
                 }
                 else
-                    throw new IllegalArgumentException("Account with this email already exists");
+                    throw new EmailAlreadyExistsException("Email already exists");
             }
             account=new Account();
             account.setEmail(userDTO.getEmail());
@@ -127,9 +125,9 @@ public class UserService {
     public void Activate(String token){
         VerificationToken verificationToken=verificationTokenRepository.findByToken(token);
         if(verificationToken==null)
-            throw new IllegalArgumentException("Invalid token");
+            throw new IllegalArgumentException("Given verification token is not valid");
         if(verificationToken.getExpiresAt().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Token expired");
+            throw new IllegalArgumentException("Verification token expired, please register again");
         Account account=verificationToken.getAccount();
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);

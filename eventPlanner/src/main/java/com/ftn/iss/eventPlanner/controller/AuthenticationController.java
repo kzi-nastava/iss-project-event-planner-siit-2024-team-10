@@ -63,11 +63,7 @@ public class AuthenticationController {
 
     @GetMapping(value = "/activate")
     public ResponseEntity<String> activateAccount(@RequestParam String token) {
-        try {
-            userService.Activate(token);
-            return new ResponseEntity<>("Account activated", HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        userService.Activate(token);
+        return new ResponseEntity<>("Account activated", HttpStatus.OK);
     }
 }
