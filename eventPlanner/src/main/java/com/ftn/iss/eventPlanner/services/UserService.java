@@ -88,7 +88,6 @@ public class UserService {
         accountRepository.save(account);
 
         sendConfirmation(user);
-        //TODO:fix mapping
         return modelMapper.map(user, CreatedUserDTO.class);
     }
 
@@ -129,11 +128,9 @@ public class UserService {
             throw new IllegalArgumentException("Given verification token is not valid");
         if(verificationToken.getExpiresAt().isBefore(LocalDateTime.now()))
             throw new IllegalArgumentException("Verification token expired, please register again");
-        //TODO: handle errors on frontend
         Account account=verificationToken.getAccount();
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
         verificationTokenRepository.delete(verificationToken);
-        //TODO: redirect to login
     }
 }
