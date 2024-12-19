@@ -61,7 +61,7 @@ public class AuthenticationController {
         return new ResponseEntity<CreatedUserDTO>(savedUser, HttpStatus.CREATED);
     }
 
-    @GetMapping(value = "/activate")
+    @PutMapping(value = "/activate")
     public ResponseEntity<String> activateAccount(@RequestParam String token) {
         userService.Activate(token);
         return new ResponseEntity<>("Account activated", HttpStatus.OK);
