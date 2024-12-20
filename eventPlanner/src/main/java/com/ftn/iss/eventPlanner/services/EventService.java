@@ -133,6 +133,16 @@ public class EventService {
         return modelMapper.map(event, CreatedEventDTO.class);
     }
 
+    public Collection<GetAgendaItemDTO> getAgenda(int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        return event.getAgenda().stream()
+                .filter(agendaItem -> !agendaItem.isDeleted())
+                .sorted(Comparator.comparing(AgendaItem::getStartTime))
+                .map(agendaItem -> modelMapper.map(agendaItem, GetAgendaItemDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public GetEventDTO getEvent(int eventId){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
