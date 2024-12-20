@@ -83,7 +83,7 @@ public class WebSecurityConfig {
         return (web) -> web.ignoring()
                 .requestMatchers(HttpMethod.GET, "/", "/webjars/*", "/*.html", "favicon.ico",
                         "/*/*.html", "/*/*.css", "/*/*.js",
-                        "/api/events*","/api/events/*",
+                        "/api/events*","/api/events/*","api/events/*/agenda",
                         "/api/event-types*","/api/event-types/*",
                         "api/services*","api/services/*",
                         "api/products*","api/products/*",
