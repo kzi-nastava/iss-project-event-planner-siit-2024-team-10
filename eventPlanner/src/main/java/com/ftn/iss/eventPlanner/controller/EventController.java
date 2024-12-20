@@ -116,6 +116,12 @@ public class EventController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping(value = "/{eventId}/agenda", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetAgendaItemDTO>> getEventAgenda(@PathVariable int eventId) {
+        Collection<GetAgendaItemDTO> agendaItems = eventService.getAgenda(eventId);
+        return ResponseEntity.ok(agendaItems);
+    }
+
     @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetEventDTO> getEvent(@PathVariable int eventId) {
         GetEventDTO event = eventService.getEvent(eventId);
