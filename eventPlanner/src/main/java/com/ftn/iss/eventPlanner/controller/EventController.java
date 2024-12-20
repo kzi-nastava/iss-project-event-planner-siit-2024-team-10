@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
@@ -113,5 +114,11 @@ public class EventController {
     @DeleteMapping(value = "/{eventId}/comments/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable int eventId, @PathVariable int commentId) throws Exception {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetEventDTO> getEvent(@PathVariable int eventId) {
+        GetEventDTO event = eventService.getEvent(eventId);
+        return ResponseEntity.ok(event);
     }
 }
