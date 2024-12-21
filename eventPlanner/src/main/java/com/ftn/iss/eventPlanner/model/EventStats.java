@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 @Entity
 public class EventStats {
     @Id
@@ -40,5 +39,34 @@ public class EventStats {
         }
     }
 
+    public void setOneStarCount(int oneStarCount) {
+        this.oneStarCount = oneStarCount;
+        recalculateAverageRating();
+    }
+
+    public void setTwoStarCount(int twoStarCount) {
+        this.twoStarCount = twoStarCount;
+        recalculateAverageRating();
+    }
+
+    public void setThreeStarCount(int threeStarCount) {
+        this.threeStarCount = threeStarCount;
+        recalculateAverageRating();
+    }
+
+    public void setFourStarCount(int fourStarCount) {
+        this.fourStarCount = fourStarCount;
+        recalculateAverageRating();
+    }
+
+    public void setFiveStarCount(int fiveStarCount) {
+        this.fiveStarCount = fiveStarCount;
+        recalculateAverageRating();
+    }
+
+    public void setParticipantsCount(int participantsCount) {
+        this.participantsCount = participantsCount;
+        recalculateAverageRating();
+    }
 
 }
