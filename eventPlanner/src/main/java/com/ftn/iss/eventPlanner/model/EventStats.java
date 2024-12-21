@@ -23,19 +23,22 @@ public class EventStats {
     private int fiveStarCount;
     @Column
     private int participantsCount;
+    @Column(nullable = false)
+    private double averageRating;
 
-    public double getAverageRating() {
+    public void recalculateAverageRating() {
         if (participantsCount == 0) {
-            return 0.0;
+            this.averageRating = 0.0;
+        } else {
+            int totalRating = oneStarCount +
+                    twoStarCount * 2 +
+                    threeStarCount * 3 +
+                    fourStarCount * 4 +
+                    fiveStarCount * 5;
+
+            this.averageRating = Math.round(((double) totalRating / participantsCount) * 10) / 10.0;
         }
-
-        int totalRating = oneStarCount +
-                twoStarCount * 2 +
-                threeStarCount * 3 +
-                fourStarCount * 4 +
-                fiveStarCount * 5;
-
-        return (double) totalRating / participantsCount;
     }
+
 
 }

@@ -1,4 +1,7 @@
 package com.ftn.iss.eventPlanner.model.specification;
+import com.ftn.iss.eventPlanner.model.EventStats;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import com.ftn.iss.eventPlanner.model.Event;
 
@@ -45,4 +48,15 @@ public class EventSpecification {
         return (root, query, criteriaBuilder) ->
                 name == null ? null : criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%");
     }
+
+    public static Specification<Event> minAverageRating(Double minRating) {
+        return (root, query, criteriaBuilder) -> {
+            if (minRating == null) {
+                return null;
+            }
+            Join<Event, EventStats> statsJoin = root.join("stats", JoinType.LEFT);
+            return criteriaBuilder.greaterThanOrEqualTo(statsJoin.get("averageRating"), minRating);
+        };
+    }
+
 }

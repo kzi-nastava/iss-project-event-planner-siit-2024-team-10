@@ -9,6 +9,8 @@ import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -73,11 +75,13 @@ public class EventController {
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
-            @RequestParam(required = false) String name
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection
     ) {
         try {
             PagedResponse<GetEventDTO> response = eventService.getAllEvents(
-                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name);
+                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -85,6 +89,9 @@ public class EventController {
                     .body(new PagedResponse<>(List.of(), 0, 0));
         }
     }
+
+
+
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
