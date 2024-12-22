@@ -65,7 +65,6 @@ public class OfferingService {
 
         if (isServiceFilter == Boolean.TRUE) {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
-                    .and(ServiceSpecification.hasEventTypeId(eventTypeId))
                     .and(ServiceSpecification.hasCategoryId(categoryId))
                     .and(ServiceSpecification.hasLocation(location))
                     .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
@@ -80,7 +79,6 @@ public class OfferingService {
                     .collect(Collectors.toList());
         } else if (isServiceFilter == Boolean.FALSE) {
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                    .and(ProductSpecification.hasEventTypeId(eventTypeId))
                     .and(ProductSpecification.hasCategoryId(categoryId))
                     .and(ProductSpecification.hasLocation(location))
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))

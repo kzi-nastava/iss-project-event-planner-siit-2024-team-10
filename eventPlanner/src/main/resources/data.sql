@@ -86,6 +86,26 @@ INSERT INTO service_details (name, description, specification, price, discount, 
                                                                                                                                                                                                                             ( 'Party Balloon Setup', 'Balloon decorations for birthdays and celebrations.', 'Includes customized balloon arches and centerpieces.', 250.00, 20.0, TRUE, 4, 2, 24, 48, TRUE, TRUE, TRUE, '2023-11-25 13:40:00'),
                                                                                                                                                                                                                             ( 'Event Clean-Up', 'Post-event cleanup service.', 'Includes garbage disposal and venue tidying.', 500.00, 50.0, TRUE, 5, 2, 24, 48, TRUE, TRUE, FALSE, '2023-11-28 18:00:00');
 
+INSERT INTO rating (rater_id, score) VALUES
+                                          (1,1),
+                                          (1,2),
+                                          (2,3),
+                                          (1,5),
+                                          (1,2),
+                                          (1,3),
+                                          (2,1),
+                                          (1,4),
+                                          (1,1),
+                                          (1,2),
+                                          (2,3),
+                                          (1,5),
+                                          (1,2),
+                                          (1,3),
+                                          (2,1),
+                                          (1,4);
+
+
+
 
 INSERT INTO offerings (dtype, category_id, provider_id, current_product_details_id, is_deleted, pending) VALUES
                                                                                        ('Product',1 ,1, 1, FALSE, FALSE),
@@ -98,7 +118,6 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_product_details_
                                                                                        ( 'Product',1 ,1,  8, FALSE, FALSE),
                                                                                        ( 'Product',2 ,3,  9, FALSE, FALSE),
                                                                                        ( 'Product',1 ,3,  10, FALSE, FALSE);
-
 INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_id, is_deleted, pending) VALUES
                                                                                        ( 'Service',1 ,1,  1, FALSE, FALSE),
                                                                                        ( 'Service',2 ,3,  2, FALSE, FALSE),
@@ -110,6 +129,38 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                        ( 'Service',1 ,3,  8, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  9, FALSE, FALSE),
                                                                                        ( 'Service',2 ,3,  10, FALSE, FALSE);
+INSERT INTO offerings_ratings (offering_id, ratings_id) VALUES
+                                                           (1, 3),
+                                                           (2, 5),
+                                                           (3, 7),
+                                                           (4, 9),
+                                                           (5, 11),
+                                                           (6, 13),
+                                                           (7, 15),
+                                                           (8, 1),
+                                                           (9, 4),
+                                                           (10, 6),
+                                                           (11, 8),
+                                                           (12, 10),
+                                                           (13, 12),
+                                                           (14, 14),
+                                                           (15, 16),
+                                                           (16, 2),
+                                                           (17, 3),
+                                                           (18, 5),
+                                                           (19, 7),
+                                                           (20, 9),
+                                                           (1, 11),
+                                                           (2, 13),
+                                                           (3, 15),
+                                                           (4, 1),
+                                                           (5, 4),
+                                                           (6, 6),
+                                                           (7, 8),
+                                                           (8, 10),
+                                                           (9, 12),
+                                                           (10, 14);
+
 
 INSERT INTO rating (score, rater_id) VALUES
                                              ( 5, 1),
