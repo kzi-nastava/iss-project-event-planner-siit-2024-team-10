@@ -76,11 +76,10 @@ public class OfferingController {
             Pageable pageable,
             @RequestParam(required = false) Boolean isServiceFilter,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) Integer minPrice,
-            @RequestParam(required = false) Integer maxPrice,
+            @RequestParam(required = false) Integer startPrice,
+            @RequestParam(required = false) Integer endPrice,
             @RequestParam(required = false) Integer minDiscount,
             @RequestParam(required = false) Integer duration,
             @RequestParam(required = false) Double minRating,
@@ -92,8 +91,8 @@ public class OfferingController {
     ){
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
-                    pageable, isServiceFilter, name, eventTypeId, categoryId, location, minPrice,
-                    maxPrice, minDiscount, duration, minRating, startDate, endDate, isAvailable, sortBy, sortDirection);
+                    pageable, isServiceFilter, name, categoryId, location, startPrice,
+                    endPrice, minDiscount, duration, minRating, startDate, endDate, isAvailable, sortBy, sortDirection);
 
 
             return ResponseEntity.ok(offerings);
