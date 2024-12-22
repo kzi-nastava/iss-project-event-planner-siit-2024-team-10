@@ -86,12 +86,14 @@ public class OfferingController {
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
-            @RequestParam(required = false) Boolean isAvailable
+            @RequestParam(required = false) Boolean isAvailable,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection
     ){
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     pageable, isServiceFilter, name, eventTypeId, categoryId, location, minPrice,
-                    maxPrice, minDiscount, duration, minRating, startDate, endDate, isAvailable);
+                    maxPrice, minDiscount, duration, minRating, startDate, endDate, isAvailable, sortBy, sortDirection);
 
 
             return ResponseEntity.ok(offerings);

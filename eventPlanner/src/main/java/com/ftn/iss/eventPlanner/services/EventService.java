@@ -11,7 +11,6 @@ import com.ftn.iss.eventPlanner.model.Event;
 import com.ftn.iss.eventPlanner.model.EventType;
 import com.ftn.iss.eventPlanner.model.Location;
 import com.ftn.iss.eventPlanner.model.EventStats;
-import com.ftn.iss.eventPlanner.model.Organizer;
 import com.ftn.iss.eventPlanner.model.specification.EventSpecification;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.EventStatsRepository;

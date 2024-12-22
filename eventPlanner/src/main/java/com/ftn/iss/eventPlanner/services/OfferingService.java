@@ -101,7 +101,7 @@ public class OfferingService {
     }
 
     public PagedResponse<GetOfferingDTO> getAllOfferings(
-            Pageable pagable,
+            Pageable pageable,
             Boolean isServiceFilter,
             String name,
             Integer eventTypeId,
@@ -114,7 +114,9 @@ public class OfferingService {
             Double minRating,
             LocalDate serviceStartDate,
             LocalDate serviceEndDate,
-            Boolean searchByAvailability
+            Boolean searchByAvailability,
+            String sortBy,
+            String sortDirection
     ) {
         if (isServiceFilter == Boolean.TRUE) {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
@@ -128,7 +130,7 @@ public class OfferingService {
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability));
 
-            Page<Service> pagedOfferings = serviceRepository.findAll(serviceSpecification, pagable);
+            Page<Service> pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
 
             List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
                     .map(this::mapToGetOfferingDTO)
@@ -144,7 +146,7 @@ public class OfferingService {
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating));
 
-            Page<Product> pagedOfferings = productRepository.findAll(productSpecification, pagable);
+            Page<Product> pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
             List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
                     .map(this::mapToGetOfferingDTO)
@@ -152,7 +154,7 @@ public class OfferingService {
 
             return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
         } else {
-            Page<Offering> pagedOfferings = offeringRepository.findAll(pagable);
+            Page<Offering> pagedOfferings = offeringRepository.findAll(pageable);
 
             List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
                     .map(this::mapToGetOfferingDTO)
