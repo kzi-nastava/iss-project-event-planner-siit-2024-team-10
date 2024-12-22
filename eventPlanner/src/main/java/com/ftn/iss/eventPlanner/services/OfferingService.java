@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalDouble;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
@@ -118,6 +115,8 @@ public class OfferingService {
             String sortBy,
             String sortDirection
     ) {
+        Page<? extends Offering> pagedOfferings;
+
         if (isServiceFilter == Boolean.TRUE) {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
                     .and(ServiceSpecification.hasEventTypeId(eventTypeId))
@@ -130,13 +129,8 @@ public class OfferingService {
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability));
 
-            Page<Service> pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
+            pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
 
-            List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-
-            return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
         } else if (isServiceFilter == Boolean.FALSE) {
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
                     .and(ProductSpecification.hasEventTypeId(eventTypeId))
@@ -146,23 +140,30 @@ public class OfferingService {
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating));
 
-            Page<Product> pagedOfferings = productRepository.findAll(productSpecification, pageable);
+            pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
-            List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-
-            return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
         } else {
-            Page<Offering> pagedOfferings = offeringRepository.findAll(pageable);
-
-            List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-
-            return new PagedResponse<>(offeringDTOs,pagedOfferings.getTotalPages(),pagedOfferings.getTotalElements());
+            pagedOfferings = offeringRepository.findAll(pageable);
         }
+
+        List<Offering> filteredOfferings = pagedOfferings.getContent().stream()
+                .map(offering -> (Offering) offering)
+                .collect(Collectors.toList());
+
+        Comparator<Offering> comparator = getOfferingComparator(sortBy, sortDirection);
+        if (comparator != null) {
+            filteredOfferings = filteredOfferings.stream()
+                    .sorted(comparator)
+                    .collect(Collectors.toList());
+        }
+
+        List<GetOfferingDTO> offeringDTOs = filteredOfferings.stream()
+                .map(this::mapToGetOfferingDTO)
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(offeringDTOs, pagedOfferings.getTotalPages(), pagedOfferings.getTotalElements());
     }
+
 
     public List<GetOfferingDTO> findTopOfferings() {
         List<Offering> offerings = offeringRepository.findAll();
@@ -244,4 +245,41 @@ public class OfferingService {
 
         return companyDTO;
     }
+
+    private Comparator<Offering> getOfferingComparator(String sortBy, String sortDirection) {
+        Comparator<Offering> comparator = null;
+
+        if ("price".equalsIgnoreCase(sortBy)) {
+            comparator = (o1, o2) -> {
+                if (o1 instanceof Service && o2 instanceof Service) {
+                    return Double.compare(((Service) o1).getCurrentDetails().getPrice(), ((Service) o2).getCurrentDetails().getPrice());
+                } else if (o1 instanceof Product && o2 instanceof Product) {
+                    return Double.compare(((Product) o1).getCurrentDetails().getPrice(), ((Product) o2).getCurrentDetails().getPrice());
+                }
+                return 0;
+            };
+        } else if ("rating".equalsIgnoreCase(sortBy)) {
+            comparator = (o1, o2) -> {
+                Double rating1 = calculateAverageRating(o1);
+                Double rating2 = calculateAverageRating(o2);
+                return Double.compare(rating1, rating2);
+            };
+        } else if ("name".equalsIgnoreCase(sortBy)) {
+            comparator = (o1, o2) -> {
+                if (o1 instanceof Service && o2 instanceof Service) {
+                    return ((Service) o1).getCurrentDetails().getName().compareToIgnoreCase(((Service) o2).getCurrentDetails().getName());
+                } else if (o1 instanceof Product && o2 instanceof Product) {
+                    return ((Product) o1).getCurrentDetails().getName().compareToIgnoreCase(((Product) o2).getCurrentDetails().getName());
+                }
+                return 0;
+            };
+        }
+
+        if ("desc".equalsIgnoreCase(sortDirection) && comparator != null) {
+            comparator = comparator.reversed();
+        }
+
+        return comparator;
+    }
+
 }

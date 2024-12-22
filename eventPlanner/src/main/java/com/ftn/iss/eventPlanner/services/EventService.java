@@ -197,7 +197,7 @@ public class EventService {
 
     private Comparator<Event> getEventComparator(String sortBy, String sortDirection) {
         if (sortBy == null || "none".equalsIgnoreCase(sortBy)) {
-            return null; // No sorting
+            return null;
         }
 
         Comparator<Event> comparator = switch (sortBy.toLowerCase()) {
@@ -206,7 +206,7 @@ public class EventService {
             case "averagerating" -> Comparator.comparing(event -> event.getStats() != null
                     ? event.getStats().getAverageRating() : 0.0);
             case "location.city" -> Comparator.comparing(event -> event.getLocation().getCity(), String.CASE_INSENSITIVE_ORDER);
-            default -> null; // Unsupported sorting field
+            default -> null;
         };
 
         if (comparator != null && "desc".equalsIgnoreCase(sortDirection)) {
