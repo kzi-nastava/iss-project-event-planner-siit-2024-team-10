@@ -1,7 +1,10 @@
 package com.ftn.iss.eventPlanner.model.specification;
 
 import com.ftn.iss.eventPlanner.model.Product;
-import com.ftn.iss.eventPlanner.model.Service;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 
 public class ProductSpecification {
@@ -58,15 +61,22 @@ public class ProductSpecification {
                 return criteriaBuilder.conjunction();
             }
 
-            var ratingsJoin = root.join("ratings");
+            Subquery<Double> subquery = query.subquery(Double.class);
+            Root<Product> subRoot = subquery.from(Product.class);
+            Join<Object, Object> ratingsJoin = subRoot.join("ratings");
 
-            query.groupBy(root.get("id"));
+            subquery.select(criteriaBuilder.avg(ratingsJoin.get("score")))
+                    .where(criteriaBuilder.equal(subRoot.get("id"), root.get("id")));
 
-            query.having(criteriaBuilder.greaterThanOrEqualTo(criteriaBuilder.avg(ratingsJoin.get("score")), minRating));
-
-            return criteriaBuilder.conjunction();
+            return criteriaBuilder.greaterThanOrEqualTo(subquery, minRating);
         };
     }
+
+
+
+
+
+
 
     public static Specification<Product> isAvailable(Boolean searchByAvailability) {
         return (root, query, criteriaBuilder) ->

@@ -76,7 +76,8 @@ public class OfferingService {
                     .and(ProductSpecification.hasLocation(location))
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
-                    .and(ProductSpecification.minRating(minRating));
+                    .and(ProductSpecification.minRating(minRating))
+                    .and(ProductSpecification.isAvailable(searchByAvailability));
 
             return productRepository.findAll(productSpecification).stream()
                     .map(this::mapToGetOfferingDTO)

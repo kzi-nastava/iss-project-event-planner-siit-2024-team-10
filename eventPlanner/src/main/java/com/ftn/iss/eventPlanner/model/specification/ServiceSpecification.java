@@ -1,8 +1,10 @@
 package com.ftn.iss.eventPlanner.model.specification;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 import com.ftn.iss.eventPlanner.model.Service;
-import java.time.LocalDate;
 
 public class ServiceSpecification {
 
@@ -57,13 +59,14 @@ public class ServiceSpecification {
                 return criteriaBuilder.conjunction();
             }
 
-            var ratingsJoin = root.join("ratings");
+            Subquery<Double> subquery = query.subquery(Double.class);
+            Root<Service> subRoot = subquery.from(Service.class);
+            Join<Object, Object> ratingsJoin = subRoot.join("ratings");
 
-            query.groupBy(root.get("id"));
+            subquery.select(criteriaBuilder.avg(ratingsJoin.get("score")))
+                    .where(criteriaBuilder.equal(subRoot.get("id"), root.get("id")));
 
-            query.having(criteriaBuilder.greaterThanOrEqualTo(criteriaBuilder.avg(ratingsJoin.get("score")), minRating));
-
-            return criteriaBuilder.conjunction();
+            return criteriaBuilder.greaterThanOrEqualTo(subquery, minRating);
         };
     }
 
