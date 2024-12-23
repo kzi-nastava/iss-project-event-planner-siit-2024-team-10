@@ -2,7 +2,6 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.event.AddFavouriteEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
-import com.ftn.iss.eventPlanner.dto.event.RemoveFavouriteEventDTO;
 import com.ftn.iss.eventPlanner.services.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
