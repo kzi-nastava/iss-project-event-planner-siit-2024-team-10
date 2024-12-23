@@ -2,12 +2,9 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.event.GetEventCardDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
-import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
@@ -18,12 +15,12 @@ import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Sort;
 
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -106,8 +103,26 @@ public class OfferingService {
             String sortBy,
             String sortDirection
     ) {
-        Page<? extends Offering> pagedOfferings;
+        if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
+            String sortField = switch (sortBy.toLowerCase()) {
+                case "price" -> "currentDetails.price";
+                case "averageRating" -> null; // Dynamically sorted
+                case "name" -> "currentDetails.name";
+                case "location.city" -> "provider.location.city";
+                default -> null;
+            };
 
+            if (sortField != null) {
+                var sortDirectionEnum = "desc".equalsIgnoreCase(sortDirection)
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                        Sort.by(sortDirectionEnum, sortField));
+            }
+        }
+
+        Page<? extends Offering> pagedOfferings;
         if (isServiceFilter == Boolean.TRUE) {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
                     .and(ServiceSpecification.hasCategoryId(categoryId))
@@ -127,7 +142,7 @@ public class OfferingService {
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability));;
+                    .and(ProductSpecification.isAvailable(searchByAvailability));
 
             pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
@@ -138,12 +153,8 @@ public class OfferingService {
         List<Offering> filteredOfferings = pagedOfferings.getContent().stream()
                 .map(offering -> (Offering) offering)
                 .collect(Collectors.toList());
-
-        Comparator<Offering> comparator = getOfferingComparator(sortBy, sortDirection);
-        if (comparator != null) {
-            filteredOfferings = filteredOfferings.stream()
-                    .sorted(comparator)
-                    .collect(Collectors.toList());
+        if ("averageRating".equalsIgnoreCase(sortBy)) {
+            filteredOfferings.sort(getOfferingComparator(sortDirection));
         }
 
         List<GetOfferingDTO> offeringDTOs = filteredOfferings.stream()
@@ -152,7 +163,6 @@ public class OfferingService {
 
         return new PagedResponse<>(offeringDTOs, pagedOfferings.getTotalPages(), pagedOfferings.getTotalElements());
     }
-
 
     public List<GetOfferingDTO> findTopOfferings() {
         List<Offering> offerings = offeringRepository.findAll();
@@ -235,34 +245,13 @@ public class OfferingService {
         return companyDTO;
     }
 
-    private Comparator<Offering> getOfferingComparator(String sortBy, String sortDirection) {
-        Comparator<Offering> comparator = null;
-
-        if ("price".equalsIgnoreCase(sortBy)) {
-            comparator = (o1, o2) -> {
-                if (o1 instanceof Service && o2 instanceof Service) {
-                    return Double.compare(((Service) o1).getCurrentDetails().getPrice(), ((Service) o2).getCurrentDetails().getPrice());
-                } else if (o1 instanceof Product && o2 instanceof Product) {
-                    return Double.compare(((Product) o1).getCurrentDetails().getPrice(), ((Product) o2).getCurrentDetails().getPrice());
-                }
-                return 0;
-            };
-        } else if ("rating".equalsIgnoreCase(sortBy)) {
-            comparator = (o1, o2) -> {
-                Double rating1 = calculateAverageRating(o1);
-                Double rating2 = calculateAverageRating(o2);
-                return Double.compare(rating1, rating2);
-            };
-        } else if ("name".equalsIgnoreCase(sortBy)) {
-            comparator = (o1, o2) -> {
-                if (o1 instanceof Service && o2 instanceof Service) {
-                    return ((Service) o1).getCurrentDetails().getName().compareToIgnoreCase(((Service) o2).getCurrentDetails().getName());
-                } else if (o1 instanceof Product && o2 instanceof Product) {
-                    return ((Product) o1).getCurrentDetails().getName().compareToIgnoreCase(((Product) o2).getCurrentDetails().getName());
-                }
-                return 0;
-            };
-        }
+    private Comparator<Offering> getOfferingComparator(String sortDirection) {
+        Comparator<Offering> comparator;
+        comparator = (o1, o2) -> {
+            Double rating1 = calculateAverageRating(o1);
+            Double rating2 = calculateAverageRating(o2);
+            return Double.compare(rating1, rating2);
+        };
 
         if ("desc".equalsIgnoreCase(sortDirection) && comparator != null) {
             comparator = comparator.reversed();

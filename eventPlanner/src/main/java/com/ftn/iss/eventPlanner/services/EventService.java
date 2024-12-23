@@ -19,6 +19,7 @@ import com.ftn.iss.eventPlanner.repositories.OrganizerRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -86,6 +87,25 @@ public class EventService {
             String sortBy,
             String sortDirection
     ) {
+        if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
+            String sortField = switch (sortBy.toLowerCase()) {
+                case "name" -> "name";
+                case "date" -> "date";
+                case "averagerating" -> "stats.averageRating";
+                case "location.city" -> "location.city";
+                default -> null;
+            };
+
+            if (sortField != null) {
+                var sortDirectionEnum = "desc".equalsIgnoreCase(sortDirection)
+                        ? org.springframework.data.domain.Sort.Direction.DESC
+                        : org.springframework.data.domain.Sort.Direction.ASC;
+
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                        org.springframework.data.domain.Sort.by(sortDirectionEnum, sortField));
+            }
+        }
+
         Specification<Event> specification = Specification.where(EventSpecification.hasEventTypeId(eventTypeId))
                 .and(EventSpecification.hasLocation(location))
                 .and(EventSpecification.maxParticipants(maxParticipants))
@@ -95,26 +115,14 @@ public class EventService {
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
-        List<Event> filteredEvents = pagedEvents.getContent();
-        if (minRating != null) {
-            filteredEvents = filteredEvents.stream()
-                    .filter(event -> event.getStats() != null && event.getStats().getAverageRating() >= minRating)
-                    .collect(Collectors.toList());
-        }
-
-        Comparator<Event> comparator = getEventComparator(sortBy, sortDirection);
-        if (comparator != null) {
-            filteredEvents = filteredEvents.stream()
-                    .sorted(comparator)
-                    .collect(Collectors.toList());
-        }
-
-        List<GetEventDTO> eventDTOs = filteredEvents.stream()
+        List<GetEventDTO> eventDTOs = pagedEvents.getContent().stream()
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
 
         return new PagedResponse<>(eventDTOs, pagedEvents.getTotalPages(), pagedEvents.getTotalElements());
     }
+
+
 
 
 
