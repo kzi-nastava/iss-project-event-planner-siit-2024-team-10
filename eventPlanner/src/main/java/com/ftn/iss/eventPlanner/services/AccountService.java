@@ -1,17 +1,24 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.authentication.RegisterDTO;
+import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
+import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.AccountStatus;
+import com.ftn.iss.eventPlanner.model.Event;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
+import com.ftn.iss.eventPlanner.repositories.EventRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService implements UserDetailsService {
@@ -19,7 +26,9 @@ public class AccountService implements UserDetailsService {
     private AccountRepository accountRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private ModelMapper modelMapper;
+    @Autowired
+    private EventRepository eventRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -29,5 +38,26 @@ public class AccountService implements UserDetailsService {
         } else {
             return account;
         }
+    }
+
+    public Collection<GetEventDTO> getFavouriteEvents(int accountId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        return account.getFavouriteEvents().stream()
+                .map(event -> modelMapper.map(event, GetEventDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public void addEventToFavourites(int accountId, int eventId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
+        account.getFavouriteEvents().add(event);
+        accountRepository.save(account);
+    }
+
+    public void removeEventFromFavourites(int accountId, int eventId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
+        account.getFavouriteEvents().removeIf(e -> e.getId() == eventId);
+        accountRepository.save(account);
     }
 }
