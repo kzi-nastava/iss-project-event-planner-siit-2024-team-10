@@ -39,7 +39,7 @@ public class TokenUtils {
                 .setIssuedAt(new Date())
                 .claim("role", account.getRole().toString())
                 .claim("account_id", account.getId())
-                .claim("user_id", account.getUser()==null?"":account.getUser().getId())
+                .claim("user_id", account.getUser()==null?0:account.getUser().getId())
                 .setExpiration(generateExpirationDate())
                 .signWith(SIGNATURE_ALGORITHM, SECRET).compact();
     }

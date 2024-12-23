@@ -70,6 +70,7 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests(request -> {
             request.requestMatchers(new AntPathRequestMatcher("/api/auth/login")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/auth/activate")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/api/error")).permitAll()
                     .anyRequest().authenticated();
         });
