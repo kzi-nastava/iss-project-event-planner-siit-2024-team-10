@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.model.specification;
 
 import com.ftn.iss.eventPlanner.model.Product;
+import com.ftn.iss.eventPlanner.model.Service;
 import org.springframework.data.jpa.domain.Specification;
 
 public class ProductSpecification {
@@ -57,17 +58,19 @@ public class ProductSpecification {
                 return criteriaBuilder.conjunction();
             }
 
-            // Join the ratings table
             var ratingsJoin = root.join("ratings");
 
-            // Group by Product ID
             query.groupBy(root.get("id"));
 
-            // Add the HAVING clause for the minimum rating
             query.having(criteriaBuilder.greaterThanOrEqualTo(criteriaBuilder.avg(ratingsJoin.get("score")), minRating));
 
             return criteriaBuilder.conjunction();
         };
+    }
+
+    public static Specification<Product> isAvailable(Boolean searchByAvailability) {
+        return (root, query, criteriaBuilder) ->
+                searchByAvailability != null && searchByAvailability ? criteriaBuilder.isTrue(root.get("currentDetails").get("isAvailable")) : criteriaBuilder.conjunction();
     }
 
 

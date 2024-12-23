@@ -17,26 +17,32 @@ public class ServiceSpecification {
     public static Specification<Service> hasCategoryId(Integer categoryId) {
         return (root, query, criteriaBuilder) ->
                 categoryId != null
-                        ? criteriaBuilder.equal(root.get("currentDetails").get("category").get("id"), categoryId)
+                        ? criteriaBuilder.equal(root.get("category").get("id"), categoryId)
                         : criteriaBuilder.conjunction();
     }
 
     public static Specification<Service> hasLocation(String location) {
         return (root, query, criteriaBuilder) ->
                 location != null && !location.isEmpty()
-                        ? criteriaBuilder.like(criteriaBuilder.lower(root.get("currentDetails").get("location").get("city")), "%" + location.toLowerCase() + "%")
+                        ? criteriaBuilder.like(criteriaBuilder.lower(root.get("provider").get("location").get("city")), "%" + location.toLowerCase() + "%")
                         : criteriaBuilder.conjunction();
     }
 
     public static Specification<Service> betweenPrices(Integer minPrice, Integer maxPrice) {
         return (root, query, criteriaBuilder) -> {
-            if (minPrice == null && maxPrice == null) return criteriaBuilder.conjunction();
-            if (minPrice != null && maxPrice != null) {
-                return criteriaBuilder.between(root.get("price"), minPrice, maxPrice);
+            if (minPrice == null && maxPrice == null) {
+                return criteriaBuilder.conjunction();
             }
+
+            var currentDetails = root.join("currentDetails");
+
+            if (minPrice != null && maxPrice != null) {
+                return criteriaBuilder.between(currentDetails.get("price"), minPrice, maxPrice);
+            }
+
             return minPrice != null
-                    ? criteriaBuilder.greaterThanOrEqualTo(root.get("currentDetails").get("price"), minPrice)
-                    : criteriaBuilder.lessThanOrEqualTo(root.get("currentDetails").get("price"), maxPrice);
+                    ? criteriaBuilder.greaterThanOrEqualTo(currentDetails.get("price"), minPrice)
+                    : criteriaBuilder.lessThanOrEqualTo(currentDetails.get("price"), maxPrice);
         };
     }
 
@@ -51,29 +57,34 @@ public class ServiceSpecification {
                 return criteriaBuilder.conjunction();
             }
 
-            var ratingsJoin = root.join("currentDetails").join("ratings");
+            var ratingsJoin = root.join("ratings");
 
-            var avgRating = criteriaBuilder.avg(ratingsJoin.get("score"));
-            return criteriaBuilder.greaterThanOrEqualTo(avgRating, minRating);
-        };
-    }
+            query.groupBy(root.get("id"));
 
+            query.having(criteriaBuilder.greaterThanOrEqualTo(criteriaBuilder.avg(ratingsJoin.get("score")), minRating));
 
-    public static Specification<Service> betweenDates(LocalDate startDate, LocalDate endDate) {
-        return (root, query, criteriaBuilder) -> {
-            if (startDate == null && endDate == null) return criteriaBuilder.conjunction();
-            if (startDate != null && endDate != null) {
-                return criteriaBuilder.between(root.get("serviceDate"), startDate, endDate);
-            }
-            return startDate != null
-                    ? criteriaBuilder.greaterThanOrEqualTo(root.get("serviceDate"), startDate)
-                    : criteriaBuilder.lessThanOrEqualTo(root.get("serviceDate"), endDate);
+            return criteriaBuilder.conjunction();
         };
     }
 
     public static Specification<Service> hasServiceDuration(Integer serviceDuration) {
-        return (root, query, criteriaBuilder) ->
-                serviceDuration != null ? criteriaBuilder.equal(root.get("currentDetails").get("duration"), serviceDuration) : criteriaBuilder.conjunction();
+        return (root, query, criteriaBuilder) -> {
+            if (serviceDuration == null) {
+                return criteriaBuilder.conjunction();
+            }
+
+            var fixedTimeCondition = criteriaBuilder.and(
+                    criteriaBuilder.isTrue(root.get("currentDetails").get("fixedTime")),
+                    criteriaBuilder.equal(root.get("currentDetails").get("minDuration"), serviceDuration)
+            );
+
+            var variableTimeCondition = criteriaBuilder.and(
+                    criteriaBuilder.isFalse(root.get("currentDetails").get("fixedTime")),
+                    criteriaBuilder.between(criteriaBuilder.literal(serviceDuration), root.get("currentDetails").get("minDuration"), root.get("currentDetails").get("maxDuration"))
+            );
+
+            return criteriaBuilder.or(fixedTimeCondition, variableTimeCondition);
+        };
     }
 
     public static Specification<Service> isAvailable(Boolean searchByAvailability) {

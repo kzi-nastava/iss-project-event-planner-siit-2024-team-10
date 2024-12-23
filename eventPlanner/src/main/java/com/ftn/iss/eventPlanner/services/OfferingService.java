@@ -50,7 +50,6 @@ public class OfferingService {
     public List<GetOfferingDTO> getAllOfferings(
             Boolean isServiceFilter,
             String name,
-            Integer eventTypeId,
             Integer categoryId,
             String location,
             Integer minPrice,
@@ -58,8 +57,6 @@ public class OfferingService {
             Integer minDiscount,
             Integer serviceDuration,
             Double minRating,
-            LocalDate serviceStartDate,
-            LocalDate serviceEndDate,
             Boolean searchByAvailability
     ) {
 
@@ -70,7 +67,6 @@ public class OfferingService {
                     .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
-                    .and(ServiceSpecification.betweenDates(serviceStartDate, serviceEndDate))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability));
 
@@ -106,8 +102,6 @@ public class OfferingService {
             Integer minDiscount,
             Integer serviceDuration,
             Double minRating,
-            LocalDate serviceStartDate,
-            LocalDate serviceEndDate,
             Boolean searchByAvailability,
             String sortBy,
             String sortDirection
@@ -121,7 +115,6 @@ public class OfferingService {
                     .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
-                    .and(ServiceSpecification.betweenDates(serviceStartDate, serviceEndDate))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability));
 
@@ -133,7 +126,8 @@ public class OfferingService {
                     .and(ProductSpecification.hasLocation(location))
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
-                    .and(ProductSpecification.minRating(minRating));
+                    .and(ProductSpecification.minRating(minRating))
+                    .and(ProductSpecification.isAvailable(searchByAvailability));;
 
             pagedOfferings = productRepository.findAll(productSpecification, pageable);
 

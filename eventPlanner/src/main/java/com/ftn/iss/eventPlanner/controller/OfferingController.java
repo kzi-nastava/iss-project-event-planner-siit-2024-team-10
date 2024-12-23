@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,7 +47,6 @@ public class OfferingController {
     public ResponseEntity<Collection<GetOfferingDTO>> getOfferings(
             @RequestParam(required = false) Boolean isServiceFilter,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Integer minPrice,
@@ -56,14 +54,12 @@ public class OfferingController {
             @RequestParam(required = false) Integer minDiscount,
             @RequestParam(required = false) Integer duration,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) Boolean isAvailable
     ){
         try {
             List<GetOfferingDTO> offerings = offeringService.getAllOfferings(
-                    isServiceFilter, name, eventTypeId, categoryId, location, minPrice, maxPrice,
-                    minDiscount, duration, minRating, startDate, endDate, isAvailable);
+                    isServiceFilter, name, categoryId, location, minPrice, maxPrice,
+                    minDiscount, duration, minRating, isAvailable);
 
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
@@ -83,8 +79,6 @@ public class OfferingController {
             @RequestParam(required = false) Integer minDiscount,
             @RequestParam(required = false) Integer duration,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) Boolean isAvailable,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection
@@ -92,7 +86,7 @@ public class OfferingController {
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     pageable, isServiceFilter, name, categoryId, location, startPrice,
-                    endPrice, minDiscount, duration, minRating, startDate, endDate, isAvailable, sortBy, sortDirection);
+                    endPrice, minDiscount, duration, minRating, isAvailable, sortBy, sortDirection);
 
 
             return ResponseEntity.ok(offerings);
