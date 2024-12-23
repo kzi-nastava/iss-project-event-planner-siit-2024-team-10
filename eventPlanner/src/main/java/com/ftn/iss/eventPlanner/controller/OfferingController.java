@@ -2,7 +2,6 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.CreateRatingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.CreatedRatingDTO;
@@ -52,14 +51,14 @@ public class OfferingController {
             @RequestParam(required = false) Integer minPrice,
             @RequestParam(required = false) Integer maxPrice,
             @RequestParam(required = false) Integer minDiscount,
-            @RequestParam(required = false) Integer duration,
+            @RequestParam(required = false) Integer serviceDuration,
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) Boolean isAvailable
     ){
         try {
             List<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     isServiceFilter, name, categoryId, location, minPrice, maxPrice,
-                    minDiscount, duration, minRating, isAvailable);
+                    minDiscount, serviceDuration, minRating, isAvailable);
 
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
@@ -77,7 +76,7 @@ public class OfferingController {
             @RequestParam(required = false) Integer startPrice,
             @RequestParam(required = false) Integer endPrice,
             @RequestParam(required = false) Integer minDiscount,
-            @RequestParam(required = false) Integer duration,
+            @RequestParam(required = false) Integer serviceDuration,
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) Boolean isAvailable,
             @RequestParam(required = false) String sortBy,
@@ -86,7 +85,7 @@ public class OfferingController {
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     pageable, isServiceFilter, name, categoryId, location, startPrice,
-                    endPrice, minDiscount, duration, minRating, isAvailable, sortBy, sortDirection);
+                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection);
 
 
             return ResponseEntity.ok(offerings);
