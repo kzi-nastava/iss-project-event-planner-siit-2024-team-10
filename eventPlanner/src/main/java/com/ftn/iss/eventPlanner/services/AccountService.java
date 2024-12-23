@@ -1,6 +1,5 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.authentication.RegisterDTO;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.AccountStatus;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
