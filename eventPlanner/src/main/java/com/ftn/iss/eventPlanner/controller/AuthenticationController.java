@@ -2,10 +2,11 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.authentication.LoginRequestDTO;
 import com.ftn.iss.eventPlanner.dto.authentication.LoginResponseDTO;
-import com.ftn.iss.eventPlanner.dto.authentication.RegisterDTO;
-import com.ftn.iss.eventPlanner.exception.ResourceConflictException;
+import com.ftn.iss.eventPlanner.dto.user.CreateUserDTO;
+import com.ftn.iss.eventPlanner.dto.user.CreatedUserDTO;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.services.AccountService;
+import com.ftn.iss.eventPlanner.services.UserService;
 import com.ftn.iss.eventPlanner.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,11 @@ public class AuthenticationController {
 
     @Autowired
     private AccountService accountService;
+
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private UserService userService;
 
 
     @PostMapping(value="/login",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,5 +55,15 @@ public class AuthenticationController {
         return ResponseEntity.ok(new LoginResponseDTO(jwt, expiresIn));
     }
 
+    @PostMapping(value="/register",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedUserDTO> createUser(@RequestBody CreateUserDTO user, @RequestParam boolean roleUpgrade) {
+        CreatedUserDTO savedUser = userService.create(user, roleUpgrade);
+        return new ResponseEntity<CreatedUserDTO>(savedUser, HttpStatus.CREATED);
+    }
 
+    @PutMapping(value = "/activate")
+    public ResponseEntity<String> activateAccount(@RequestParam String token) {
+        userService.Activate(token);
+        return new ResponseEntity<>("Account activated", HttpStatus.OK);
+    }
 }
