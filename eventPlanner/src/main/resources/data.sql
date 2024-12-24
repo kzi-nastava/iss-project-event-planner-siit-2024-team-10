@@ -1,32 +1,31 @@
-INSERT INTO location (city, country, street, house_number) VALUES
+INSERT INTO location ( city, country, street, house_number) VALUES
                                                                    ( 'New York', 'USA', '5th Avenue', '101'),
-                                                                   ('London', 'UK', 'Baker Street', '221B'),
+                                                                   ( 'London', 'UK', 'Baker Street', '221B'),
                                                                    ( 'Berlin', 'Germany', 'Unter den Linden', '50');
 
-INSERT INTO account (email, password, role, registration_timestamp, last_password_reset_date,notifications_silenced, status, user_id) VALUES
-                                                                                                                     ( 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0, '2023-12-01 10:00:00','2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null),
-                                                                                                                     ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null),
-                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3, '2023-12-02 11:00:00','2023-12-01 10:00:00', TRUE, 0, null);
+INSERT INTO account (email, password, role, last_password_reset_date,notifications_silenced, status, user_id) VALUES
+                                                                                                                     ( 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                     ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', TRUE, 0, null),
+                                                                                                                     ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', TRUE, 0, null),
+                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', TRUE, 0, null);
 
 
-INSERT INTO company (email, name, phone_number, description, location_id) VALUES
-                                                                                  ( 'info@techcorp.com', 'TechCorp', '555-1234', 'Leading tech company.', 1),
-                                                                                  ( 'hello@greenworld.com', 'GreenWorld', '555-5678', 'Sustainable solutions provider.', 2);
+INSERT INTO company ( email, name, phone_number, description, location_id) VALUES
+                                                                                  ( 'info@techcorp.com', 'TechCorp', '555-1234', 'Leading tech company.', 1);
 
-INSERT INTO users (dtype, first_name, last_name, phone_number, profile_photo, location_id, account_id, company_id) VALUES
-                                                                                                                           ('Provider', 'John', 'Doe', '123-456-7890', NULL, 1, 1,1),
-                                                                                                                           ('Organizer', 'Jane', 'Smith', '987-654-3210', NULL, 2, 2, NULL),
-                                                                                                                           ('Provider', 'John', 'Doe', '123-456-7890', NULL, 3, 3,2);
+INSERT INTO users ( dtype, first_name, last_name, phone_number, profile_photo, location_id, account_id, company_id) VALUES
+                                                                                                                           ('Provider', 'John', 'Doe', '123-456-7890', NULL, 1, 3,1),
+                                                                                                                           ('Organizer', 'Jane', 'Smith', '987-654-3210', NULL, 2, 2, NULL);
 
 
-INSERT INTO offering_category (name, description, is_deleted, pending) VALUES
-                                                                               ( 'Electronics', 'Category for electronic items.', FALSE, FALSE),
-                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE);
+INSERT INTO offering_category (id, name, description, is_deleted, pending) VALUES
+                                                                               (1, 'Electronics', 'Category for electronic items.', FALSE, FALSE),
+                                                                               (2, 'Home Services', 'Category for home-related services.', FALSE, TRUE);
 
-INSERT INTO event_type (name, description, is_active) VALUES
+INSERT INTO event_type ( name, description, is_active) VALUES
                                                               ( 'Workshop', 'Hands-on learning sessions.', TRUE),
                                                               ( 'Conference', 'Large gatherings for presentations and discussions.', TRUE);
+
 
 INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_star_count, five_star_count, participants_count, average_rating) VALUES
                                                                                                                                      (2,1,5,2,4,14, 3.3),

@@ -57,8 +57,8 @@ public class EventService {
             String location,
             Integer maxParticipants,
             Double minRating,
-            String startDate,
-            String endDate,
+            LocalDate startDate,
+            LocalDate endDate,
             String name
     ) {
         Specification<Event> specification = Specification.where(EventSpecification.hasEventTypeId(eventTypeId))
@@ -81,8 +81,8 @@ public class EventService {
             String location,
             Integer maxParticipants,
             Double minRating,
-            String startDate,
-            String endDate,
+            LocalDate startDate,
+            LocalDate endDate,
             String name,
             String sortBy,
             String sortDirection
@@ -175,7 +175,11 @@ public class EventService {
         }
 
         dto.setMaxParticipants(event.getMaxParticipants());
-        dto.setAverageRating(event.getStats().getAverageRating());
+        if (event.getStats()!=null) {
+            dto.setAverageRating(event.getStats().getAverageRating());
+        }else{
+            dto.setAverageRating(0);
+        }
         dto.setDescription(event.getDescription());
         dto.setOpen(event.isOpen());
         return dto;
