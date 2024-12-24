@@ -29,8 +29,6 @@ public class Account implements UserDetails {
     @Enumerated
     private Role role;
     @Column(nullable = false)
-    private LocalDateTime registrationTimestamp;
-    @Column(nullable = false)
     private boolean notificationsSilenced;
     @Column(nullable = false)
     private Timestamp lastPasswordResetDate;

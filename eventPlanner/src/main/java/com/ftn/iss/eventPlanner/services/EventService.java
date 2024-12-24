@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.webjars.NotFoundException;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -84,23 +85,41 @@ public class EventService {
             Double minRating,
             LocalDate startDate,
             LocalDate endDate,
-            String name
+            String name,
+            String sortBy,
+            String sortDirection
     ) {
         Specification<Event> specification = Specification.where(EventSpecification.hasEventTypeId(eventTypeId))
                 .and(EventSpecification.hasLocation(location))
                 .and(EventSpecification.maxParticipants(maxParticipants))
-                .and(EventSpecification.minRating(minRating))
                 .and(EventSpecification.betweenDates(startDate, endDate))
+                .and(EventSpecification.minAverageRating(minRating))
                 .and(EventSpecification.hasName(name));
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
-        List<GetEventDTO> eventDTOs = pagedEvents.getContent().stream()
+        List<Event> filteredEvents = pagedEvents.getContent();
+        if (minRating != null) {
+            filteredEvents = filteredEvents.stream()
+                    .filter(event -> event.getStats() != null && event.getStats().getAverageRating() >= minRating)
+                    .collect(Collectors.toList());
+        }
+
+        Comparator<Event> comparator = getEventComparator(sortBy, sortDirection);
+        if (comparator != null) {
+            filteredEvents = filteredEvents.stream()
+                    .sorted(comparator)
+                    .collect(Collectors.toList());
+        }
+
+        List<GetEventDTO> eventDTOs = filteredEvents.stream()
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
 
         return new PagedResponse<>(eventDTOs, pagedEvents.getTotalPages(), pagedEvents.getTotalElements());
     }
+
+
 
     public List<GetEventDTO> findTopEvents() {
         List<Event> events = eventRepository.findAll();
@@ -127,7 +146,7 @@ public class EventService {
         event.setOrganizer(organizerRepository.findById(createEventDTO.getOrganizerId())
                 .orElseThrow(() -> new IllegalArgumentException("Organizer with ID " + createEventDTO.getOrganizerId() + " not found")));
         event.setDeleted(false);
-        event.setDateCreated(java.time.LocalDate.now());
+        event.setDateCreated(java.time.LocalDateTime.now());
         event = eventRepository.save(event);
         eventRepository.flush();
         return modelMapper.map(event, CreatedEventDTO.class);
@@ -167,7 +186,11 @@ public class EventService {
         }
 
         dto.setMaxParticipants(event.getMaxParticipants());
-        dto.setAverageRating(calculateAverageRating(event));
+        if (event.getStats()!=null) {
+            dto.setAverageRating(event.getStats().getAverageRating());
+        }else{
+            dto.setAverageRating(0);
+        }
         dto.setDescription(event.getDescription());
         dto.setOpen(event.isOpen());
         return dto;
@@ -194,18 +217,27 @@ public class EventService {
         return organizerDTO;
     }
 
-    private double calculateAverageRating(Event event){
-        if (event.getStats() != null) {
-            EventStats eventStats = event.getStats();
-            return (double) (eventStats.getFiveStarCount() +
-                    eventStats.getFourStarCount() +
-                    eventStats.getThreeStarCount() +
-                    eventStats.getTwoStarCount() +
-                    eventStats.getOneStarCount()) /
-                    eventStats.getParticipantsCount();
-        } else {
-            return 0.0;
+
+    private Comparator<Event> getEventComparator(String sortBy, String sortDirection) {
+        if (sortBy == null || "none".equalsIgnoreCase(sortBy)) {
+            return null; // No sorting
         }
+
+        Comparator<Event> comparator = switch (sortBy.toLowerCase()) {
+            case "name" -> Comparator.comparing(Event::getName, String.CASE_INSENSITIVE_ORDER);
+            case "date" -> Comparator.comparing(Event::getDate);
+            case "averagerating" -> Comparator.comparing(event -> event.getStats() != null
+                    ? event.getStats().getAverageRating() : 0.0);
+            case "location.city" -> Comparator.comparing(event -> event.getLocation().getCity(), String.CASE_INSENSITIVE_ORDER);
+            default -> null; // Unsupported sorting field
+        };
+
+        if (comparator != null && "desc".equalsIgnoreCase(sortDirection)) {
+            comparator = comparator.reversed();
+        }
+
+        return comparator;
     }
+
 
 }

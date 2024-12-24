@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -58,7 +59,7 @@ public class Event {
     private EventStats stats;
 
     @Column(nullable = false)
-    private LocalDate dateCreated;
+    private LocalDateTime dateCreated;
 
     public Event() {
     }

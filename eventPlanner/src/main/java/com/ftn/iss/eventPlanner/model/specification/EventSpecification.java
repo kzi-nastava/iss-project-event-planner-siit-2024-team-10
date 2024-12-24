@@ -1,8 +1,12 @@
 package com.ftn.iss.eventPlanner.model.specification;
+import com.ftn.iss.eventPlanner.model.EventStats;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import com.ftn.iss.eventPlanner.model.Event;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class EventSpecification {
 
@@ -21,12 +25,9 @@ public class EventSpecification {
                 maxParticipants == null ? null : criteriaBuilder.lessThanOrEqualTo(root.get("maxParticipants"), maxParticipants);
     }
 
-    public static Specification<Event> minRating(Double minRating) {
-        return (root, query, criteriaBuilder) ->
-                minRating == null ? null : criteriaBuilder.greaterThanOrEqualTo(root.get("stats").get("averageRating"), minRating);
-    }
 
     public static Specification<Event> betweenDates(LocalDate startDate, LocalDate endDate) {
+
         return (root, query, criteriaBuilder) -> {
             if (startDate == null && endDate == null) {
                 return null;
@@ -43,4 +44,15 @@ public class EventSpecification {
         return (root, query, criteriaBuilder) ->
                 name == null ? null : criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%");
     }
+
+    public static Specification<Event> minAverageRating(Double minRating) {
+        return (root, query, criteriaBuilder) -> {
+            if (minRating == null) {
+                return null;
+            }
+            Join<Event, EventStats> statsJoin = root.join("stats", JoinType.LEFT);
+            return criteriaBuilder.greaterThanOrEqualTo(statsJoin.get("averageRating"), minRating);
+        };
+    }
+
 }
