@@ -4,6 +4,8 @@ import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+
+import com.ftn.iss.eventPlanner.dto.event.CreatedEventRatingDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
@@ -65,7 +67,6 @@ public class EventService {
         Specification<Event> specification = Specification.where(EventSpecification.hasEventTypeId(eventTypeId))
                 .and(EventSpecification.hasLocation(location))
                 .and(EventSpecification.maxParticipants(maxParticipants))
-                .and(EventSpecification.minRating(minRating))
                 .and(EventSpecification.betweenDates(startDate, endDate))
                 .and(EventSpecification.hasName(name));
 
@@ -166,6 +167,33 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         return mapToGetEventDTO(event);
+    }
+
+    public CreatedEventRatingDTO rateEvent(int eventId, int rating){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        EventStats stats = event.getStats();
+        switch (rating) {
+            case 1:
+                stats.setOneStarCount(stats.getOneStarCount()+1);
+                break;
+            case 2:
+                stats.setTwoStarCount(stats.getTwoStarCount()+1);
+                break;
+            case 3:
+                stats.setThreeStarCount(stats.getThreeStarCount()+1);
+                break;
+            case 4:
+                stats.setFourStarCount(stats.getFourStarCount()+1);
+                break;
+            case 5:
+                stats.setFiveStarCount(stats.getFiveStarCount()+1);
+                break;
+            default:
+                throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
+        eventStatsRepository.save(stats);
+        return new CreatedEventRatingDTO(stats.getAverageRating());
     }
 
 
