@@ -84,12 +84,15 @@ public class WebSecurityConfig {
         return (web) -> web.ignoring()
                 .requestMatchers(HttpMethod.GET, "/", "/webjars/*", "/*.html", "favicon.ico",
                         "/*/*.html", "/*/*.css", "/*/*.js",
-                        "/api/events*","/api/events/*",
+                        "/api/events*","/api/events/*","api/events/*/agenda",
                         "/api/event-types*","/api/event-types/*",
                         "api/services*","api/services/*",
                         "api/products*","api/products/*",
                         "api/categories*","api/categories/*",
-                        "api/offerings*","api/offerings/*");
+                        "api/offerings*","api/offerings/*",
+                        "api/accounts/*/favourite-events")
+                .requestMatchers(HttpMethod.POST, "api/accounts/*/favourite-events","api/events/*/ratings")
+                .requestMatchers(HttpMethod.DELETE, "api/accounts/*/favourite-events/*");
 
     }
 

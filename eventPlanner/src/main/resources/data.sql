@@ -26,12 +26,20 @@ INSERT INTO event_type ( name, description, is_active) VALUES
                                                               ( 'Workshop', 'Hands-on learning sessions.', TRUE),
                                                               ( 'Conference', 'Large gatherings for presentations and discussions.', TRUE);
 
-INSERT INTO event (id, organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created) VALUES
-                                                                                                                                                   (1, 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2024-01-15', FALSE, 1, '2024-03-10'),
-                                                                                                                                                   (2, 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2024-03-10', FALSE, 2, '2024-03-03'),
-                                                                                                                                                   (3, 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2024-07-20', FALSE, 3, '2024-05-01'),
-                                                                                                                                                   (4, 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, FALSE, '2024-10-15', FALSE, 2, '2024-08-12'),
-                                                                                                                                                   (5, 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2024-09-01', FALSE, 1, '2024-07-15');
+INSERT INTO event_stats(one_star_count,two_star_count,three_star_count,four_star_count,five_star_count,average_rating,participants_count) VALUES
+    (0,0,0,0,0,0,0),
+    (0,0,0,0,0,0,0),
+    (0,0,0,0,0,0,0),
+    (0,0,0,0,0,0,0),
+    (0,0,0,0,0,0,0);
+
+
+INSERT INTO event (id, organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
+                                                                                                                                                   (1, 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2024-01-15', FALSE, 1, '2024-03-10',1),
+                                                                                                                                                   (2, 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2024-03-10', FALSE, 2, '2024-03-03',2),
+                                                                                                                                                   (3, 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2024-07-20', FALSE, 3, '2024-05-01',3),
+                                                                                                                                                   (4, 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, FALSE, '2024-10-15', FALSE, 2, '2024-08-12',4),
+                                                                                                                                                   (5, 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2024-09-01', FALSE, 1, '2024-07-15',5);
 INSERT INTO agenda_item (id, name, description, location, start_time, end_time, is_deleted) VALUES
                                                                                                 (1, 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 (2, 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
