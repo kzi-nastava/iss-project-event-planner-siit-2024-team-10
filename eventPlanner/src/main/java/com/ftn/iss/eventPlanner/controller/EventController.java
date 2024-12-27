@@ -1,6 +1,8 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.agendaitem.CreateAgendaItemDTO;
+import com.ftn.iss.eventPlanner.dto.agendaitem.CreatedAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
@@ -138,5 +140,11 @@ public class EventController {
     public ResponseEntity<CreatedEventRatingDTO> rateEvent(@PathVariable int eventId, @RequestBody CreateEventRatingDTO rating) {
         CreatedEventRatingDTO ratedEvent = eventService.rateEvent(eventId, rating.getRating());
         return ResponseEntity.ok(ratedEvent);
+    }
+
+    @PostMapping(value="/{eventId}/agenda", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedAgendaItemDTO> createAgendaItem(@PathVariable int eventId, @RequestBody CreateAgendaItemDTO agendaItemDto) {
+        CreatedAgendaItemDTO createdAgendaItemDTO = eventService.createAgendaItem(eventId, agendaItemDto);
+        return ResponseEntity.ok(createdAgendaItemDTO);
     }
 }
