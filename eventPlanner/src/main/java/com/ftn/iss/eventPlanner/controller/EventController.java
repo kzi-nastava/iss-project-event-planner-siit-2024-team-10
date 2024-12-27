@@ -153,4 +153,11 @@ public class EventController {
         UpdatedAgendaItemDTO updatedAgendaItemDTO = eventService.updateAgendaItem(eventId, agendaItemId, agendaItemDto);
         return ResponseEntity.ok(updatedAgendaItemDTO);
     }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @DeleteMapping(value="/{eventId}/agenda/{agendaItemId}")
+    public ResponseEntity<Void> deleteAgendaItem(@PathVariable int eventId, @PathVariable int agendaItemId) {
+        eventService.deleteAgendaItem(eventId, agendaItemId);
+        return ResponseEntity.noContent().build();
+    }
 }
