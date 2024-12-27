@@ -1,9 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
-import com.ftn.iss.eventPlanner.dto.agendaitem.CreateAgendaItemDTO;
-import com.ftn.iss.eventPlanner.dto.agendaitem.CreatedAgendaItemDTO;
-import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
+import com.ftn.iss.eventPlanner.dto.agendaitem.*;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
 
@@ -205,6 +203,23 @@ public class EventService {
         event.getAgenda().add(agendaItem);
         eventRepository.save(event);
         return modelMapper.map(agendaItem, CreatedAgendaItemDTO.class);
+    }
+
+    public UpdatedAgendaItemDTO updateAgendaItem(int eventId, int agendaItemId, UpdateAgendaItemDTO agendaItemDto){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        AgendaItem agendaItem = agendaItemRepository.findById(agendaItemId)
+                .orElseThrow(() -> new NotFoundException("Agenda Item with ID " + agendaItemId + " not found"));
+        if(!event.getAgenda().stream().anyMatch(agendaItem1 -> agendaItem1.getId() == agendaItemId)){
+            throw new IllegalArgumentException("Agenda Item with ID " + agendaItemId + " is not part of Event with ID " + eventId);
+        }
+        agendaItem.setName(agendaItemDto.getName());
+        agendaItem.setDescription(agendaItemDto.getDescription());
+        agendaItem.setLocation(agendaItemDto.getLocation());
+        agendaItem.setStartTime(agendaItemDto.getStartTime());
+        agendaItem.setEndTime(agendaItemDto.getEndTime());
+        agendaItemRepository.save(agendaItem);
+        return modelMapper.map(agendaItem, UpdatedAgendaItemDTO.class);
     }
 
 
