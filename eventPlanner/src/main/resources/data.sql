@@ -17,10 +17,9 @@ INSERT INTO users ( dtype, first_name, last_name, phone_number, profile_photo, l
                                                                                                                            ('Provider', 'John', 'Doe', '123-456-7890', NULL, 1, 3,1),
                                                                                                                            ('Organizer', 'Jane', 'Smith', '987-654-3210', NULL, 2, 2, NULL);
 
-
-INSERT INTO offering_category (id, name, description, is_deleted, pending) VALUES
-                                                                               (1, 'Electronics', 'Category for electronic items.', FALSE, FALSE),
-                                                                               (2, 'Home Services', 'Category for home-related services.', FALSE, TRUE);
+INSERT INTO offering_category (name, description, is_deleted, pending) VALUES
+                                                                               ('Electronics', 'Category for electronic items.', FALSE, FALSE),
+                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE);
 
 INSERT INTO event_type ( name, description, is_active) VALUES
                                                               ( 'Workshop', 'Hands-on learning sessions.', TRUE),
@@ -110,24 +109,24 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_product_details_
                                                                                        ('Product',1 ,1, 1, FALSE, FALSE),
                                                                                        ('Product',2 ,1,  2, FALSE, FALSE),
                                                                                        ('Product',1 ,1,  3, FALSE, FALSE),
-                                                                                       ('Product',1 ,3,  4, FALSE, FALSE),
+                                                                                       ('Product',1 ,1,  4, FALSE, FALSE),
                                                                                        ('Product',1 ,1,  5, FALSE, FALSE),
                                                                                        ( 'Product',2 ,1,  6, FALSE, FALSE),
                                                                                        ( 'Product',1 ,1,  7, FALSE, FALSE),
                                                                                        ( 'Product',1 ,1,  8, FALSE, FALSE),
-                                                                                       ( 'Product',2 ,3,  9, FALSE, FALSE),
-                                                                                       ( 'Product',1 ,3,  10, FALSE, FALSE);
+                                                                                       ( 'Product',2 ,1,  9, FALSE, FALSE),
+                                                                                       ( 'Product',1 ,1,  10, FALSE, FALSE);
 INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_id, is_deleted, pending) VALUES
                                                                                        ( 'Service',1 ,1,  1, FALSE, FALSE),
-                                                                                       ( 'Service',2 ,3,  2, FALSE, FALSE),
+                                                                                       ( 'Service',2 ,1,  2, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  3, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  4, FALSE, FALSE),
-                                                                                       ( 'Service',2 ,3,  5, FALSE, FALSE),
+                                                                                       ( 'Service',2 ,1,  5, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  6, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  7, FALSE, FALSE),
-                                                                                       ( 'Service',1 ,3,  8, FALSE, FALSE),
+                                                                                       ( 'Service',1 ,1,  8, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  9, FALSE, FALSE),
-                                                                                       ( 'Service',2 ,3,  10, FALSE, FALSE);
+                                                                                       ( 'Service',2 ,1,  10, FALSE, FALSE);
 INSERT INTO offerings_ratings (offering_id, ratings_id) VALUES
                                                            (1, 3),
                                                            (2, 5),

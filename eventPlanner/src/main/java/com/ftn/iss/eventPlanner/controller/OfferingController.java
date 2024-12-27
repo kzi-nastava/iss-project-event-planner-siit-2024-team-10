@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @CrossOrigin
@@ -172,4 +173,20 @@ public class OfferingController {
     public ResponseEntity<?> deleteComment(@PathVariable int offeringId, @PathVariable int commentId) throws Exception {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping(value = "/highest-prices")
+    public ResponseEntity<?> getHighestPrice(@RequestParam(required = false) Boolean isService) {
+        try {
+            Double highestPrice = offeringService.getHighestPrice(isService);
+            return ResponseEntity.ok(highestPrice);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
 }

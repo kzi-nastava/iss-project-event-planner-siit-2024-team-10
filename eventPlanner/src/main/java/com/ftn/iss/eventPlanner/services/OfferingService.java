@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 
 
 import java.util.*;
@@ -259,6 +260,28 @@ public class OfferingService {
         }
 
         return comparator;
+    }
+
+    public Double getHighestPrice(Boolean isService) {
+        try {
+            Double highestPrice = null;
+            if (Boolean.FALSE.equals(isService)) {
+                highestPrice = productRepository.findMaxProductPrice();
+            } else if (Boolean.TRUE.equals(isService)) {
+                highestPrice = serviceRepository.findMaxServicePrice();
+            } else {
+                throw new IllegalArgumentException("Invalid isService parameter. It must be true or false.");
+            }
+
+            if (highestPrice == null) {
+                throw new NoSuchElementException("No prices found for the specified filter.");
+            }
+
+            return highestPrice;
+        } catch (Exception e) {
+            System.err.println("Error while fetching the highest price: " + e.getMessage());
+            throw e;
+        }
     }
 
 }
