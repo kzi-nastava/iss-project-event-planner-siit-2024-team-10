@@ -3,6 +3,7 @@ package com.ftn.iss.eventPlanner.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class Event {
     private boolean isOpen;
 
     @Column(nullable = false)
-    private LocalDateTime date;
+    private LocalDate date;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="guests", joinColumns = @JoinColumn(name="event_id"))

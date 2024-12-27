@@ -26,11 +26,7 @@ public class EventSpecification {
     }
 
 
-    public static Specification<Event> betweenDates(String startDateStr, String endDateStr) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-
-        LocalDate startDate = startDateStr != null ? LocalDate.parse(startDateStr, formatter) : null;
-        LocalDate endDate = endDateStr != null ? LocalDate.parse(endDateStr, formatter) : null;
+    public static Specification<Event> betweenDates(LocalDate startDate, LocalDate endDate) {
 
         return (root, query, criteriaBuilder) -> {
             if (startDate == null && endDate == null) {

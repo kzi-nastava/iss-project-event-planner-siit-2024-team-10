@@ -6,7 +6,7 @@ import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Setter
 @Getter
@@ -18,7 +18,7 @@ public class GetEventDTO {
     private String description;
     private int maxParticipants;
     private boolean isOpen;
-    private LocalDateTime date;
+    private LocalDate date;
     private GetLocationDTO location;
     private double averageRating;
 
