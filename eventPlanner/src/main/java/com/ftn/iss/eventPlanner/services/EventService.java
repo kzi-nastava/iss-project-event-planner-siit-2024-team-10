@@ -222,6 +222,18 @@ public class EventService {
         return modelMapper.map(agendaItem, UpdatedAgendaItemDTO.class);
     }
 
+    public void deleteAgendaItem(int eventId, int agendaItemId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        AgendaItem agendaItem = agendaItemRepository.findById(agendaItemId)
+                .orElseThrow(() -> new NotFoundException("Agenda Item with ID " + agendaItemId + " not found"));
+        if(!event.getAgenda().stream().anyMatch(agendaItem1 -> agendaItem1.getId() == agendaItemId)){
+            throw new IllegalArgumentException("Agenda Item with ID " + agendaItemId + " is not part of Event with ID " + eventId);
+        }
+        agendaItem.setDeleted(true);
+        agendaItemRepository.save(agendaItem);
+    }
+
 
     // HELPER FUNCTIONS
 
