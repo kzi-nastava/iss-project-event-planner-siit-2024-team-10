@@ -1,6 +1,8 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.agendaitem.CreateAgendaItemDTO;
+import com.ftn.iss.eventPlanner.dto.agendaitem.CreatedAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
@@ -12,10 +14,7 @@ import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.EventSpecification;
-import com.ftn.iss.eventPlanner.repositories.EventRepository;
-import com.ftn.iss.eventPlanner.repositories.EventStatsRepository;
-import com.ftn.iss.eventPlanner.repositories.EventTypeRepository;
-import com.ftn.iss.eventPlanner.repositories.OrganizerRepository;
+import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -46,6 +45,8 @@ public class EventService {
     private OrganizerRepository organizerRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
+    @Autowired
+    private AgendaItemRepository agendaItemRepository;
 
     public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
@@ -194,6 +195,16 @@ public class EventService {
         }
         eventStatsRepository.save(stats);
         return new CreatedEventRatingDTO(stats.getAverageRating());
+    }
+
+    public CreatedAgendaItemDTO createAgendaItem(int eventId, CreateAgendaItemDTO agendaItemDto){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        AgendaItem agendaItem = modelMapper.map(agendaItemDto, AgendaItem.class);
+        agendaItemRepository.save(agendaItem);
+        event.getAgenda().add(agendaItem);
+        eventRepository.save(event);
+        return modelMapper.map(agendaItem, CreatedAgendaItemDTO.class);
     }
 
 
