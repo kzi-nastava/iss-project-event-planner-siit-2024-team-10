@@ -37,6 +37,7 @@ public class ProductService {
     private ModelMapper modelMapper;
     public List<GetProductDTO> findAll(
             String name,
+            Integer eventTypeId,
             Integer categoryId,
             Double minPrice,
             Double maxPrice,
@@ -54,6 +55,7 @@ public class ProductService {
     public PagedResponse<GetProductDTO> findAll(
             Pageable pagable,
             String name,
+            Integer eventTypeId,
             Integer categoryId,
             Double minPrice,
             Double maxPrice,

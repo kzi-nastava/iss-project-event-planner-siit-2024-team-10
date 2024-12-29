@@ -82,6 +82,7 @@ public class ServiceService {
     }
     public List<GetServiceDTO> findAll(
         String name,
+        Integer eventTypeId,
         Integer categoryId,
         Double minPrice,
         Double maxPrice,
@@ -99,6 +100,7 @@ public class ServiceService {
     public PagedResponse<GetServiceDTO> findAll(
             Pageable pagable,
             String name,
+            Integer eventTypeId,
             Integer categoryId,
             Double minPrice,
             Double maxPrice,
