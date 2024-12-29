@@ -37,7 +37,6 @@ public class ProductService {
     private ModelMapper modelMapper;
     public List<GetProductDTO> findAll(
             String name,
-            Integer eventTypeId,
             Integer categoryId,
             Double minPrice,
             Double maxPrice,
@@ -45,7 +44,6 @@ public class ProductService {
     ) {
         // TODO: add whats needed for filtering
         Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                .and(ProductSpecification.hasEventTypeId(eventTypeId))
                 .and(ProductSpecification.hasCategoryId(categoryId))
                 .and(ProductSpecification.betweenPrices(minPrice, maxPrice));
 
@@ -56,14 +54,12 @@ public class ProductService {
     public PagedResponse<GetProductDTO> findAll(
             Pageable pagable,
             String name,
-            Integer eventTypeId,
             Integer categoryId,
             Double minPrice,
             Double maxPrice,
             Boolean searchByAvailability
     ) {
         Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                .and(ProductSpecification.hasEventTypeId(eventTypeId))
                 .and(ProductSpecification.hasCategoryId(categoryId))
                 .and(ProductSpecification.betweenPrices(minPrice, maxPrice));
 

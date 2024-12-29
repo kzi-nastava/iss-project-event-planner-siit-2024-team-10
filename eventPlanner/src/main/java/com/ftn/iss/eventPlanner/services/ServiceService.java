@@ -82,14 +82,12 @@ public class ServiceService {
     }
     public List<GetServiceDTO> findAll(
         String name,
-        Integer eventTypeId,
         Integer categoryId,
         Double minPrice,
         Double maxPrice,
         Boolean searchByAvailability
     ) {
         Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
-                .and(ServiceSpecification.hasEventTypeId(eventTypeId))
                 .and(ServiceSpecification.hasCategoryId(categoryId))
                 .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
                 .and(ServiceSpecification.isAvailable(searchByAvailability));
@@ -101,14 +99,12 @@ public class ServiceService {
     public PagedResponse<GetServiceDTO> findAll(
             Pageable pagable,
             String name,
-            Integer eventTypeId,
             Integer categoryId,
             Double minPrice,
             Double maxPrice,
             Boolean searchByAvailability
     ) {
         Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
-                .and(ServiceSpecification.hasEventTypeId(eventTypeId))
                 .and(ServiceSpecification.hasCategoryId(categoryId))
                 .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
                 .and(ServiceSpecification.isAvailable(searchByAvailability));
