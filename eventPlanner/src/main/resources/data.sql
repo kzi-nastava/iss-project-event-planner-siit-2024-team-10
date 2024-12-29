@@ -17,48 +17,48 @@ INSERT INTO users ( dtype, first_name, last_name, phone_number, profile_photo, l
                                                                                                                            ('Provider', 'John', 'Doe', '123-456-7890', NULL, 1, 3,1),
                                                                                                                            ('Organizer', 'Jane', 'Smith', '987-654-3210', NULL, 2, 2, NULL);
 
-
-INSERT INTO offering_category (id, name, description, is_deleted, pending) VALUES
-                                                                               (1, 'Electronics', 'Category for electronic items.', FALSE, FALSE),
-                                                                               (2, 'Home Services', 'Category for home-related services.', FALSE, TRUE);
+INSERT INTO offering_category (name, description, is_deleted, pending) VALUES
+                                                                               ('Electronics', 'Category for electronic items.', FALSE, FALSE),
+                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE);
 
 INSERT INTO event_type ( name, description, is_active) VALUES
                                                               ( 'Workshop', 'Hands-on learning sessions.', TRUE),
                                                               ( 'Conference', 'Large gatherings for presentations and discussions.', TRUE);
 
-INSERT INTO event_stats(one_star_count,two_star_count,three_star_count,four_star_count,five_star_count,average_rating,participants_count) VALUES
-    (0,0,0,0,0,0,0),
-    (0,0,0,0,0,0,0),
-    (0,0,0,0,0,0,0),
-    (0,0,0,0,0,0,0),
-    (0,0,0,0,0,0,0);
 
+INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_star_count, five_star_count, participants_count, average_rating) VALUES
+                                                                                                                                     (2,1,5,2,4,14, 3.3),
+                                                                                                                                     (4,2,6,1,1,14, 2.8),
+                                                                                                                                     (1,2,1,0,0,4, 2.0),
+                                                                                                                                     (0,0,2,3,7,12, 4.4),
+                                                                                                                                     (4,2,1,7,1,15, 3.2);
 
-INSERT INTO event (id, organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
-                                                                                                                                                   (1, 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2024-01-15', FALSE, 1, '2024-03-10',1),
-                                                                                                                                                   (2, 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2024-03-10', FALSE, 2, '2024-03-03',2),
-                                                                                                                                                   (3, 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2024-07-20', FALSE, 3, '2024-05-01',3),
-                                                                                                                                                   (4, 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, FALSE, '2024-10-15', FALSE, 2, '2024-08-12',4),
-                                                                                                                                                   (5, 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2024-09-01', FALSE, 1, '2024-07-15',5);
-INSERT INTO agenda_item (id, name, description, location, start_time, end_time, is_deleted) VALUES
-                                                                                                (1, 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
-                                                                                                (2, 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
+INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
+                                                                                                                                                   ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2024-01-15 12:00', FALSE, 1, '2024-03-10', 1),
+                                                                                                                                                   ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2024-03-10 15:00', FALSE, 2, '2024-03-03',2),
+                                                                                                                                                   ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2024-07-20 09:00', FALSE, 3, '2024-05-01',3),
+                                                                                                                                                   ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, FALSE, '2024-10-15 08:30', FALSE, 2, '2024-08-12',4),
+                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2024-09-01 18:00', FALSE, 1, '2024-07-15',5);
+INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
+                                                                                                ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
+                                                                                                ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
 
-INSERT INTO budget_item (id, amount, purchase_date, is_deleted, category_id, offering_id) VALUES
-                                                                                              (1, 500.00, '2023-11-01 14:00:00', FALSE, 1, NULL),
-                                                                                              (2, 200.00, '2023-11-02 15:00:00', FALSE, 2, NULL);
+INSERT INTO budget_item (amount, purchase_date, is_deleted, category_id, offering_id) VALUES
+                                                                                              ( 500.00, '2023-11-01 14:00:00', FALSE, 1, NULL),
+                                                                                              ( 200.00, '2023-11-02 15:00:00', FALSE, 2, NULL);
 
-INSERT INTO comment (id, content, status, commenter_id) VALUES
-                                                            (1, 'Great event!', 1, 1),
-                                                            (2, 'Needs better organization.', 0, 2);
+INSERT INTO comment (content, status, commenter_id) VALUES
+                                                            ( 'Great event!', 1, 1),
+                                                            ( 'Needs better organization.', 0, 2);
 
-INSERT INTO message (id, content, timestamp, sender_id, receiver_id, is_read) VALUES
-                                                                                  (1, 'Hello, when is the event?', '2023-12-05 09:00:00', 1, 2, FALSE),
-                                                                                  (2, 'Can you provide more details?', '2023-12-06 10:00:00', 2, 1, TRUE);
+INSERT INTO message (content, timestamp, sender_id, receiver_id, is_read) VALUES
+                                                                                  ( 'Hello, when is the event?', '2023-12-05 09:00:00', 1, 2, FALSE),
+                                                                                  ( 'Can you provide more details?', '2023-12-06 10:00:00', 2, 1, TRUE);
 
-INSERT INTO notification (id, is_read, content) VALUES
-                                                    (1, FALSE, 'Your account has been updated.'),
-                                                    (2, TRUE, 'Event registration confirmed.');
+INSERT INTO notification (is_read, content) VALUES
+                                                    ( FALSE, 'Your account has been updated.'),
+                                                    ( TRUE, 'Event registration confirmed.');
+
 
 INSERT INTO product_details (name, description, price, discount, is_visible, is_available, timestamp) VALUES
                                                                                                               ( 'Wedding Decoration Set', 'Complete set of decorations for weddings, including table centerpieces and backdrops.', 200.00, 10.0, TRUE, FALSE, '2023-10-20 15:00:00'),
@@ -85,35 +85,86 @@ INSERT INTO service_details (name, description, specification, price, discount, 
                                                                                                                                                                                                                             ( 'Party Balloon Setup', 'Balloon decorations for birthdays and celebrations.', 'Includes customized balloon arches and centerpieces.', 250.00, 20.0, TRUE, 4, 2, 24, 48, TRUE, TRUE, TRUE, '2023-11-25 13:40:00'),
                                                                                                                                                                                                                             ( 'Event Clean-Up', 'Post-event cleanup service.', 'Includes garbage disposal and venue tidying.', 500.00, 50.0, TRUE, 5, 2, 24, 48, TRUE, TRUE, FALSE, '2023-11-28 18:00:00');
 
+INSERT INTO rating (rater_id, score) VALUES
+                                          (1,1),
+                                          (1,2),
+                                          (2,3),
+                                          (1,5),
+                                          (1,2),
+                                          (1,3),
+                                          (2,1),
+                                          (1,4),
+                                          (1,1),
+                                          (1,2),
+                                          (2,3),
+                                          (1,5),
+                                          (1,2),
+                                          (1,3),
+                                          (2,1),
+                                          (1,4);
 
-INSERT INTO offerings (id, dtype, category_id, provider_id, current_product_details_id, is_deleted, pending) VALUES
-                                                                                       (1, 'Product',1 ,1, 1, FALSE, FALSE),
-                                                                                       (2, 'Product',2 ,1,  2, FALSE, FALSE),
-                                                                                       (3, 'Product',1 ,1,  3, FALSE, FALSE),
-                                                                                       (4, 'Product',1 ,1,  4, FALSE, FALSE),
-                                                                                       (5, 'Product',1 ,1,  5, FALSE, FALSE),
-                                                                                       (6, 'Product',2 ,1,  6, FALSE, FALSE),
-                                                                                       (7, 'Product',1 ,1,  7, FALSE, FALSE),
-                                                                                       (8, 'Product',1 ,1,  8, FALSE, FALSE),
-                                                                                       (9, 'Product',2 ,1,  9, FALSE, FALSE),
-                                                                                       (10, 'Product',1 ,1,  10, FALSE, FALSE);
 
-INSERT INTO offerings (id, dtype, category_id, provider_id, current_service_details_id, is_deleted, pending) VALUES
-                                                                                       (11, 'Service',1 ,1,  1, FALSE, FALSE),
-                                                                                       (12, 'Service',2 ,1,  2, FALSE, FALSE),
-                                                                                       (13, 'Service',1 ,1,  3, FALSE, FALSE),
-                                                                                       (14, 'Service',1 ,1,  4, FALSE, FALSE),
-                                                                                       (15, 'Service',2 ,1,  5, FALSE, FALSE),
-                                                                                       (16, 'Service',1 ,1,  6, FALSE, FALSE),
-                                                                                       (17, 'Service',1 ,1,  7, FALSE, FALSE),
-                                                                                       (18, 'Service',1 ,1,  8, FALSE, FALSE),
-                                                                                       (19, 'Service',1 ,1,  9, FALSE, FALSE),
-                                                                                       (20, 'Service',2 ,1,  10, FALSE, FALSE);
 
-INSERT INTO rating (id, score, rater_id) VALUES
-                                             (1, 5, 1),
-                                             (2, 3, 2);
 
-INSERT INTO reservation (id, start_time, end_time, status, event_id, service_id) VALUES
-                                                                                     (1, '2024-01-15 09:00:00', '2024-01-15 17:00:00', 1, 1, NULL),
-                                                                                     (2, '2024-03-10 08:00:00', '2024-03-10 20:00:00', 0, 2, 1);
+INSERT INTO offerings (dtype, category_id, provider_id, current_product_details_id, is_deleted, pending) VALUES
+                                                                                       ('Product',1 ,1, 1, FALSE, FALSE),
+                                                                                       ('Product',2 ,1,  2, FALSE, FALSE),
+                                                                                       ('Product',1 ,1,  3, FALSE, FALSE),
+                                                                                       ('Product',1 ,1,  4, FALSE, FALSE),
+                                                                                       ('Product',1 ,1,  5, FALSE, FALSE),
+                                                                                       ( 'Product',2 ,1,  6, FALSE, FALSE),
+                                                                                       ( 'Product',1 ,1,  7, FALSE, FALSE),
+                                                                                       ( 'Product',1 ,1,  8, FALSE, FALSE),
+                                                                                       ( 'Product',2 ,1,  9, FALSE, FALSE),
+                                                                                       ( 'Product',1 ,1,  10, FALSE, FALSE);
+INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_id, is_deleted, pending) VALUES
+                                                                                       ( 'Service',1 ,1,  1, FALSE, FALSE),
+                                                                                       ( 'Service',2 ,1,  2, FALSE, FALSE),
+                                                                                       ( 'Service',1 ,1,  3, FALSE, FALSE),
+                                                                                       ( 'Service',1 ,1,  4, FALSE, FALSE),
+                                                                                       ( 'Service',2 ,1,  5, FALSE, FALSE),
+                                                                                       ( 'Service',1 ,1,  6, FALSE, FALSE),
+                                                                                       ( 'Service',1 ,1,  7, FALSE, FALSE),
+                                                                                       ( 'Service',1 ,1,  8, FALSE, FALSE),
+                                                                                       ( 'Service',1 ,1,  9, FALSE, FALSE),
+                                                                                       ( 'Service',2 ,1,  10, FALSE, FALSE);
+INSERT INTO offerings_ratings (offering_id, ratings_id) VALUES
+                                                           (1, 3),
+                                                           (2, 5),
+                                                           (3, 7),
+                                                           (4, 9),
+                                                           (5, 11),
+                                                           (6, 13),
+                                                           (7, 15),
+                                                           (8, 1),
+                                                           (9, 4),
+                                                           (10, 6),
+                                                           (11, 8),
+                                                           (12, 10),
+                                                           (13, 12),
+                                                           (14, 14),
+                                                           (15, 16),
+                                                           (16, 2),
+                                                           (17, 3),
+                                                           (18, 5),
+                                                           (19, 7),
+                                                           (20, 9),
+                                                           (1, 11),
+                                                           (2, 13),
+                                                           (3, 15),
+                                                           (4, 1),
+                                                           (5, 4),
+                                                           (6, 6),
+                                                           (7, 8),
+                                                           (8, 10),
+                                                           (9, 12),
+                                                           (10, 14);
+
+
+INSERT INTO rating (score, rater_id) VALUES
+                                             ( 5, 1),
+                                             ( 3, 2);
+
+INSERT INTO reservation (start_time, end_time, status, event_id, service_id) VALUES
+                                                                                     ( '2024-01-15 09:00:00', '2024-01-15 17:00:00', 1, 1, NULL),
+                                                                                     ( '2024-03-10 08:00:00', '2024-03-10 20:00:00', 0, 2, 1);
