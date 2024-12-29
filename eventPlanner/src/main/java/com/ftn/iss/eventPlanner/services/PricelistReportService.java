@@ -1,8 +1,10 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.GetPricelistItemDTO;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -12,6 +14,26 @@ import java.util.HashMap;
 
 @Service
 public class PricelistReportService {
+    @Autowired
+    OfferingService offeringService;
+    public List<GetPricelistItemDTO> getPricelist() {
+        List<GetOfferingDTO> offerings = offeringService.findAll();
+        List<GetPricelistItemDTO> pricelist = new ArrayList<>();
+
+        for (GetOfferingDTO offering : offerings) {
+            GetPricelistItemDTO item = new GetPricelistItemDTO();
+            item.setId(offering.getId());
+            item.setOfferingId(offering.getId());
+            item.setName(offering.getName());
+            item.setPrice(offering.getPrice());
+            item.setDiscount(offering.getDiscount());
+            double priceWithDiscount = offering.getPrice() * (1 - offering.getDiscount() / 100.0);
+            item.setPriceWithDiscount(priceWithDiscount);
+            pricelist.add(item);
+        }
+
+        return pricelist;
+    }
 
     public byte[] generateReport(List<GetPricelistItemDTO> pricelistItems) throws JRException {
         // Load the JRXML template from classpath

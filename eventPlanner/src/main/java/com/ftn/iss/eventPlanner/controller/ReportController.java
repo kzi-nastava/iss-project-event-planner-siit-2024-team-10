@@ -18,7 +18,7 @@ import java.util.List;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/report")
+@RequestMapping("/api/reports")
 public class ReportController {
 
     @Autowired
@@ -26,23 +26,10 @@ public class ReportController {
     @Autowired
     private OfferingService offeringService;
 
-    @GetMapping(value = "/pricelist", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/pricelists", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<byte[]> generateReport() {
         try {
-            List<GetOfferingDTO> pricelistItems = offeringService.findAll();
-            List<GetPricelistItemDTO> pricelist = new ArrayList<>();
-
-            for (GetOfferingDTO offering : pricelistItems) {
-                GetPricelistItemDTO item = new GetPricelistItemDTO();
-                item.setId(offering.getId());
-                item.setOfferingId(offering.getId());
-                item.setName(offering.getName());
-                item.setPrice(offering.getPrice());
-                item.setDiscount(offering.getDiscount());
-                double priceWithDiscount = offering.getPrice() * (1 - offering.getDiscount()/100);
-                item.setPriceWithDiscount(priceWithDiscount);
-                pricelist.add(item);
-            }
+            List<GetPricelistItemDTO> pricelist = reportService.getPricelist();
             byte[] pdfReport = reportService.generateReport(pricelist);
             return ResponseEntity.ok()
                     .header("Content-Type", "application/pdf")
