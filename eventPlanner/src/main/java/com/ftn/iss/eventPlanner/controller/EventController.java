@@ -1,11 +1,10 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
+import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
-import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
-import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
-import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
+import com.ftn.iss.eventPlanner.dto.event.*;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,5 +120,23 @@ public class EventController {
     @DeleteMapping(value = "/{eventId}/comments/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable int eventId, @PathVariable int commentId) throws Exception {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping(value = "/{eventId}/agenda", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetAgendaItemDTO>> getEventAgenda(@PathVariable int eventId) {
+        Collection<GetAgendaItemDTO> agendaItems = eventService.getAgenda(eventId);
+        return ResponseEntity.ok(agendaItems);
+    }
+
+    @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetEventDTO> getEvent(@PathVariable int eventId) {
+        GetEventDTO event = eventService.getEvent(eventId);
+        return ResponseEntity.ok(event);
+    }
+
+    @PostMapping(value="/{eventId}/ratings", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedEventRatingDTO> rateEvent(@PathVariable int eventId, @RequestBody CreateEventRatingDTO rating) {
+        CreatedEventRatingDTO ratedEvent = eventService.rateEvent(eventId, rating.getRating());
+        return ResponseEntity.ok(ratedEvent);
     }
 }

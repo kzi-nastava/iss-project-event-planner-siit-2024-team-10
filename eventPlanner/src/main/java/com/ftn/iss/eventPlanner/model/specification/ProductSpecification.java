@@ -31,7 +31,7 @@ public class ProductSpecification {
                         : criteriaBuilder.conjunction();
     }
 
-    public static Specification<Product> betweenPrices(Integer minPrice, Integer maxPrice) {
+    public static Specification<Product> betweenPrices(Double minPrice, Double maxPrice) {
         return (root, query, criteriaBuilder) -> {
             if (minPrice == null && maxPrice == null) {
                 return criteriaBuilder.conjunction();

@@ -1,8 +1,11 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+
+import com.ftn.iss.eventPlanner.dto.event.CreatedEventRatingDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
@@ -11,6 +14,7 @@ import com.ftn.iss.eventPlanner.model.Event;
 import com.ftn.iss.eventPlanner.model.EventType;
 import com.ftn.iss.eventPlanner.model.Location;
 import com.ftn.iss.eventPlanner.model.EventStats;
+import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.EventSpecification;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.EventStatsRepository;
@@ -24,7 +28,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
+import org.webjars.NotFoundException;
+
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -155,6 +163,49 @@ public class EventService {
         event = eventRepository.save(event);
         eventRepository.flush();
         return modelMapper.map(event, CreatedEventDTO.class);
+    }
+
+    public Collection<GetAgendaItemDTO> getAgenda(int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        return event.getAgenda().stream()
+                .filter(agendaItem -> !agendaItem.isDeleted())
+                .sorted(Comparator.comparing(AgendaItem::getStartTime))
+                .map(agendaItem -> modelMapper.map(agendaItem, GetAgendaItemDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public GetEventDTO getEvent(int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        return mapToGetEventDTO(event);
+    }
+
+    public CreatedEventRatingDTO rateEvent(int eventId, int rating){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        EventStats stats = event.getStats();
+        switch (rating) {
+            case 1:
+                stats.setOneStarCount(stats.getOneStarCount()+1);
+                break;
+            case 2:
+                stats.setTwoStarCount(stats.getTwoStarCount()+1);
+                break;
+            case 3:
+                stats.setThreeStarCount(stats.getThreeStarCount()+1);
+                break;
+            case 4:
+                stats.setFourStarCount(stats.getFourStarCount()+1);
+                break;
+            case 5:
+                stats.setFiveStarCount(stats.getFiveStarCount()+1);
+                break;
+            default:
+                throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
+        eventStatsRepository.save(stats);
+        return new CreatedEventRatingDTO(stats.getAverageRating());
     }
 
 

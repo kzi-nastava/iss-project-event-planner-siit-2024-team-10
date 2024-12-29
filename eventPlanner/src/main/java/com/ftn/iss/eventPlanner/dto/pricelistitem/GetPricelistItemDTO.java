@@ -11,6 +11,7 @@ public class GetPricelistItemDTO {
     private String name;
     private double price;
     private double discount;
+    private double priceWithDiscount;
 
     public GetPricelistItemDTO() {
     }

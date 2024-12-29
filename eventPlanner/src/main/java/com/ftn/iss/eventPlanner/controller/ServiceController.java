@@ -8,6 +8,7 @@ import com.ftn.iss.eventPlanner.services.ServiceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,28 +21,27 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/services")
-@CrossOrigin
 public class ServiceController {
     @Autowired
     private ServiceService serviceService;
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetServiceDTO>> getServices(
-        @RequestParam(required = false) Integer categoryId,
-        @RequestParam(required = false) Integer eventTypeId,
-        @RequestParam(required = false) Double minPrice,
-        @RequestParam(required = false) Double maxPrice,
-        @RequestParam(required = false) Boolean isAvailable,
-        @RequestParam(required = false) String name
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Integer eventTypeId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Boolean isAvailable,
+            @RequestParam(required = false) String name
     ){
-        List<GetServiceDTO> services = serviceService.findAll();
+        List<GetServiceDTO> services = serviceService.findAll(name,eventTypeId,categoryId,minPrice,maxPrice,isAvailable);
         return new ResponseEntity<>(services, HttpStatus.OK);
     }
     @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResponse<GetServiceDTO>> getServicesPage(
-            SpringDataWebProperties.Pageable page,
+    public ResponseEntity<PagedResponse<GetServiceDTO>> getServices(
+            Pageable pageable,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) Double minPrice,
@@ -49,25 +49,18 @@ public class ServiceController {
             @RequestParam(required = false) Boolean isAvailable,
             @RequestParam(required = false) String name
     ) {
-        Collection<GetServiceDTO> services = new ArrayList<>() ;
-
-        PagedResponse<GetServiceDTO> response = new PagedResponse<>(
-                services,
-                1,
-                5
-        );
-
+        PagedResponse<GetServiceDTO> response = serviceService.findAll(pageable, name, categoryId, eventTypeId, minPrice, maxPrice, isAvailable);
         return new ResponseEntity<PagedResponse<GetServiceDTO>>(response, HttpStatus.OK);
     }
-	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<GetServiceDTO> getService(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetServiceDTO> getService(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
         try {
             GetServiceDTO serviceDTO = serviceService.findById(id);
             return new ResponseEntity<>(serviceDTO, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-	}
+    }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -83,8 +76,8 @@ public class ServiceController {
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
-			throws Exception {
+    public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
+            throws Exception {
         try{
             UpdatedServiceDTO updatedServiceDTO = serviceService.update(id,service);
             return new ResponseEntity<>(updatedServiceDTO, HttpStatus.CREATED);
@@ -94,13 +87,13 @@ public class ServiceController {
         }}
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<?> delete(@PathVariable("id") int id) {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") int id) {
         try {
             serviceService.delete(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-	}
+    }
 }

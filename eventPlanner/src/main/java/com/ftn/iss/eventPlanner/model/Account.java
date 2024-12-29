@@ -35,7 +35,7 @@ public class Account implements UserDetails {
     @Column(nullable = false)
     @Enumerated
     private AccountStatus status;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Event> favouriteEvents = new HashSet<>();
     @ManyToMany
     private Set<Event> acceptedEvents = new HashSet<>();;

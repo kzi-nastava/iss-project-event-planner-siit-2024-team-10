@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -48,8 +49,8 @@ public class Event {
     @ManyToOne
     private Location location;
 
-    @OneToMany
-    private Set<AgendaItem> agenda;
+    @OneToMany(fetch = FetchType.EAGER)
+    private Set<AgendaItem> agenda = new HashSet<>();
 
     @OneToMany
     private Set<BudgetItem> budget;

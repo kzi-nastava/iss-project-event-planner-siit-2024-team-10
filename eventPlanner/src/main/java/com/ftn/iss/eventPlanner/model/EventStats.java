@@ -26,17 +26,15 @@ public class EventStats {
     private double averageRating;
 
     public void recalculateAverageRating() {
-        if (participantsCount == 0) {
-            this.averageRating = 0.0;
-        } else {
-            int totalRating = oneStarCount +
-                    twoStarCount * 2 +
-                    threeStarCount * 3 +
-                    fourStarCount * 4 +
-                    fiveStarCount * 5;
+        int totalRating = oneStarCount +
+                twoStarCount * 2 +
+                threeStarCount * 3 +
+                fourStarCount * 4 +
+                fiveStarCount * 5;
 
-            this.averageRating = Math.round(((double) totalRating / participantsCount) * 10) / 10.0;
-        }
+        int ratingCount = oneStarCount + twoStarCount + threeStarCount + fourStarCount + fiveStarCount;
+
+        this.averageRating = ratingCount==0? 0 : Math.round(((double) totalRating / ratingCount) * 10) / 10.0;
     }
 
     public void setOneStarCount(int oneStarCount) {

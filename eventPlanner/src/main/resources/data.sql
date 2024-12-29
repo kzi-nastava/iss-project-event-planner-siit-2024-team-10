@@ -59,6 +59,7 @@ INSERT INTO notification (is_read, content) VALUES
                                                     ( FALSE, 'Your account has been updated.'),
                                                     ( TRUE, 'Event registration confirmed.');
 
+
 INSERT INTO product_details (name, description, price, discount, is_visible, is_available, timestamp) VALUES
                                                                                                               ( 'Wedding Decoration Set', 'Complete set of decorations for weddings, including table centerpieces and backdrops.', 200.00, 10.0, TRUE, FALSE, '2023-10-20 15:00:00'),
                                                                                                               ( 'Conference Projector', 'High-resolution projector for conferences and business meetings.', 1200.00, 10.0, TRUE, TRUE, '2023-10-25 10:30:00'),
