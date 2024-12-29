@@ -16,7 +16,7 @@ public class Rating {
     @Column(nullable = false)
 
     private int score;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Account rater;
 
     public Rating() {
