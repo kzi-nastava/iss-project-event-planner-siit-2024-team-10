@@ -196,6 +196,9 @@ public class EventService {
     }
 
     public CreatedAgendaItemDTO createAgendaItem(int eventId, CreateAgendaItemDTO agendaItemDto){
+        if(agendaItemDto.getStartTime().isAfter(agendaItemDto.getEndTime())){
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         AgendaItem agendaItem = modelMapper.map(agendaItemDto, AgendaItem.class);
@@ -206,6 +209,9 @@ public class EventService {
     }
 
     public UpdatedAgendaItemDTO updateAgendaItem(int eventId, int agendaItemId, UpdateAgendaItemDTO agendaItemDto){
+        if(agendaItemDto.getStartTime().isAfter(agendaItemDto.getEndTime())){
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         AgendaItem agendaItem = agendaItemRepository.findById(agendaItemId)

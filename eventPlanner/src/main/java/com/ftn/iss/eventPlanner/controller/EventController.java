@@ -142,7 +142,7 @@ public class EventController {
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value="/{eventId}/agenda", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedAgendaItemDTO> createAgendaItem(@PathVariable int eventId, @RequestBody CreateAgendaItemDTO agendaItemDto) {
+    public ResponseEntity<CreatedAgendaItemDTO> createAgendaItem(@PathVariable int eventId,@Valid @RequestBody CreateAgendaItemDTO agendaItemDto) {
         CreatedAgendaItemDTO createdAgendaItemDTO = eventService.createAgendaItem(eventId, agendaItemDto);
         return ResponseEntity.ok(createdAgendaItemDTO);
     }
@@ -156,7 +156,7 @@ public class EventController {
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @DeleteMapping(value="/{eventId}/agenda/{agendaItemId}")
-    public ResponseEntity<Void> deleteAgendaItem(@PathVariable int eventId, @PathVariable int agendaItemId) {
+    public ResponseEntity<Void> deleteAgendaItem(@PathVariable int eventId, @Valid @PathVariable int agendaItemId) {
         eventService.deleteAgendaItem(eventId, agendaItemId);
         return ResponseEntity.noContent().build();
     }
