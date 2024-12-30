@@ -1,7 +1,7 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
-import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
+import com.ftn.iss.eventPlanner.dto.agendaitem.*;
 import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.*;
@@ -93,7 +93,7 @@ public class EventController {
 
 
 
-    @PreAuthorize("hasAnyAuthority('PROVIDER')")
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedEventDTO> createEvent(@Valid @RequestBody CreateEventDTO event) {
         try{
@@ -138,5 +138,26 @@ public class EventController {
     public ResponseEntity<CreatedEventRatingDTO> rateEvent(@PathVariable int eventId, @RequestBody CreateEventRatingDTO rating) {
         CreatedEventRatingDTO ratedEvent = eventService.rateEvent(eventId, rating.getRating());
         return ResponseEntity.ok(ratedEvent);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @PostMapping(value="/{eventId}/agenda", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedAgendaItemDTO> createAgendaItem(@PathVariable int eventId,@Valid @RequestBody CreateAgendaItemDTO agendaItemDto) {
+        CreatedAgendaItemDTO createdAgendaItemDTO = eventService.createAgendaItem(eventId, agendaItemDto);
+        return ResponseEntity.ok(createdAgendaItemDTO);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @PutMapping(value="/{eventId}/agenda/{agendaItemId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedAgendaItemDTO> updateAgendaItem(@PathVariable int eventId, @PathVariable int agendaItemId, @RequestBody UpdateAgendaItemDTO agendaItemDto) {
+        UpdatedAgendaItemDTO updatedAgendaItemDTO = eventService.updateAgendaItem(eventId, agendaItemId, agendaItemDto);
+        return ResponseEntity.ok(updatedAgendaItemDTO);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @DeleteMapping(value="/{eventId}/agenda/{agendaItemId}")
+    public ResponseEntity<Void> deleteAgendaItem(@PathVariable int eventId, @Valid @PathVariable int agendaItemId) {
+        eventService.deleteAgendaItem(eventId, agendaItemId);
+        return ResponseEntity.noContent().build();
     }
 }
