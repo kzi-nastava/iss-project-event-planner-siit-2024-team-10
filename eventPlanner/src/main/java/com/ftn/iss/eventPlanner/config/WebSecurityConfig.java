@@ -73,6 +73,7 @@ public class WebSecurityConfig {
                     .requestMatchers(new AntPathRequestMatcher("/api/auth/activate")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/api/error")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("socket/**")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/messages/**")).permitAll()
                     .anyRequest().authenticated();
         });
         http.addFilterBefore(new TokenAuthenticationFilter(tokenUtils, userDetailsService()), UsernamePasswordAuthenticationFilter.class);
@@ -92,9 +93,10 @@ public class WebSecurityConfig {
                         "api/categories*","api/categories/*",
                         "api/offerings*","api/offerings/*",
                         "api/accounts/*/favourite-events",
-                        "/socket/**"
+                        "/socket/**",
+                        "api/messages/*/*"
                 )
-                .requestMatchers(HttpMethod.POST, "api/accounts/*/favourite-events","api/events/*/ratings")
+                .requestMatchers(HttpMethod.POST, "api/accounts/*/favourite-events","api/events/*/ratings","api/messages/**")
                 .requestMatchers(HttpMethod.DELETE, "api/accounts/*/favourite-events/*");
 
     }
