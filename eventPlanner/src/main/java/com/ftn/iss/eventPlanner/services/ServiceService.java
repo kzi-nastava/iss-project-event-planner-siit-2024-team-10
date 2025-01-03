@@ -89,7 +89,6 @@ public class ServiceService {
         Boolean searchByAvailability
     ) {
         Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
-                .and(ServiceSpecification.hasEventTypeId(eventTypeId))
                 .and(ServiceSpecification.hasCategoryId(categoryId))
                 .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
                 .and(ServiceSpecification.isAvailable(searchByAvailability));
@@ -108,7 +107,6 @@ public class ServiceService {
             Boolean searchByAvailability
     ) {
         Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
-                .and(ServiceSpecification.hasEventTypeId(eventTypeId))
                 .and(ServiceSpecification.hasCategoryId(categoryId))
                 .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
                 .and(ServiceSpecification.isAvailable(searchByAvailability));

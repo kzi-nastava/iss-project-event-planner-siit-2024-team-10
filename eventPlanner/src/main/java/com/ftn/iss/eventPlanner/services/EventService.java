@@ -1,7 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
-import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
+import com.ftn.iss.eventPlanner.dto.agendaitem.*;
 import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
 
@@ -10,15 +10,17 @@ import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
+import com.ftn.iss.eventPlanner.model.Event;
+import com.ftn.iss.eventPlanner.model.EventType;
+import com.ftn.iss.eventPlanner.model.Location;
+import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.EventSpecification;
-import com.ftn.iss.eventPlanner.repositories.EventRepository;
-import com.ftn.iss.eventPlanner.repositories.EventStatsRepository;
-import com.ftn.iss.eventPlanner.repositories.EventTypeRepository;
-import com.ftn.iss.eventPlanner.repositories.OrganizerRepository;
+import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +48,8 @@ public class EventService {
     private OrganizerRepository organizerRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
+    @Autowired
+    private AgendaItemRepository agendaItemRepository;
 
     public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
@@ -90,6 +94,25 @@ public class EventService {
             String sortBy,
             String sortDirection
     ) {
+        if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
+            String sortField = switch (sortBy.toLowerCase()) {
+                case "name" -> "name";
+                case "date" -> "date";
+                case "averagerating" -> "stats.averageRating";
+                case "location.city" -> "location.city";
+                default -> null;
+            };
+
+            if (sortField != null) {
+                var sortDirectionEnum = "desc".equalsIgnoreCase(sortDirection)
+                        ? org.springframework.data.domain.Sort.Direction.DESC
+                        : org.springframework.data.domain.Sort.Direction.ASC;
+
+                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                        org.springframework.data.domain.Sort.by(sortDirectionEnum, sortField));
+            }
+        }
+
         Specification<Event> specification = Specification.where(EventSpecification.hasEventTypeId(eventTypeId))
                 .and(EventSpecification.hasLocation(location))
                 .and(EventSpecification.maxParticipants(maxParticipants))
@@ -99,26 +122,14 @@ public class EventService {
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
-        List<Event> filteredEvents = pagedEvents.getContent();
-        if (minRating != null) {
-            filteredEvents = filteredEvents.stream()
-                    .filter(event -> event.getStats() != null && event.getStats().getAverageRating() >= minRating)
-                    .collect(Collectors.toList());
-        }
-
-        Comparator<Event> comparator = getEventComparator(sortBy, sortDirection);
-        if (comparator != null) {
-            filteredEvents = filteredEvents.stream()
-                    .sorted(comparator)
-                    .collect(Collectors.toList());
-        }
-
-        List<GetEventDTO> eventDTOs = filteredEvents.stream()
+        List<GetEventDTO> eventDTOs = pagedEvents.getContent().stream()
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
 
         return new PagedResponse<>(eventDTOs, pagedEvents.getTotalPages(), pagedEvents.getTotalElements());
     }
+
+
 
 
 
@@ -196,6 +207,51 @@ public class EventService {
         return new CreatedEventRatingDTO(stats.getAverageRating());
     }
 
+    public CreatedAgendaItemDTO createAgendaItem(int eventId, CreateAgendaItemDTO agendaItemDto){
+        if(agendaItemDto.getStartTime().isAfter(agendaItemDto.getEndTime())){
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        AgendaItem agendaItem = modelMapper.map(agendaItemDto, AgendaItem.class);
+        agendaItemRepository.save(agendaItem);
+        event.getAgenda().add(agendaItem);
+        eventRepository.save(event);
+        return modelMapper.map(agendaItem, CreatedAgendaItemDTO.class);
+    }
+
+    public UpdatedAgendaItemDTO updateAgendaItem(int eventId, int agendaItemId, UpdateAgendaItemDTO agendaItemDto){
+        if(agendaItemDto.getStartTime().isAfter(agendaItemDto.getEndTime())){
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        AgendaItem agendaItem = agendaItemRepository.findById(agendaItemId)
+                .orElseThrow(() -> new NotFoundException("Agenda Item with ID " + agendaItemId + " not found"));
+        if(!event.getAgenda().stream().anyMatch(agendaItem1 -> agendaItem1.getId() == agendaItemId)){
+            throw new IllegalArgumentException("Agenda Item with ID " + agendaItemId + " is not part of Event with ID " + eventId);
+        }
+        agendaItem.setName(agendaItemDto.getName());
+        agendaItem.setDescription(agendaItemDto.getDescription());
+        agendaItem.setLocation(agendaItemDto.getLocation());
+        agendaItem.setStartTime(agendaItemDto.getStartTime());
+        agendaItem.setEndTime(agendaItemDto.getEndTime());
+        agendaItemRepository.save(agendaItem);
+        return modelMapper.map(agendaItem, UpdatedAgendaItemDTO.class);
+    }
+
+    public void deleteAgendaItem(int eventId, int agendaItemId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        AgendaItem agendaItem = agendaItemRepository.findById(agendaItemId)
+                .orElseThrow(() -> new NotFoundException("Agenda Item with ID " + agendaItemId + " not found"));
+        if(!event.getAgenda().stream().anyMatch(agendaItem1 -> agendaItem1.getId() == agendaItemId)){
+            throw new IllegalArgumentException("Agenda Item with ID " + agendaItemId + " is not part of Event with ID " + eventId);
+        }
+        agendaItem.setDeleted(true);
+        agendaItemRepository.save(agendaItem);
+    }
+
 
     // HELPER FUNCTIONS
 
@@ -249,7 +305,7 @@ public class EventService {
 
     private Comparator<Event> getEventComparator(String sortBy, String sortDirection) {
         if (sortBy == null || "none".equalsIgnoreCase(sortBy)) {
-            return null; // No sorting
+            return null;
         }
 
         Comparator<Event> comparator = switch (sortBy.toLowerCase()) {
@@ -258,7 +314,7 @@ public class EventService {
             case "averagerating" -> Comparator.comparing(event -> event.getStats() != null
                     ? event.getStats().getAverageRating() : 0.0);
             case "location.city" -> Comparator.comparing(event -> event.getLocation().getCity(), String.CASE_INSENSITIVE_ORDER);
-            default -> null; // Unsupported sorting field
+            default -> null;
         };
 
         if (comparator != null && "desc".equalsIgnoreCase(sortDirection)) {

@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/pricelist")
+@RequestMapping("/api/pricelists")
 public class PricelistController {
     @Autowired
 

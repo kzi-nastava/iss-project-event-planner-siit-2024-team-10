@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:x="http://jasperreports.sourceforge.net/jasperreports/extension"
+              name="Pricelist Report" pageWidth="595" pageHeight="842" columnWidth="515" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+
+    <field name="serialNumber" class="java.lang.Integer"/>
+    <field name="itemName" class="java.lang.String"/>
+    <field name="price" class="java.lang.Double"/>
+    <field name="discount" class="java.lang.Double"/>
+    <field name="priceWithDiscount" class="java.lang.Double"/>
+
+    <!-- Column Header Section -->
+    <columnHeader>
+        <band height="20">
+            <!-- Column Headers -->
+            <textField>
+                <reportElement x="0" y="0" width="50" height="20"/>
+                <textFieldExpression><![CDATA["Serial Number"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="60" y="0" width="200" height="20"/>
+                <textFieldExpression><![CDATA["Item Name"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="270" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA["Price"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="380" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA["Discount"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="490" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA["Price with Discount"]]></textFieldExpression>
+            </textField>
+        </band>
+    </columnHeader>
+
+    <!-- Detail Section (the actual data rows) -->
+    <detail>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="0" width="50" height="20"/>
+                <textFieldExpression><![CDATA[$F{serialNumber}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="60" y="0" width="200" height="20"/>
+                <textFieldExpression><![CDATA[$F{itemName}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="270" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{price}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="380" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{discount}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="490" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{priceWithDiscount}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+</jasperReport>
