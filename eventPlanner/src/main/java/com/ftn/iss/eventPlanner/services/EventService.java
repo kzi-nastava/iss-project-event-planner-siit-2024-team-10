@@ -262,7 +262,8 @@ public class EventService {
         dto.setName(event.getName());
         dto.setDate(event.getDate());
         dto.setOrganizer(setGetOrganizerDTO(event));
-        dto.setEventType(modelMapper.map(event.getEventType(), GetEventTypeDTO.class));
+        if(event.getEventType()!=null)
+            dto.setEventType(modelMapper.map(event.getEventType(), GetEventTypeDTO.class));
 
         if (event.getLocation() != null) {
             GetLocationDTO locationDTO = setGetLocationDTO(event);
