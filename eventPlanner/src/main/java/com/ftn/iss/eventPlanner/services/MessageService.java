@@ -42,7 +42,7 @@ public class MessageService {
                 .collect(Collectors.toList());
     }
     /*
-    If we only work with account and not user - display "User" instead of name and last name
+    If we only work with account and not user - display username instead of name and last name
      */
     public List<GetChatContact> getChatContacts(int userId) {
         List<Message> allMessages = messageRepository.findBySenderIdOrReceiverId(userId, userId);
@@ -79,7 +79,7 @@ public class MessageService {
             }catch (Exception exception){
                 GetChatContact contact = new GetChatContact();
                 contact.setUser(contactId);
-                contact.setName("User");
+                contact.setName(account.getUsername());
                 contact.setContent(latestMessage.getContent());
                 contact.setDateTime(latestMessage.getTimestamp());
 
