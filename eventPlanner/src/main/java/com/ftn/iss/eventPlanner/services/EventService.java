@@ -145,6 +145,9 @@ public class EventService {
 
     public CreatedEventDTO create (CreateEventDTO createEventDTO){
         Event event = modelMapper.map(createEventDTO, Event.class);
+        if(event.getDate().isBefore(LocalDate.now())){
+            throw new IllegalArgumentException("Event date must be in the future");
+        }
         event.setId(0);
         Location location = modelMapper.map(locationService.create(createEventDTO.getLocation()), Location.class);
         event.setLocation(location);
