@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                     .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/api/auth/activate")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/api/error")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("socket/**")).permitAll()
                     .anyRequest().authenticated();
         });
         http.addFilterBefore(new TokenAuthenticationFilter(tokenUtils, userDetailsService()), UsernamePasswordAuthenticationFilter.class);
@@ -90,7 +91,9 @@ public class WebSecurityConfig {
                         "api/products*","api/products/*",
                         "api/categories*","api/categories/*",
                         "api/offerings*","api/offerings/*",
-                        "api/accounts/*/favourite-events")
+                        "api/accounts/*/favourite-events",
+                        "/socket/**"
+                )
                 .requestMatchers(HttpMethod.POST, "api/accounts/*/favourite-events","api/events/*/ratings")
                 .requestMatchers(HttpMethod.DELETE, "api/accounts/*/favourite-events/*");
 
@@ -102,9 +105,11 @@ public class WebSecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
         configuration.setAllowedMethods(Arrays.asList("POST", "PUT", "GET", "OPTIONS", "DELETE", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }
 
