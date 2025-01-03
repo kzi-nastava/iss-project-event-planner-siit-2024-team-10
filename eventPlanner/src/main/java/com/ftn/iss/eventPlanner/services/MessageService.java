@@ -5,22 +5,20 @@ import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
 import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
 import com.ftn.iss.eventPlanner.dto.message.CreateMessageDTO;
 import com.ftn.iss.eventPlanner.dto.message.CreatedMessageDTO;
+import com.ftn.iss.eventPlanner.dto.message.GetChatContact;
 import com.ftn.iss.eventPlanner.dto.message.GetMessageDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
-import com.ftn.iss.eventPlanner.model.AccountReport;
-import com.ftn.iss.eventPlanner.model.Location;
-import com.ftn.iss.eventPlanner.model.Message;
-import com.ftn.iss.eventPlanner.model.Offering;
+import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.MessageRepository;
+import com.ftn.iss.eventPlanner.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +27,8 @@ public class MessageService {
     private MessageRepository messageRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private UserRepository userRepository;
     private ModelMapper modelMapper = new ModelMapper();
 
     public List<GetMessageDTO> filterMessages(int senderId, int receiverId){
@@ -40,6 +40,57 @@ public class MessageService {
                 .sorted(Comparator.comparing(Message::getTimestamp))
                 .map(message -> modelMapper.map(message, GetMessageDTO.class))
                 .collect(Collectors.toList());
+    }
+    /*
+    If we only work with account and not user - display "User" instead of name and last name
+     */
+    public List<GetChatContact> getChatContacts(int userId) {
+        List<Message> allMessages = messageRepository.findBySenderIdOrReceiverId(userId, userId);
+
+        Map<Integer, Message> latestMessageMap = new HashMap<>();
+
+        for (Message message : allMessages) {
+            int contactId = message.getSender().getId() == userId ? message.getReceiver().getId() : message.getSender().getId();
+
+            Message existingMessage = latestMessageMap.get(contactId);
+            if (existingMessage == null || message.getTimestamp().isAfter(existingMessage.getTimestamp())) {
+                latestMessageMap.put(contactId, message);
+            }
+        }
+
+        List<GetChatContact> contacts = new ArrayList<>();
+
+        for (Map.Entry<Integer, Message> entry : latestMessageMap.entrySet()) {
+            Message latestMessage = entry.getValue();
+            int contactId = entry.getKey();
+
+            Account account = accountRepository.findById(contactId).get();
+            try {
+                User contactUser = userRepository.findById(account.getUser().getId()).orElse(null);
+                if (contactUser != null) {
+                    GetChatContact contact = new GetChatContact();
+                    contact.setUser(contactId);
+                    contact.setName(contactUser.getFirstName() + " " + contactUser.getLastName());
+                    contact.setContent(latestMessage.getContent());
+                    contact.setDateTime(latestMessage.getTimestamp());
+
+                    contacts.add(contact);
+                }
+            }catch (Exception exception){
+                GetChatContact contact = new GetChatContact();
+                contact.setUser(contactId);
+                contact.setName("User");
+                contact.setContent(latestMessage.getContent());
+                contact.setDateTime(latestMessage.getTimestamp());
+
+                contacts.add(contact);
+            }
+        }
+
+        // Sort contacts by datetime of last message (most recent first)
+        contacts.sort((c1, c2) -> c2.getDateTime().compareTo(c1.getDateTime()));
+
+        return contacts;
     }
     public CreatedMessageDTO create(CreateMessageDTO messageDTO){
         try{

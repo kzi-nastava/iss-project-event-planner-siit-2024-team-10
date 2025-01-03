@@ -18,6 +18,7 @@ INSERT INTO users ( dtype, first_name, last_name, phone_number, profile_photo, l
                                                                                                                            ('Organizer', 'Jane', 'Smith', '987-654-3210', NULL, 2, 2, NULL);
 
 
+
 INSERT INTO offering_category (id, name, description, is_deleted, pending) VALUES
                                                                                (1, 'Electronics', 'Category for electronic items.', FALSE, FALSE),
                                                                                (2, 'Home Services', 'Category for home-related services.', FALSE, TRUE);
@@ -52,9 +53,9 @@ INSERT INTO comment (id, content, status, commenter_id) VALUES
                                                             (1, 'Great event!', 1, 1),
                                                             (2, 'Needs better organization.', 0, 2);
 
-INSERT INTO message (id, content, timestamp, sender_id, receiver_id, is_read) VALUES
-                                                                                  (1, 'Hello, when is the event?', '2023-12-05 09:00:00', 1, 2, FALSE),
-                                                                                  (2, 'Can you provide more details?', '2023-12-06 10:00:00', 2, 1, TRUE);
+INSERT INTO message ( content, timestamp, sender_id, receiver_id, is_read) VALUES
+                                                                                  ( 'Hello, when is the event?', '2023-12-05 09:00:00', 1, 2, FALSE),
+                                                                                  ( 'Can you provide more details?', '2023-12-06 10:00:00', 2, 1, TRUE);
 
 INSERT INTO notification (id, is_read, content) VALUES
                                                     (1, FALSE, 'Your account has been updated.'),
@@ -117,3 +118,15 @@ INSERT INTO rating (id, score, rater_id) VALUES
 INSERT INTO reservation (id, start_time, end_time, status, event_id, service_id) VALUES
                                                                                      (1, '2024-01-15 09:00:00', '2024-01-15 17:00:00', 1, 1, NULL),
                                                                                      (2, '2024-03-10 08:00:00', '2024-03-10 20:00:00', 0, 2, 1);
+
+INSERT INTO message (content, timestamp, sender_id, receiver_id, is_read) VALUES
+                                                                                  ( 'Can you confirm my registration?', '2023-12-07 11:00:00', 3, 1, FALSE),
+                                                                                  ( 'Thank you for the details!', '2023-12-07 12:30:00', 2, 3, TRUE),
+                                                                                  ( 'What are the event topics?', '2023-12-08 10:15:00', 3, 2, FALSE),
+                                                                                  ( 'Topics will be shared soon.', '2023-12-08 11:45:00', 2, 3, TRUE),
+                                                                                  ( 'Do you have a schedule?', '2023-12-09 14:20:00', 1, 2, FALSE),
+                                                                                  ( 'Yes, I will send it shortly.', '2023-12-09 15:00:00', 2, 1, TRUE),
+                                                                                  ('Will there be lunch provided?', '2023-12-10 09:10:00', 3, 2, FALSE),
+                                                                                  ( 'Lunch is included in the ticket.', '2023-12-10 10:30:00', 2, 1, TRUE),
+                                                                                  ( 'Can I get a refund?', '2023-12-11 16:40:00', 1, 2, FALSE),
+                                                                                  ( 'Refunds are processed within 7 days.', '2023-12-11 17:50:00', 2, 1, TRUE);

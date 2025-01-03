@@ -3,6 +3,7 @@ import com.ftn.iss.eventPlanner.dto.eventtype.CreateEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.message.CreateMessageDTO;
 import com.ftn.iss.eventPlanner.dto.message.CreatedMessageDTO;
+import com.ftn.iss.eventPlanner.dto.message.GetChatContact;
 import com.ftn.iss.eventPlanner.dto.message.GetMessageDTO;
 import com.ftn.iss.eventPlanner.services.MessageService;
 import jakarta.validation.Valid;
@@ -33,5 +34,11 @@ public class MessageController {
         catch (IllegalArgumentException e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+    //     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<GetChatContact>> getChatContacts(@PathVariable int userId) {
+        List<GetChatContact> contacts = messageService.getChatContacts(userId);
+        return ResponseEntity.ok(contacts);
     }
 }
