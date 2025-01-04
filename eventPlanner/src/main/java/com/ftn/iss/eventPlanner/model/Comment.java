@@ -19,6 +19,8 @@ public class Comment {
     private Status status;
     @ManyToOne
     private Account commenter;
+    @Column(nullable = false)
+    private int rating;
 
     public Comment() {
     }

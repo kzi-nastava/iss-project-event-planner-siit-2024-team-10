@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.comment.GetCommentDTO;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
@@ -177,6 +178,29 @@ public class OfferingService {
                 .collect(Collectors.toList());
     }
 
+    public List<GetCommentDTO> getComments(int offeringId) {
+        Optional<Offering> offering = offeringRepository.findById(offeringId);
+
+        if (offering.isPresent()) {
+            return offering.get().getComments().stream()
+                    .map(comment -> mapToGetCommentDTO(comment))
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    private GetCommentDTO mapToGetCommentDTO(Comment comment) {
+        return new GetCommentDTO(
+                comment.getId(),
+                comment.getContent(),
+                comment.getStatus(),
+                comment.getCommenter().getId(),
+                comment.getRating(),
+                comment.getCommenter().getUsername()
+        );
+    }
+
     // HELPER FUNCTIONS
 
     private GetOfferingDTO mapToGetOfferingDTO(Offering offering) {
@@ -211,11 +235,12 @@ public class OfferingService {
     }
 
     private double calculateAverageRating(Offering offering) {
-        if (offering.getRatings() == null || offering.getRatings().isEmpty()) {
+        if (offering.getComments() == null || offering.getComments().isEmpty()) {
             return 0.0;
         }
-        OptionalDouble average = offering.getRatings().stream()
-                .mapToInt(Rating::getScore)
+
+        OptionalDouble average = offering.getComments().stream()
+                .mapToInt(Comment::getRating)
                 .average();
 
         return average.orElse(0.0);

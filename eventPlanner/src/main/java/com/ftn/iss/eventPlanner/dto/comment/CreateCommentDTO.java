@@ -8,6 +8,7 @@ import lombok.Setter;
 public class CreateCommentDTO {
     private String content;
     private int accountId;
+    private int rating;
     public CreateCommentDTO(){
 
     }
