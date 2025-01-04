@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.*;
@@ -177,6 +178,7 @@ public class OfferingService {
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
+    @Transactional(readOnly = true)
 
     public List<GetCommentDTO> getComments(int offeringId) {
         Optional<Offering> offering = offeringRepository.findById(offeringId);

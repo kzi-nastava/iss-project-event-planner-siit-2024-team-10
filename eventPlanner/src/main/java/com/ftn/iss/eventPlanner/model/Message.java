@@ -18,9 +18,9 @@ public class Message {
     private String content;
     @Column(nullable = false)
     private LocalDateTime timestamp;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Account sender;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Account receiver;
     @Column(nullable = false)
     private boolean isRead;
