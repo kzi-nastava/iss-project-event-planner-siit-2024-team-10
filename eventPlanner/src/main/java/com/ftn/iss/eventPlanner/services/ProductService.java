@@ -45,7 +45,6 @@ public class ProductService {
     ) {
         // TODO: add whats needed for filtering
         Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                .and(ProductSpecification.hasEventTypeId(eventTypeId))
                 .and(ProductSpecification.hasCategoryId(categoryId))
                 .and(ProductSpecification.betweenPrices(minPrice, maxPrice));
 
@@ -63,7 +62,6 @@ public class ProductService {
             Boolean searchByAvailability
     ) {
         Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                .and(ProductSpecification.hasEventTypeId(eventTypeId))
                 .and(ProductSpecification.hasCategoryId(categoryId))
                 .and(ProductSpecification.betweenPrices(minPrice, maxPrice));
 

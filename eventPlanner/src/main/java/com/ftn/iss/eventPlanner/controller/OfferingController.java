@@ -2,7 +2,6 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingCardDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.CreateRatingDTO;
 import com.ftn.iss.eventPlanner.dto.rating.CreatedRatingDTO;
@@ -16,10 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @CrossOrigin
@@ -48,22 +47,19 @@ public class OfferingController {
     public ResponseEntity<Collection<GetOfferingDTO>> getOfferings(
             @RequestParam(required = false) Boolean isServiceFilter,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Integer minDiscount,
-            @RequestParam(required = false) Integer duration,
+            @RequestParam(required = false) Integer serviceDuration,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) Boolean isAvailable
     ){
         try {
             List<GetOfferingDTO> offerings = offeringService.getAllOfferings(
-                    isServiceFilter, name, eventTypeId, categoryId, location, minPrice, maxPrice,
-                    minDiscount, duration, minRating, startDate, endDate, isAvailable);
+                    isServiceFilter, name, categoryId, location, minPrice, maxPrice,
+                    minDiscount, serviceDuration, minRating, isAvailable);
 
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
@@ -76,22 +72,21 @@ public class OfferingController {
             Pageable pageable,
             @RequestParam(required = false) Boolean isServiceFilter,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double startPrice,
+            @RequestParam(required = false) Double endPrice,
             @RequestParam(required = false) Integer minDiscount,
-            @RequestParam(required = false) Integer duration,
+            @RequestParam(required = false) Integer serviceDuration,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
-            @RequestParam(required = false) Boolean isAvailable
+            @RequestParam(required = false) Boolean isAvailable,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection
     ){
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
-                    pageable, isServiceFilter, name, eventTypeId, categoryId, location, minPrice,
-                    maxPrice, minDiscount, duration, minRating, startDate, endDate, isAvailable);
+                    pageable, isServiceFilter, name, categoryId, location, startPrice,
+                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection);
 
 
             return ResponseEntity.ok(offerings);
@@ -178,4 +173,20 @@ public class OfferingController {
     public ResponseEntity<?> deleteComment(@PathVariable int offeringId, @PathVariable int commentId) throws Exception {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping(value = "/highest-prices")
+    public ResponseEntity<?> getHighestPrice(@RequestParam(required = false) Boolean isService) {
+        try {
+            Double highestPrice = offeringService.getHighestPrice(isService);
+            return ResponseEntity.ok(highestPrice);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
 }
