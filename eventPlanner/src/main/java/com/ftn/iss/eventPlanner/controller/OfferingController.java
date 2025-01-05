@@ -100,11 +100,12 @@ public class OfferingController {
                     .body(new PagedResponse<>(List.of(), 0, 0));
         }
     }
+
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value = "{offeringId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment) {
+    public ResponseEntity<CreatedCommentDTO> createComment(@PathVariable int offeringId, @RequestBody CreateCommentDTO comment) {
         try{
-            CreatedCommentDTO createdEventType = commentService.create(comment);
+            CreatedCommentDTO createdEventType = commentService.create(comment,offeringId);
             return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
         }
         catch (IllegalArgumentException e){

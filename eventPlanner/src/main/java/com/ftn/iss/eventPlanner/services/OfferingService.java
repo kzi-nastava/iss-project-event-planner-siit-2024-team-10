@@ -179,13 +179,13 @@ public class OfferingService {
                 .collect(Collectors.toList());
     }
     @Transactional(readOnly = true)
-
     public List<GetCommentDTO> getComments(int offeringId) {
         Optional<Offering> offering = offeringRepository.findById(offeringId);
 
         if (offering.isPresent()) {
             return offering.get().getComments().stream()
-                    .map(comment -> mapToGetCommentDTO(comment))
+                    .filter(comment -> comment.getStatus() != Status.PENDING)
+                    .map(this::mapToGetCommentDTO)
                     .collect(Collectors.toList());
         } else {
             return Collections.emptyList();
