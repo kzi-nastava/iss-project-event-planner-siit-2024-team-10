@@ -7,6 +7,7 @@ import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.*;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -159,5 +160,13 @@ public class EventController {
     public ResponseEntity<Void> deleteAgendaItem(@PathVariable int eventId, @Valid @PathVariable int agendaItemId) {
         eventService.deleteAgendaItem(eventId, agendaItemId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping(value="/{eventId}/reports/open-event", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getEventReport(@PathVariable int eventId) throws JRException {
+        byte[] pdfReport= eventService.generateOpenEventReport(eventId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=event_report.pdf")
+                .body(pdfReport);
     }
 }
