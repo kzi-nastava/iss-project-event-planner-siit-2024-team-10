@@ -91,7 +91,7 @@ public class WebSecurityConfig {
                         "api/categories*","api/categories/*",
                         "api/offerings*","api/offerings/*",
                         "api/accounts/*/favourite-events",
-                        "api/comments*")
+                        "api/comments*","api/images","api/images/*")
                 .requestMatchers(HttpMethod.POST,
                         "api/accounts/*/favourite-events",
                         "api/events/*/ratings")
