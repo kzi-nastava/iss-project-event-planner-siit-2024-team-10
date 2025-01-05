@@ -19,13 +19,13 @@ public class CommentService {
     private CommentRepository commentRepository;
     @Autowired
     private AccountRepository accountRepository;
-    private ModelMapper modelMapper;
+    private ModelMapper modelMapper = new ModelMapper();
 
     public CreatedCommentDTO create(CreateCommentDTO commentDTO){
         Comment comment = new Comment();
         comment.setContent(commentDTO.getContent());
         comment.setRating(commentDTO.getRating());
-        Optional<Account> accountOptional = accountRepository.findById(commentDTO.getAccountId());
+        Optional<Account> accountOptional = accountRepository.findById(commentDTO.getAccount());
         accountOptional.ifPresent(account -> comment.setCommenter(account));
         comment.setStatus(Status.PENDING);
         commentRepository.save(comment);

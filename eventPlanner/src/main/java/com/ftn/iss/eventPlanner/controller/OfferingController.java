@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
@@ -99,7 +100,7 @@ public class OfferingController {
                     .body(new PagedResponse<>(List.of(), 0, 0));
         }
     }
-
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value = "{offeringId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedCommentDTO> createComment(@RequestBody CreateCommentDTO comment) {
         try{
@@ -107,6 +108,7 @@ public class OfferingController {
             return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
         }
         catch (IllegalArgumentException e){
+            System.out.println(e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

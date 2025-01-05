@@ -47,17 +47,17 @@ INSERT INTO budget_item (amount, purchase_date, is_deleted, category_id, offerin
                                                                                               ( 500.00, '2023-11-01 14:00:00', FALSE, 1, NULL),
                                                                                               ( 200.00, '2023-11-02 15:00:00', FALSE, 2, NULL);
 
-INSERT INTO comment (id, content, status, commenter_id, rating) VALUES
-                                                                    (1, 'Great event!', 1, 1, 5),
-                                                                    (2, 'Could be better.', 1, 2, 3),
-                                                                    (3, 'Excellent organization!', 1, 3, 5),
-                                                                    (4, 'Not satisfied with the service.', 0, 1, 2),
-                                                                    (5, 'Highly recommend.', 1, 2, 4),
-                                                                    (6, 'Average experience.', 1, 2, 3),
-                                                                    (7, 'Loved the venue!', 0, 1, 4),
-                                                                    (8, 'Staff was very helpful.', 1, 1, 5),
-                                                                    (9, 'Disappointed with the food.', 1, 1, 2),
-                                                                    (10, 'Best event I’ve attended!', 1, 2, 5);
+INSERT INTO comment (content, status, commenter_id, rating) VALUES
+                                                                    ( 'Great event!', 1, 1, 5),
+                                                                    ( 'Could be better.', 1, 2, 3),
+                                                                    ( 'Excellent organization!', 1, 3, 5),
+                                                                    ( 'Not satisfied with the service.', 0, 1, 2),
+                                                                    ( 'Highly recommend.', 1, 2, 4),
+                                                                    ( 'Average experience.', 1, 2, 3),
+                                                                    ( 'Loved the venue!', 0, 1, 4),
+                                                                    ( 'Staff was very helpful.', 1, 1, 5),
+                                                                    ( 'Disappointed with the food.', 1, 1, 2),
+                                                                    ( 'Best event I’ve attended!', 1, 2, 5);
 
 
 INSERT INTO message (content, timestamp, sender_id, receiver_id, is_read) VALUES
