@@ -7,6 +7,7 @@ import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
 
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventRatingDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
+import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
@@ -254,6 +255,15 @@ public class EventService {
         }
         agendaItem.setDeleted(true);
         agendaItemRepository.save(agendaItem);
+    }
+
+    public GetEventStatsDTO getEventStats(int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        EventStats stats = event.getStats();
+        GetEventStatsDTO statsDTO = modelMapper.map(stats, GetEventStatsDTO.class);
+        statsDTO.setEventName(event.getName());
+        return statsDTO;
     }
 
     public byte[] generateOpenEventReport(int eventId) throws JRException {
