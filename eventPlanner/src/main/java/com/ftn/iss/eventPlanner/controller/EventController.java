@@ -5,6 +5,8 @@ import com.ftn.iss.eventPlanner.dto.agendaitem.*;
 import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.*;
+import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
+import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
 import net.sf.jasperreports.engine.JRException;
@@ -168,5 +170,11 @@ public class EventController {
         return ResponseEntity.ok()
                 .header("Content-Disposition", "inline; filename=event_report.pdf")
                 .body(pdfReport);
+    }
+
+    @GetMapping(value="/{eventId}/stats", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetEventStatsDTO> getEventStats(@PathVariable int eventId) {
+        GetEventStatsDTO eventStats = eventService.getEventStats(eventId);
+        return ResponseEntity.ok(eventStats);
     }
 }
