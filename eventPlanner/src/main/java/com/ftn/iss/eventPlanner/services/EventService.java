@@ -17,6 +17,8 @@ import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.EventSpecification;
 import com.ftn.iss.eventPlanner.repositories.*;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,11 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 import org.webjars.NotFoundException;
 
+import java.io.InputStream;
 import java.time.LocalDate;
+import java.util.*;
 import java.util.Comparator;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -255,6 +256,44 @@ public class EventService {
         agendaItemRepository.save(agendaItem);
     }
 
+    public byte[] generateOpenEventReport(int eventId) throws JRException {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        if(!event.isOpen())
+            throw new IllegalArgumentException("Event with ID " + eventId + " is not open");
+        EventStats eventStats=event.getStats();
+        // Load the JRXML template from classpath
+        String reportPath = "template/open_event_report.jrxml";  // Ensure the path is correct
+        InputStream reportStream = getClass().getClassLoader().getResourceAsStream(reportPath);
+        if (reportStream == null) {
+            throw new JRException("Could not find report template: " + reportPath);
+        }
+
+        // Compile the Jasper report
+        JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+
+        // Prepare the data for the report
+        List<HashMap<String, Object>> reportData = new ArrayList<>();
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("participants", eventStats.getParticipantsCount());
+        data.put("rating1Count", eventStats.getOneStarCount());
+        data.put("rating2Count", eventStats.getTwoStarCount());
+        data.put("rating3Count", eventStats.getThreeStarCount());
+        data.put("rating4Count", eventStats.getFourStarCount());
+        data.put("rating5Count", eventStats.getFiveStarCount());
+        reportData.add(data);
+
+        // Convert data into JRDataSource
+        JRDataSource jrDataSource = new JRBeanCollectionDataSource(reportData);
+
+        // Fill the report with data
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("eventName", event.getName()); // Replace with actual event name
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, jrDataSource);
+
+        // Export to PDF
+        return JasperExportManager.exportReportToPdf(jasperPrint);
+    }
 
     // HELPER FUNCTIONS
 
@@ -326,6 +365,5 @@ public class EventService {
 
         return comparator;
     }
-
 
 }
