@@ -2,11 +2,14 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
+import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.AccountStatus;
 import com.ftn.iss.eventPlanner.model.Event;
+import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
+import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +27,8 @@ import java.util.stream.Collectors;
 public class AccountService implements UserDetailsService {
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private OfferingRepository offeringRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -58,6 +63,25 @@ public class AccountService implements UserDetailsService {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
         account.getFavouriteEvents().removeIf(e -> e.getId() == eventId);
+        accountRepository.save(account);
+    }
+    public Collection<GetOfferingDTO> getFavouriteOfferings(int accountId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        return account.getFavouriteEvents().stream()
+                .map(event -> modelMapper.map(event, GetOfferingDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public void addOfferingToFavourites(int accountId, int offeringId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new NotFoundException("Offering not found"));
+        account.getFavouriteOfferings().add(offering);
+        accountRepository.save(account);
+    }
+
+    public void removeOfferingFromFavourites(int accountId, int offeringId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        account.getFavouriteOfferings().removeIf(e -> e.getId() == offeringId);
         accountRepository.save(account);
     }
 }

@@ -41,7 +41,7 @@ public class Account implements UserDetails {
     private Set<Event> acceptedEvents = new HashSet<>();;
     @OneToOne
     private User user;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Offering> favouriteOfferings = new HashSet<>();;
     @OneToMany
     private Set<Notification> notifications = new HashSet<>();;
