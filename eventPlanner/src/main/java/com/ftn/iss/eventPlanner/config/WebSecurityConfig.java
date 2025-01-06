@@ -91,12 +91,14 @@ public class WebSecurityConfig {
                         "api/categories*","api/categories/*",
                         "api/offerings*","api/offerings/*",
                         "api/accounts/*/favourite-events",
+                        "api/accounts/*/favourite-offerings",
                         "api/comments*","api/images","api/images/*","api/offerings/*/comments")
                 .requestMatchers(HttpMethod.POST,
                         "api/accounts/*/favourite-events",
+                        "api/accounts/*/favourite-offerings",
                         "api/events/*/ratings")
                 .requestMatchers(HttpMethod.DELETE,
-                        "api/accounts/*/favourite-events/*");
+                        "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
     }
 
     @Bean

@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
@@ -44,7 +45,7 @@ public class AccountService implements UserDetailsService {
             return account;
         }
     }
-
+    @Transactional
     public Collection<GetEventDTO> getFavouriteEvents(int accountId) {
         Account account = accountRepository.findByIdWithFavouriteEvents(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));
@@ -52,21 +53,21 @@ public class AccountService implements UserDetailsService {
                 .map(event -> modelMapper.map(event, GetEventDTO.class))
                 .collect(Collectors.toList());
     }
-
+    @Transactional
     public void addEventToFavourites(int accountId, int eventId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
         account.getFavouriteEvents().add(event);
         accountRepository.save(account);
     }
-
+    @Transactional
     public void removeEventFromFavourites(int accountId, int eventId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
         account.getFavouriteEvents().removeIf(e -> e.getId() == eventId);
         accountRepository.save(account);
     }
-
+    @Transactional
     public Collection<GetOfferingDTO> getFavouriteOfferings(int accountId) {
         Account account = accountRepository.findByIdWithFavouriteOfferings(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));
@@ -74,14 +75,14 @@ public class AccountService implements UserDetailsService {
                 .map(offering -> modelMapper.map(offering, GetOfferingDTO.class))
                 .collect(Collectors.toList());
     }
-
+    @Transactional
     public void addOfferingToFavourites(int accountId, int offeringId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
         Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new NotFoundException("Offering not found"));
         account.getFavouriteOfferings().add(offering);
         accountRepository.save(account);
     }
-
+    @Transactional
     public void removeOfferingFromFavourites(int accountId, int offeringId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
         account.getFavouriteOfferings().removeIf(e -> e.getId() == offeringId);
