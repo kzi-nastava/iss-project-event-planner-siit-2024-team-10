@@ -149,5 +149,14 @@ public class OfferingController {
                     .body("An unexpected error occurred: " + e.getMessage());
         }
     }
+    @GetMapping(value = "/provider/{providerId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetOfferingDTO>> getOfferingsByProviderId(@PathVariable int providerId) {
+        try {
+            List<GetOfferingDTO> offerings = offeringService.getOfferingsByProviderId(providerId);
+            return ResponseEntity.ok(offerings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
+    }
 
 }

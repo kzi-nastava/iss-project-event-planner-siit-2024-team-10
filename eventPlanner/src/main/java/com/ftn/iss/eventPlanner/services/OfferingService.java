@@ -191,7 +191,12 @@ public class OfferingService {
             return Collections.emptyList();
         }
     }
-
+    public List<GetOfferingDTO> getOfferingsByProviderId(int providerId) {
+        return offeringRepository.findAll().stream()
+                .filter(offering -> offering.getProvider().getId() == providerId)
+                .map(this::mapToGetOfferingDTO)
+                .collect(Collectors.toList());
+    }
     private GetCommentDTO mapToGetCommentDTO(Comment comment) {
         return new GetCommentDTO(
                 comment.getId(),
