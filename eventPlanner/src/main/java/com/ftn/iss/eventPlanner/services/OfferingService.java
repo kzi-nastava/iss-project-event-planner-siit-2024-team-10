@@ -191,6 +191,8 @@ public class OfferingService {
             return Collections.emptyList();
         }
     }
+    @Transactional
+
     public List<GetOfferingDTO> getOfferingsByProviderId(int providerId) {
         return offeringRepository.findAll().stream()
                 .filter(offering -> offering.getProvider().getId() == providerId)
