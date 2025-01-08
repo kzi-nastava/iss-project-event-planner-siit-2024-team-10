@@ -177,4 +177,10 @@ public class EventController {
         GetEventStatsDTO eventStats = eventService.getEventStats(eventId);
         return ResponseEntity.ok(eventStats);
     }
+
+    @PostMapping(value="/{eventId}/stats/participants", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetEventStatsDTO> addParticipant(@PathVariable int eventId) {
+        GetEventStatsDTO updatedEventStats = eventService.addParticipant(eventId);
+        return ResponseEntity.ok(updatedEventStats);
+    }
 }
