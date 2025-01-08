@@ -305,6 +305,20 @@ public class EventService {
         return JasperExportManager.exportReportToPdf(jasperPrint);
     }
 
+    public GetEventStatsDTO addParticipant(int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        EventStats stats = event.getStats();
+        if(stats.getParticipantsCount()>=event.getMaxParticipants()){
+            throw new IllegalArgumentException("Event is full");
+        }
+        stats.setParticipantsCount(stats.getParticipantsCount()+1);
+        eventStatsRepository.save(stats);
+        GetEventStatsDTO statsDTO = modelMapper.map(stats, GetEventStatsDTO.class);
+        statsDTO.setEventName(event.getName());
+        return statsDTO;
+    }
+
     // HELPER FUNCTIONS
 
     private GetEventDTO mapToGetEventDTO(Event event) {
@@ -325,6 +339,7 @@ public class EventService {
         dto.setMaxParticipants(event.getMaxParticipants());
         if (event.getStats()!=null) {
             dto.setAverageRating(event.getStats().getAverageRating());
+            dto.setParticipantsCount(event.getStats().getParticipantsCount());
         }else{
             dto.setAverageRating(0);
         }
