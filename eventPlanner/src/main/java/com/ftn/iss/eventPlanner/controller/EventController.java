@@ -164,6 +164,7 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','ADMIN')")
     @GetMapping(value="/{eventId}/reports/open-event", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> getEventReport(@PathVariable int eventId) throws JRException {
         byte[] pdfReport= eventService.generateOpenEventReport(eventId);
@@ -172,6 +173,7 @@ public class EventController {
                 .body(pdfReport);
     }
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','ADMIN')")
     @GetMapping(value="/{eventId}/stats", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetEventStatsDTO> getEventStats(@PathVariable int eventId) {
         GetEventStatsDTO eventStats = eventService.getEventStats(eventId);
