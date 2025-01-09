@@ -7,9 +7,6 @@ import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
 
 import com.ftn.iss.eventPlanner.dto.event.CreatedEventRatingDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
-import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
 import com.ftn.iss.eventPlanner.model.Event;
 import com.ftn.iss.eventPlanner.model.EventType;
 import com.ftn.iss.eventPlanner.model.Location;
@@ -30,7 +27,6 @@ import org.webjars.NotFoundException;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,11 +47,14 @@ public class EventService {
     @Autowired
     private AgendaItemRepository agendaItemRepository;
 
+    @Autowired
+    private DTOMapper dtoMapper;
+
     public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
 
         return events.stream()
-                .map(this::mapToGetEventDTO)
+                .map(dtoMapper::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
 
@@ -77,7 +76,7 @@ public class EventService {
         List<Event> events = eventRepository.findAll(specification);
 
         return events.stream()
-                .map(this::mapToGetEventDTO)
+                .map(dtoMapper::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
 
@@ -123,15 +122,11 @@ public class EventService {
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
         List<GetEventDTO> eventDTOs = pagedEvents.getContent().stream()
-                .map(this::mapToGetEventDTO)
+                .map(dtoMapper::mapToGetEventDTO)
                 .collect(Collectors.toList());
 
         return new PagedResponse<>(eventDTOs, pagedEvents.getTotalPages(), pagedEvents.getTotalElements());
     }
-
-
-
-
 
     public List<GetEventDTO> findTopEvents() {
         List<Event> events = eventRepository.findAll();
@@ -139,7 +134,7 @@ public class EventService {
         return events.stream()
                 .sorted((e1, e2) -> e2.getDateCreated().compareTo(e1.getDateCreated()))
                 .limit(5)
-                .map(this::mapToGetEventDTO)
+                .map(dtoMapper::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
 
@@ -180,7 +175,7 @@ public class EventService {
     public GetEventDTO getEvent(int eventId){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
-        return mapToGetEventDTO(event);
+        return dtoMapper.mapToGetEventDTO(event);
     }
 
     public CreatedEventRatingDTO rateEvent(int eventId, int rating){
@@ -254,78 +249,4 @@ public class EventService {
         agendaItem.setDeleted(true);
         agendaItemRepository.save(agendaItem);
     }
-
-
-    // HELPER FUNCTIONS
-
-    private GetEventDTO mapToGetEventDTO(Event event) {
-        GetEventDTO dto = new GetEventDTO();
-
-        dto.setId(event.getId());
-        dto.setName(event.getName());
-        dto.setDate(event.getDate());
-        dto.setOrganizer(setGetOrganizerDTO(event));
-        if(event.getEventType()!=null)
-            dto.setEventType(modelMapper.map(event.getEventType(), GetEventTypeDTO.class));
-
-        if (event.getLocation() != null) {
-            GetLocationDTO locationDTO = setGetLocationDTO(event);
-            dto.setLocation(locationDTO);
-        }
-
-        dto.setMaxParticipants(event.getMaxParticipants());
-        if (event.getStats()!=null) {
-            dto.setAverageRating(event.getStats().getAverageRating());
-        }else{
-            dto.setAverageRating(0);
-        }
-        dto.setDescription(event.getDescription());
-        dto.setOpen(event.isOpen());
-        return dto;
-    }
-
-    private GetLocationDTO setGetLocationDTO (Event event){
-        GetLocationDTO locationDTO = new GetLocationDTO();
-        locationDTO.setCountry(event.getLocation().getCountry());
-        locationDTO.setCity(event.getLocation().getCity());
-        locationDTO.setStreet(event.getLocation().getStreet());
-        locationDTO.setHouseNumber(event.getLocation().getHouseNumber());
-        return locationDTO;
-    }
-
-    private GetOrganizerDTO setGetOrganizerDTO(Event event){
-        GetOrganizerDTO organizerDTO = new GetOrganizerDTO();
-        organizerDTO.setId(event.getOrganizer().getId());
-        organizerDTO.setEmail(event.getOrganizer().getAccount().getEmail());
-        organizerDTO.setFirstName(event.getOrganizer().getFirstName());
-        organizerDTO.setLastName(event.getOrganizer().getLastName());
-        organizerDTO.setPhoneNumber(event.getOrganizer().getPhoneNumber());
-        organizerDTO.setProfilePhoto(event.getOrganizer().getProfilePhoto());
-        organizerDTO.setLocation(modelMapper.map(event.getOrganizer().getLocation(), GetLocationDTO.class));
-        return organizerDTO;
-    }
-
-
-    private Comparator<Event> getEventComparator(String sortBy, String sortDirection) {
-        if (sortBy == null || "none".equalsIgnoreCase(sortBy)) {
-            return null;
-        }
-
-        Comparator<Event> comparator = switch (sortBy.toLowerCase()) {
-            case "name" -> Comparator.comparing(Event::getName, String.CASE_INSENSITIVE_ORDER);
-            case "date" -> Comparator.comparing(Event::getDate);
-            case "averagerating" -> Comparator.comparing(event -> event.getStats() != null
-                    ? event.getStats().getAverageRating() : 0.0);
-            case "location.city" -> Comparator.comparing(event -> event.getLocation().getCity(), String.CASE_INSENSITIVE_ORDER);
-            default -> null;
-        };
-
-        if (comparator != null && "desc".equalsIgnoreCase(sortDirection)) {
-            comparator = comparator.reversed();
-        }
-
-        return comparator;
-    }
-
-
 }
