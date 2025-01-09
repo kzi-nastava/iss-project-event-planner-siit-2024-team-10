@@ -20,7 +20,7 @@ import java.util.OptionalDouble;
 @Component
 public class DTOMapper {
 
-    private ModelMapper modelMapper = new ModelMapper();
+    private final ModelMapper modelMapper;
     @Autowired
     public DTOMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
@@ -175,4 +175,32 @@ public class DTOMapper {
 
         return average.orElse(0.0);
     }
+
+    public GetServiceDTO mapServiceDetailsDTO(Service service, ServiceDetails serviceDetails) {
+        GetServiceDTO serviceDTO = new GetServiceDTO();
+
+        serviceDTO.setName(serviceDetails.getName());
+        serviceDTO.setDescription(serviceDetails.getDescription());
+        serviceDTO.setSpecification(serviceDetails.getSpecification());
+        serviceDTO.setPrice(serviceDetails.getPrice());
+        serviceDTO.setDiscount(serviceDetails.getDiscount());
+        serviceDTO.setPhotos(serviceDetails.getPhotos());
+        serviceDTO.setVisible(serviceDetails.isVisible());
+        serviceDTO.setAvailable(serviceDetails.isAvailable());
+        serviceDTO.setMaxDuration(serviceDetails.getMaxDuration());
+        serviceDTO.setMinDuration(serviceDetails.getMinDuration());
+        serviceDTO.setCancellationPeriod(serviceDetails.getCancellationPeriod());
+        serviceDTO.setReservationPeriod(serviceDetails.getReservationPeriod());
+        serviceDTO.setAutoConfirm(serviceDetails.isAutoConfirm());
+
+        serviceDTO.setId(service.getId());
+        serviceDTO.setPending(service.isPending());
+        serviceDTO.setDeleted(service.isDeleted());
+        serviceDTO.setCategory(modelMapper.map(service.getCategory(), GetOfferingCategoryDTO.class));
+        serviceDTO.setProvider(setGetProviderDTO(service));
+
+        return serviceDTO;
+    }
+
+
 }
