@@ -165,6 +165,6 @@ INSERT INTO rating (score, rater_id) VALUES
                                              ( 5, 1),
                                              ( 3, 2);
 
-INSERT INTO reservation (start_time, end_time, status, event_id, service_id) VALUES
-                                                                                     ( '2024-01-15 09:00:00', '2024-01-15 17:00:00', 1, 1, NULL),
-                                                                                     ( '2024-03-10 08:00:00', '2024-03-10 20:00:00', 0, 2, 1);
+INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
+                                                                                     ( '09:00:00', '17:00:00', 1, 1, NULL, '2023-12-06 10:00:0'),
+                                                                                     ( '08:00:00', '20:00:00', 0, 2, 1, '2023-12-06 10:00:0');
