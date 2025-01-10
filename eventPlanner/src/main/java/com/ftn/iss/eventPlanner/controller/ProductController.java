@@ -63,8 +63,8 @@ public class ProductController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedProductDTO> createProduct(@RequestBody CreateProductDTO product) throws Exception {
-        CreatedProductDTO createdProduct = new CreatedProductDTO();
-        return new ResponseEntity<CreatedProductDTO>(createdProduct, HttpStatus.CREATED);
+        CreatedProductDTO createdProduct = productService.create(product);
+        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
