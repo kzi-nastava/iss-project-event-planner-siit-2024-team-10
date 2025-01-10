@@ -9,8 +9,8 @@ import java.util.List;
 @Setter
 public class CreateProductDTO {
     private int categoryId;
-    private String categoryProposal;
-    private boolean pending;
+    private String categoryProposalName;
+    private String categoryProposalDescription;
     private int providerID;
     private String name;
     private String description;
@@ -19,7 +19,6 @@ public class CreateProductDTO {
     private List<String> photos;
     private boolean isVisible;
     private boolean isAvailable;
-    private List<Integer> eventTypesIds;
 
     public CreateProductDTO() {}
 }
