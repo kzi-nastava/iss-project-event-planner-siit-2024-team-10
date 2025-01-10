@@ -5,18 +5,20 @@ import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
+import com.ftn.iss.eventPlanner.dto.product.CreateProductDTO;
+import com.ftn.iss.eventPlanner.dto.product.CreatedProductDTO;
 import com.ftn.iss.eventPlanner.dto.product.GetProductDTO;
 import com.ftn.iss.eventPlanner.dto.product.UpdatedProductDTO;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.dto.service.UpdatedServiceDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
-import com.ftn.iss.eventPlanner.model.Offering;
-import com.ftn.iss.eventPlanner.model.Product;
-import com.ftn.iss.eventPlanner.model.ProductDetails;
-import com.ftn.iss.eventPlanner.model.ServiceDetails;
+import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
+import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.ProductRepository;
+import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
+import jdk.jfr.Category;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,7 +36,12 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
+    private OfferingCategoryRepository offeringCategoryRepository;
+    @Autowired
+    private ProviderRepository providerRepository;
+    @Autowired
     private ModelMapper modelMapper;
+
     public List<GetProductDTO> findAll(
             String name,
             Integer eventTypeId,
@@ -147,5 +154,45 @@ public class ProductService {
         companyDTO.setPhoneNumber(offering.getProvider().getCompany().getPhoneNumber());
 
         return companyDTO;
+    }
+
+    public CreatedProductDTO create(CreateProductDTO productDTO){
+        Product product = new Product();
+        product.setPending(false);
+        if(productDTO.getCategoryId() == 0){
+            if(productDTO.getCategoryProposalName()==null)
+                throw new IllegalArgumentException("Category proposal is required");
+            OfferingCategory category = new OfferingCategory();
+            category.setName(productDTO.getCategoryProposalName());
+            category.setDescription(productDTO.getCategoryProposalDescription());
+            category.setPending(true);
+            category=offeringCategoryRepository.save(category);
+            product.setCategory(category);
+            product.setPending(true);
+        }
+        else{
+            OfferingCategory category = offeringCategoryRepository.findById(productDTO.getCategoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("Category with ID " + productDTO.getCategoryId() + " not found"));
+            product.setCategory(category);
+        }
+        Provider provider = providerRepository.findById(productDTO.getProviderID())
+                .orElseThrow(() -> new IllegalArgumentException("Provider with ID " + productDTO.getProviderID() + " not found"));
+        product.setProvider(provider);
+
+        //TODO add custom model mapper
+        ProductDetails productDetails = new ProductDetails();
+        productDetails.setName(productDTO.getName());
+        productDetails.setDescription(productDTO.getDescription());
+        productDetails.setPrice(productDTO.getPrice());
+        productDetails.setDiscount(productDTO.getDiscount());
+        productDetails.setPhotos(productDTO.getPhotos());
+        productDetails.setVisible(productDTO.isVisible());
+        productDetails.setAvailable(productDTO.isAvailable());
+        productDetails.setTimestamp(LocalDateTime.now());
+
+        product.setCurrentDetails(productDetails);
+        product = productRepository.save(product);
+        //TODO add custom model mapper
+        return modelMapper.map(product, CreatedProductDTO.class);
     }
 }
