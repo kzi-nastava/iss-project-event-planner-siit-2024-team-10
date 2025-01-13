@@ -17,6 +17,9 @@ INSERT INTO users ( dtype, first_name, last_name, phone_number, profile_photo, l
                                                                                                                            ('Provider', 'John', 'Doe', '123-456-7890', NULL, 1, 3,1),
                                                                                                                            ('Organizer', 'Jane', 'Smith', '987-654-3210', NULL, 2, 2, NULL);
 
+UPDATE account SET user_id = 2 WHERE id = 2;
+UPDATE account SET user_id = 1 WHERE id = 3;
+
 INSERT INTO offering_category (name, description, is_deleted, pending) VALUES
                                                                                ('Electronics', 'Category for electronic items.', FALSE, FALSE),
                                                                                ( 'Home Services', 'Category for home-related services.', FALSE, TRUE);
