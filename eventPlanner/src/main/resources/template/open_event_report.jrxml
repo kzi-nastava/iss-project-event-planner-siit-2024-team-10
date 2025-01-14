@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="EventReport" pageWidth="595" pageHeight="842" columnWidth="555"
+              leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+
+    <parameter name="eventName" class="java.lang.String"/>
+    <field name="participants" class="java.lang.Integer"/>
+    <field name="rating1Count" class="java.lang.Integer"/>
+    <field name="rating2Count" class="java.lang.Integer"/>
+    <field name="rating3Count" class="java.lang.Integer"/>
+    <field name="rating4Count" class="java.lang.Integer"/>
+    <field name="rating5Count" class="java.lang.Integer"/>
+
+    <title>
+        <band height="50">
+            <textField>
+                <reportElement x="0" y="0" width="555" height="30"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="16" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{eventName} + " - Event Report"]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <detail>
+        <band height="400">
+            <textField>
+                <reportElement x="0" y="20" width="555" height="30"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Number of Participants: " + $F{participants}]]></textFieldExpression>
+            </textField>
+
+            <barChart>
+                <chart evaluationTime="Report">
+                    <reportElement x="50" y="70" width="455" height="300"/>
+                    <chartTitle>
+                        <titleExpression><![CDATA["Rating Distribution"]]></titleExpression>
+                    </chartTitle>
+                    <chartSubtitle/>
+                    <chartLegend/>
+                </chart>
+                <categoryDataset>
+                    <dataset resetType="Report"/>
+                    <categorySeries>
+                        <seriesExpression><![CDATA["Ratings"]]></seriesExpression>
+                        <categoryExpression><![CDATA[1]]></categoryExpression>
+                        <valueExpression><![CDATA[$F{rating1Count}]]></valueExpression>
+                    </categorySeries>
+                    <categorySeries>
+                        <seriesExpression><![CDATA["Ratings"]]></seriesExpression>
+                        <categoryExpression><![CDATA[2]]></categoryExpression>
+                        <valueExpression><![CDATA[$F{rating2Count}]]></valueExpression>
+                    </categorySeries>
+                    <categorySeries>
+                        <seriesExpression><![CDATA["Ratings"]]></seriesExpression>
+                        <categoryExpression><![CDATA[3]]></categoryExpression>
+                        <valueExpression><![CDATA[$F{rating3Count}]]></valueExpression>
+                    </categorySeries>
+                    <categorySeries>
+                        <seriesExpression><![CDATA["Ratings"]]></seriesExpression>
+                        <categoryExpression><![CDATA[4]]></categoryExpression>
+                        <valueExpression><![CDATA[$F{rating4Count}]]></valueExpression>
+                    </categorySeries>
+                    <categorySeries>
+                        <seriesExpression><![CDATA["Ratings"]]></seriesExpression>
+                        <categoryExpression><![CDATA[5]]></categoryExpression>
+                        <valueExpression><![CDATA[$F{rating5Count}]]></valueExpression>
+                    </categorySeries>
+                </categoryDataset>
+                <barPlot>
+                    <plot/>
+                    <itemLabel/>
+                    <categoryAxisFormat>
+                        <axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000">
+                            <labelFont>
+                                <font size="12"/>
+                            </labelFont>
+                        </axisFormat>
+                    </categoryAxisFormat>
+                    <valueAxisFormat>
+                        <axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000">
+                            <labelFont>
+                                <font size="12"/>
+                            </labelFont>
+                        </axisFormat>
+                    </valueAxisFormat>
+                </barPlot>
+            </barChart>
+        </band>
+    </detail>
+</jasperReport>
