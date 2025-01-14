@@ -7,6 +7,8 @@ import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.model.*;
+import com.ftn.iss.eventPlanner.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+    @Autowired
+    private UserService userService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedUserDTO> createUser(@RequestBody CreateUserDTO user){
@@ -38,102 +42,10 @@ public class UserController {
         return new ResponseEntity<CreatedUserDTO>(savedUser, HttpStatus.CREATED);
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetUserDTO>> getUsers() {
-        Collection<GetUserDTO> users = new ArrayList<>() ;
-
-        GetUserDTO user1 = new GetUserDTO();
-        user1.setId(1);
-        user1.setEmail("user1@example.com");
-        user1.setRole(Role.PROVIDER);
-        user1.setFirstName("John");
-        user1.setLastName("Doe");
-        user1.setPhoneNumber("123-456-7890");
-        user1.setProfilePhoto("https://example.com/photos/user1.jpg");
-        user1.setLocation(new GetLocationDTO("New York", "USA", "5th Avenue", "10A"));
-        user1.setCompany(new GetCompanyDTO("info@company1.com", "Tech Corp", "123-555-7890", "Tech solutions company",
-                Arrays.asList("https://example.com/photos/company1.jpg"), new GetLocationDTO("San Francisco", "USA", "Market St", "101")));
-
-        users.add(user1);
-
-        // User 2
-        GetUserDTO user2 = new GetUserDTO();
-        user2.setId(2);
-        user2.setEmail("user2@example.com");
-        user2.setRole(Role.PROVIDER);
-        user2.setFirstName("Jane");
-        user2.setLastName("Smith");
-        user2.setPhoneNumber("234-567-8901");
-        user2.setProfilePhoto("https://example.com/photos/user2.jpg");
-        user2.setLocation(new GetLocationDTO("London", "UK", "Baker Street", "221B"));
-        user2.setCompany(new GetCompanyDTO("contact@company2.com", "Health Solutions", "345-666-8901", "Healthcare products company",
-                Arrays.asList("https://example.com/photos/company2.jpg"), new GetLocationDTO("Bristol", "UK", "Queen St", "42")));
-
-        users.add(user2);
-
-        // User 3
-        GetUserDTO user3 = new GetUserDTO();
-        user3.setId(3);
-        user3.setEmail("user3@example.com");
-        user3.setRole(Role.EVENT_ORGANIZER);
-        user3.setFirstName("Alice");
-        user3.setLastName("Johnson");
-        user3.setPhoneNumber("345-678-9012");
-        user3.setProfilePhoto("https://example.com/photos/user3.jpg");
-        user3.setLocation(new GetLocationDTO("Paris", "France", "Champs-Élysées", "33"));
-        user3.setCompany(null);
-
-        users.add(user3);
-
-        // User 4
-        GetUserDTO user4 = new GetUserDTO();
-        user4.setId(4);
-        user4.setEmail("user4@example.com");
-        user4.setRole(Role.PROVIDER);
-        user4.setFirstName("Bob");
-        user4.setLastName("Brown");
-        user4.setPhoneNumber("456-789-0123");
-        user4.setProfilePhoto("https://example.com/photos/user4.jpg");
-        user4.setLocation(new GetLocationDTO("Berlin", "Germany", "Kurfürstendamm", "101"));
-        user4.setCompany(new GetCompanyDTO("hello@company3.com", "Green Energy", "789-555-0123", "Renewable energy company",
-                Arrays.asList("https://example.com/photos/company3.jpg"), new GetLocationDTO("Hamburg", "Germany", "Jungfernstieg", "22")));
-
-        users.add(user4);
-
-        // User 5
-        GetUserDTO user5 = new GetUserDTO();
-        user5.setId(5);
-        user5.setEmail("user5@example.com");
-        user5.setRole(Role.PROVIDER);
-        user5.setFirstName("Charlie");
-        user5.setLastName("Williams");
-        user5.setPhoneNumber("567-890-1234");
-        user5.setProfilePhoto("https://example.com/photos/user5.jpg");
-        user5.setLocation(new GetLocationDTO("Tokyo", "Japan", "Shibuya", "109"));
-        user5.setCompany(null);
-
-        users.add(user5);
-
-
-        return new ResponseEntity<Collection<GetUserDTO>>(users, HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GetUserDTO> getUser(@PathVariable("id") int id) {
-
-        GetUserDTO user = new GetUserDTO();
-        user.setId(id);
-        user.setEmail("user4@example.com");
-        user.setRole(Role.PROVIDER);
-        user.setFirstName("Bob");
-        user.setLastName("Brown");
-        user.setPhoneNumber("456-789-0123");
-        user.setProfilePhoto("https://example.com/photos/user4.jpg");
-        user.setLocation(new GetLocationDTO("Berlin", "Germany", "Kurfürstendamm", "101"));
-        user.setCompany(new GetCompanyDTO("hello@company3.com", "Green Energy", "789-555-0123", "Renewable energy company",
-                Arrays.asList("https://example.com/photos/company3.jpg"), new GetLocationDTO("Hamburg", "Germany", "Jungfernstieg", "22")));
-
-        return new ResponseEntity<GetUserDTO>(user, HttpStatus.OK);
+    @GetMapping(value = "/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetUserDTO> getUserDetails(@PathVariable("accountId") int accountId) {
+        GetUserDTO user = userService.getUserDetails(accountId);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PutMapping(value = "/{id}/activate")

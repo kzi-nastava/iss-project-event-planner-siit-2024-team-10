@@ -90,7 +90,8 @@ public class WebSecurityConfig {
                         "api/products*","api/products/*",
                         "api/categories*","api/categories/*",
                         "api/offerings*","api/offerings/*",
-                        "api/accounts/*/favourite-events")
+                        "api/accounts/*/favourite-events",
+                        "api/users/*")
                 .requestMatchers(HttpMethod.POST, "api/accounts/*/favourite-events","api/events/*/ratings","api/events/*/stats/participants")
                 .requestMatchers(HttpMethod.DELETE, "api/accounts/*/favourite-events/*");
 
