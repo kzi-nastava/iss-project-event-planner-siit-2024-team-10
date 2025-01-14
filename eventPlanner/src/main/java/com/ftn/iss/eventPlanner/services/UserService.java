@@ -1,7 +1,10 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.CreateUserDTO;
 import com.ftn.iss.eventPlanner.dto.user.CreatedUserDTO;
+import com.ftn.iss.eventPlanner.dto.user.GetUserDTO;
 import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.*;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -132,5 +136,26 @@ public class UserService {
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
         verificationTokenRepository.delete(verificationToken);
+    }
+
+    public GetUserDTO getUserDetails(int accountId){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        GetUserDTO userDetails = new GetUserDTO();
+        userDetails.setAccountId(account.getId());
+        userDetails.setEmail(account.getEmail());
+        userDetails.setRole(account.getRole());
+        if(account.getRole() == Role.AUTHENTICATED_USER || account.getRole() == Role.ADMIN)
+            return userDetails;
+        User user = account.getUser();
+        userDetails.setUserId(user.getId());
+        userDetails.setFirstName(user.getFirstName());
+        userDetails.setLastName(user.getLastName());
+        userDetails.setPhoneNumber(user.getPhoneNumber());
+        userDetails.setProfilePhoto(user.getProfilePhoto());
+        userDetails.setLocation(modelMapper.map(user.getLocation(), GetLocationDTO.class));
+        if(account.getRole() == Role.PROVIDER)
+            userDetails.setCompany(modelMapper.map(((Provider) user).getCompany(), GetCompanyDTO.class));
+        return userDetails;
     }
 }
