@@ -26,16 +26,11 @@ public class MessageController {
         return new ResponseEntity<>(messages, HttpStatus.OK).getBody();
     }
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedMessageDTO> createEventType(@Valid @RequestBody CreateMessageDTO createMessageDTO) {
-        try{
-            CreatedMessageDTO createdMessageDTO = messageService.create(createMessageDTO);
-            return new ResponseEntity<>(createdMessageDTO, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<CreatedMessageDTO> createMessage(@Valid @RequestBody CreateMessageDTO createMessageDTO) {
+        CreatedMessageDTO createdMessageDTO = messageService.create(createMessageDTO);
+        return new ResponseEntity<>(createdMessageDTO, HttpStatus.CREATED);
     }
-    //     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+
     @GetMapping("/{userId}")
     public ResponseEntity<List<GetChatContact>> getChatContacts(@PathVariable int userId) {
         List<GetChatContact> contacts = messageService.getChatContacts(userId);

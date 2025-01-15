@@ -21,6 +21,7 @@ public class GetEventDTO {
     private LocalDate date;
     private GetLocationDTO location;
     private double averageRating;
+    private int participantsCount;
 
     public GetEventDTO() {super();}
 }
