@@ -35,13 +35,14 @@ public class Account implements UserDetails {
     @Column(nullable = false)
     @Enumerated
     private AccountStatus status;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     private Set<Event> favouriteEvents = new HashSet<>();
     @ManyToMany
     private Set<Event> acceptedEvents = new HashSet<>();;
     @OneToOne
     private User user;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
+
     private Set<Offering> favouriteOfferings = new HashSet<>();;
     @OneToMany
     private Set<Notification> notifications = new HashSet<>();;

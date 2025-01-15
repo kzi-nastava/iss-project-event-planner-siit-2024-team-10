@@ -115,7 +115,6 @@ public class EventController {
 
         updatedComment.setId(commentId);
         updatedComment.setContent(comment.getContent());
-        updatedComment.setStatus(comment.getStatus());
 
         return new ResponseEntity<UpdatedCommentDTO>(updatedComment, HttpStatus.OK);
     }

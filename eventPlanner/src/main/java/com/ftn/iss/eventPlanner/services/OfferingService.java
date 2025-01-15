@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.comment.GetCommentDTO;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.*;
@@ -176,6 +178,37 @@ public class OfferingService {
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
+    @Transactional(readOnly = true)
+    public List<GetCommentDTO> getComments(int offeringId) {
+        Optional<Offering> offering = offeringRepository.findById(offeringId);
+
+        if (offering.isPresent()) {
+            return offering.get().getComments().stream()
+                    .filter(comment -> comment.getStatus() != Status.PENDING)
+                    .map(this::mapToGetCommentDTO)
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    @Transactional
+
+    public List<GetOfferingDTO> getOfferingsByProviderId(int providerId) {
+        return offeringRepository.findAll().stream()
+                .filter(offering -> offering.getProvider().getId() == providerId)
+                .map(this::mapToGetOfferingDTO)
+                .collect(Collectors.toList());
+    }
+    private GetCommentDTO mapToGetCommentDTO(Comment comment) {
+        return new GetCommentDTO(
+                comment.getId(),
+                comment.getContent(),
+                comment.getStatus(),
+                comment.getCommenter().getId(),
+                comment.getRating(),
+                comment.getCommenter().getUsername()
+        );
+    }
 
     // HELPER FUNCTIONS
 
@@ -211,11 +244,12 @@ public class OfferingService {
     }
 
     private double calculateAverageRating(Offering offering) {
-        if (offering.getRatings() == null || offering.getRatings().isEmpty()) {
+        if (offering.getComments() == null || offering.getComments().isEmpty()) {
             return 0.0;
         }
-        OptionalDouble average = offering.getRatings().stream()
-                .mapToInt(Rating::getScore)
+
+        OptionalDouble average = offering.getComments().stream()
+                .mapToInt(Comment::getRating)
                 .average();
 
         return average.orElse(0.0);
