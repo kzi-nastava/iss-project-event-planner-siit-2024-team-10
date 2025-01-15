@@ -98,4 +98,8 @@ public class ServiceSpecification {
         return (root, query, criteriaBuilder) ->
                 searchByAvailability != null && searchByAvailability ? criteriaBuilder.isTrue(root.get("currentDetails").get("isAvailable")) : criteriaBuilder.conjunction();
     }
+
+    public static Specification<Service> isVisible() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("currentDetails").get("isVisible"), true);
+    }
 }

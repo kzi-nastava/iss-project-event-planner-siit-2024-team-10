@@ -38,9 +38,11 @@ public class OfferingController {
     }
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings() {
+    public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings(
+            @RequestParam(required = false) Integer accountId
+    ) {
         try {
-            List<GetOfferingDTO> offerings = offeringService.findTopOfferings();
+            List<GetOfferingDTO> offerings = offeringService.findTopOfferings(accountId);
 
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
@@ -86,12 +88,14 @@ public class OfferingController {
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) Boolean isAvailable,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDirection
+            @RequestParam(required = false) String sortDirection,
+            @RequestParam(required = false) Integer accountId
+
     ){
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     pageable, isServiceFilter, name, categoryId, location, startPrice,
-                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection);
+                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection,accountId);
 
 
             return ResponseEntity.ok(offerings);

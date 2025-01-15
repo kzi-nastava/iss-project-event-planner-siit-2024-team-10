@@ -79,5 +79,8 @@ public class ProductSpecification {
                 searchByAvailability != null && searchByAvailability ? criteriaBuilder.isTrue(root.get("currentDetails").get("isAvailable")) : criteriaBuilder.conjunction();
     }
 
+    public static Specification<Product> isVisible() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("currentDetails").get("isVisible"), true);
+    }
 
 }

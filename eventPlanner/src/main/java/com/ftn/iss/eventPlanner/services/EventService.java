@@ -48,6 +48,8 @@ public class EventService {
     private EventStatsRepository eventStatsRepository;
     @Autowired
     private OrganizerRepository organizerRepository;
+    @Autowired
+    private AccountService accountService;
 
     private ModelMapper modelMapper = new ModelMapper();
     @Autowired
@@ -94,8 +96,16 @@ public class EventService {
             LocalDate endDate,
             String name,
             String sortBy,
-            String sortDirection
+            String sortDirection,
+            Integer accountId
     ) {
+        if (accountId != null && (location == null || location.isEmpty())) {
+            Location userLocation = accountService.findUserLocation(accountId);
+            if (userLocation != null) {
+                location = userLocation.getCity();
+            }
+        }
+
         if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
             String sortField = switch (sortBy.toLowerCase()) {
                 case "name" -> "name";
@@ -120,7 +130,8 @@ public class EventService {
                 .and(EventSpecification.maxParticipants(maxParticipants))
                 .and(EventSpecification.betweenDates(startDate, endDate))
                 .and(EventSpecification.minAverageRating(minRating))
-                .and(EventSpecification.hasName(name));
+                .and(EventSpecification.hasName(name))
+                .and(EventSpecification.isOpen());
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
@@ -131,19 +142,30 @@ public class EventService {
         return new PagedResponse<>(eventDTOs, pagedEvents.getTotalPages(), pagedEvents.getTotalElements());
     }
 
-
-
-
-
-    public List<GetEventDTO> findTopEvents() {
+    public List<GetEventDTO> findTopEvents(Integer accountId) {
         List<Event> events = eventRepository.findAll();
 
+        if (accountId != null) {
+            Location userLocation = accountService.findUserLocation(accountId);
+
+            if (userLocation != null) {
+                events = events.stream()
+                        .filter(event -> event.getLocation() != null &&
+                                event.getLocation().getCity().equalsIgnoreCase(userLocation.getCity()))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        // Filter events by isOpen and limit to top 5
         return events.stream()
+                .filter(Event::isOpen) // Ensure only open events are included
                 .sorted((e1, e2) -> e2.getDateCreated().compareTo(e1.getDateCreated()))
                 .limit(5)
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
+
+
 
     public CreatedEventDTO create (CreateEventDTO createEventDTO){
         Event event = modelMapper.map(createEventDTO, Event.class);

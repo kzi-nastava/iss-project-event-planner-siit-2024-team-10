@@ -34,9 +34,11 @@ public class EventController {
     private EventService eventService;
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetEventDTO>> getTopEvents() {
+    public ResponseEntity<Collection<GetEventDTO>> getTopEvents(
+            @RequestParam(required = false) Integer accountId
+            ) {
         try {
-            List<GetEventDTO> events = eventService.findTopEvents();
+            List<GetEventDTO> events = eventService.findTopEvents(accountId);
 
             return ResponseEntity.ok(events);
         } catch (Exception e) {
@@ -80,11 +82,12 @@ public class EventController {
             @RequestParam(required = false)  @DateTimeFormat(pattern="MM/dd/yyyy") LocalDate endDate,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDirection
+            @RequestParam(required = false) String sortDirection,
+            @RequestParam(required = false) Integer accountId
     ) {
         try {
             PagedResponse<GetEventDTO> response = eventService.getAllEvents(
-                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection);
+                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection, accountId);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

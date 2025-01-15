@@ -13,6 +13,7 @@ import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
+import jakarta.persistence.criteria.JoinType;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,8 @@ public class OfferingService {
     private ServiceRepository serviceRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private AccountService accountService;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -106,8 +109,16 @@ public class OfferingService {
             Double minRating,
             Boolean searchByAvailability,
             String sortBy,
-            String sortDirection
+            String sortDirection,
+            Integer accountId
     ) {
+        if (accountId != null && (location == null || location.isEmpty())) {
+            Location userLocation = accountService.findUserLocation(accountId);
+            if (userLocation != null) {
+                location = userLocation.getCity();
+            }
+        }
+
         if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
             String sortField = switch (sortBy.toLowerCase()) {
                 case "price" -> "currentDetails.price";
@@ -128,6 +139,7 @@ public class OfferingService {
         }
 
         Page<? extends Offering> pagedOfferings;
+
         if (isServiceFilter == Boolean.TRUE) {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
                     .and(ServiceSpecification.hasCategoryId(categoryId))
@@ -136,7 +148,8 @@ public class OfferingService {
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
-                    .and(ServiceSpecification.isAvailable(searchByAvailability));
+                    .and(ServiceSpecification.isAvailable(searchByAvailability))
+                    .and(ServiceSpecification.isVisible());  // Added visibility filter
 
             pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
 
@@ -147,22 +160,40 @@ public class OfferingService {
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability));
+                    .and(ProductSpecification.isAvailable(searchByAvailability))
+                    .and(ProductSpecification.isVisible());  // Added visibility filter
 
             pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
         } else {
-            pagedOfferings = offeringRepository.findAll(pageable);
+            Specification<Offering> combinedSpec = (root, query, criteriaBuilder) -> {
+                // Create disjunction for Product and Service
+                var disjunction = criteriaBuilder.disjunction();
+
+                // For Product, join with ProductDetails and filter based on visibility
+                disjunction.getExpressions().add(
+                        criteriaBuilder.and(
+                                criteriaBuilder.equal(root.type(), criteriaBuilder.literal(Product.class)),
+                                criteriaBuilder.isTrue(root.join("currentDetails", JoinType.LEFT).get("isVisible")) // ProductDetails is accessed here
+                        )
+                );
+
+                // For Service, join with ServiceDetails and filter based on visibility
+                disjunction.getExpressions().add(
+                        criteriaBuilder.and(
+                                criteriaBuilder.equal(root.type(), criteriaBuilder.literal(Service.class)),
+                                criteriaBuilder.isTrue(root.join("currentDetails", JoinType.LEFT).get("isVisible")) // ServiceDetails is accessed here
+                        )
+                );
+
+                return disjunction;
+            };
+
+// Use the combined specification to fetch offerings
+            pagedOfferings = offeringRepository.findAll(combinedSpec, pageable);
         }
 
-        List<Offering> filteredOfferings = pagedOfferings.getContent().stream()
-                .map(offering -> (Offering) offering)
-                .collect(Collectors.toList());
-        if ("averageRating".equalsIgnoreCase(sortBy)) {
-            filteredOfferings.sort(getOfferingComparator(sortDirection));
-        }
-
-        List<GetOfferingDTO> offeringDTOs = filteredOfferings.stream()
+        List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
 
@@ -170,8 +201,18 @@ public class OfferingService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetOfferingDTO> findTopOfferings() {
+    public List<GetOfferingDTO> findTopOfferings(Integer accountId) {
         List<Offering> offerings = offeringRepository.findAll();
+        if (accountId != null) {
+            Location userLocation = accountService.findUserLocation(accountId);
+
+            if (userLocation != null) {
+                offerings = offerings.stream()
+                        .filter(offering -> offering.getProvider().getLocation() != null &&
+                                offering.getProvider().getLocation().getCity().equalsIgnoreCase(userLocation.getCity()))
+                        .collect(Collectors.toList());
+            }
+        }
 
         return offerings.stream()
                 .sorted((o1, o2) -> Double.compare(
