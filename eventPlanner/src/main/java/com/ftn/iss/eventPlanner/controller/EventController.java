@@ -5,8 +5,11 @@ import com.ftn.iss.eventPlanner.dto.agendaitem.*;
 import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.*;
+import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
+import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -158,5 +161,27 @@ public class EventController {
     public ResponseEntity<Void> deleteAgendaItem(@PathVariable int eventId, @Valid @PathVariable int agendaItemId) {
         eventService.deleteAgendaItem(eventId, agendaItemId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','ADMIN')")
+    @GetMapping(value="/{eventId}/reports/open-event", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getEventReport(@PathVariable int eventId) throws JRException {
+        byte[] pdfReport= eventService.generateOpenEventReport(eventId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=event_report.pdf")
+                .body(pdfReport);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','ADMIN')")
+    @GetMapping(value="/{eventId}/stats", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetEventStatsDTO> getEventStats(@PathVariable int eventId) {
+        GetEventStatsDTO eventStats = eventService.getEventStats(eventId);
+        return ResponseEntity.ok(eventStats);
+    }
+
+    @PostMapping(value="/{eventId}/stats/participants", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetEventStatsDTO> addParticipant(@PathVariable int eventId) {
+        GetEventStatsDTO updatedEventStats = eventService.addParticipant(eventId);
+        return ResponseEntity.ok(updatedEventStats);
     }
 }

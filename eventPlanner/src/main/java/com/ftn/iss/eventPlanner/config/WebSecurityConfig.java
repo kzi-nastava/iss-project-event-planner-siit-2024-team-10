@@ -97,6 +97,7 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.POST,
                         "api/accounts/*/favourite-events",
                         "api/accounts/*/favourite-offerings",
+                        "api/events/*/stats/participants",
                         "api/events/*/ratings")
                 .requestMatchers(HttpMethod.DELETE,
                         "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
