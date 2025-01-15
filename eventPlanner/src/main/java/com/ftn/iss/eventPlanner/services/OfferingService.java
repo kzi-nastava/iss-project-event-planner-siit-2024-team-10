@@ -92,6 +92,7 @@ public class OfferingService {
         }
     }
 
+    @Transactional(readOnly = true)
     public PagedResponse<GetOfferingDTO> getAllOfferings(
             Pageable pageable,
             Boolean isServiceFilter,
@@ -168,6 +169,7 @@ public class OfferingService {
         return new PagedResponse<>(offeringDTOs, pagedOfferings.getTotalPages(), pagedOfferings.getTotalElements());
     }
 
+    @Transactional(readOnly = true)
     public List<GetOfferingDTO> findTopOfferings() {
         List<Offering> offerings = offeringRepository.findAll();
 
@@ -192,7 +194,6 @@ public class OfferingService {
         }
     }
     @Transactional
-
     public List<GetOfferingDTO> getOfferingsByProviderId(int providerId) {
         return offeringRepository.findAll().stream()
                 .filter(offering -> offering.getProvider().getId() == providerId)
