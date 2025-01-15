@@ -7,7 +7,8 @@ import lombok.Setter;
 @Setter
 public class CreateCommentDTO {
     private String content;
-    private int accountId;
+    private int account;
+    private int rating;
     public CreateCommentDTO(){
 
     }

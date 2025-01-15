@@ -64,7 +64,7 @@ public class ServiceController {
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedServiceDTO> createService(@Valid @RequestBody CreateServiceDTO service) throws Exception {
+    public ResponseEntity<CreatedServiceDTO> createService(@RequestBody CreateServiceDTO service) throws Exception {
         try{
             CreatedServiceDTO createdServiceDTO = serviceService.create(service);
             return new ResponseEntity<>(createdServiceDTO, HttpStatus.CREATED);

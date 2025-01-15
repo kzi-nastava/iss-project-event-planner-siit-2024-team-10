@@ -2,6 +2,7 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.product.*;
+import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -56,8 +57,12 @@ public class ProductController {
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetProductDTO> getProduct(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
-        GetProductDTO product = new GetProductDTO();
-        return new ResponseEntity<>(product, HttpStatus.OK);
+        try {
+            GetProductDTO serviceDTO = productService.findById(id);
+            return new ResponseEntity<>(serviceDTO, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
 

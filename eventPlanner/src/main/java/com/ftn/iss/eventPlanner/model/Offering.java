@@ -26,8 +26,6 @@ public abstract class Offering {
     private boolean isDeleted;
     @ManyToOne
     private Provider provider;
-    @ManyToMany
+    @OneToMany(fetch = FetchType.LAZY)
     private Set<Comment> comments = new HashSet<>();
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Rating> ratings = new HashSet<>();
 }
