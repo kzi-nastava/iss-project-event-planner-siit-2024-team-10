@@ -91,7 +91,7 @@ public class OfferingService {
                     .collect(Collectors.toList());
         }
     }
-
+    @Transactional(readOnly = true)
     public PagedResponse<GetOfferingDTO> getAllOfferings(
             Pageable pageable,
             Boolean isServiceFilter,
@@ -167,7 +167,7 @@ public class OfferingService {
 
         return new PagedResponse<>(offeringDTOs, pagedOfferings.getTotalPages(), pagedOfferings.getTotalElements());
     }
-
+    @Transactional(readOnly = true)
     public List<GetOfferingDTO> findTopOfferings() {
         List<Offering> offerings = offeringRepository.findAll();
 
@@ -242,14 +242,14 @@ public class OfferingService {
         }
         return dto;
     }
-
-    private double calculateAverageRating(Offering offering) {
-        if (offering.getComments() == null || offering.getComments().isEmpty()) {
+    public double calculateAverageRating(Offering offering) {
+        List<GetCommentDTO> comments = getComments(offering.getId());
+        if (comments == null || comments.isEmpty()) {
             return 0.0;
         }
 
-        OptionalDouble average = offering.getComments().stream()
-                .mapToInt(Comment::getRating)
+        OptionalDouble average = comments.stream()
+                .mapToInt(GetCommentDTO::getRating)
                 .average();
 
         return average.orElse(0.0);
@@ -265,6 +265,7 @@ public class OfferingService {
         providerDTO.setProfilePhoto(offering.getProvider().getProfilePhoto());
         providerDTO.setLocation(modelMapper.map(offering.getProvider().getLocation(), GetLocationDTO.class));
         providerDTO.setCompany(setGetCompanyDTO(offering));
+        providerDTO.setAccountId(offering.getProvider().getAccount().getId());
         return providerDTO;
     }
 

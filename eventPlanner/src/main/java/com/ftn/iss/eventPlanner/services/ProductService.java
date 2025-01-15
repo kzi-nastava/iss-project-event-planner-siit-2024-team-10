@@ -134,6 +134,7 @@ public class ProductService {
         providerDTO.setProfilePhoto(offering.getProvider().getProfilePhoto());
         providerDTO.setLocation(modelMapper.map(offering.getProvider().getLocation(), GetLocationDTO.class));
         providerDTO.setCompany(setGetCompanyDTO(offering));
+        providerDTO.setAccountId(offering.getProvider().getAccount().getId());
         return providerDTO;
     }
     private GetCompanyDTO setGetCompanyDTO(Offering offering){
