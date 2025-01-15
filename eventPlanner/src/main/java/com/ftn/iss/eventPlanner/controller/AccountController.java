@@ -2,7 +2,6 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.event.AddFavouriteEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
-import com.ftn.iss.eventPlanner.dto.offering.AddFavouriteOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.services.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +38,9 @@ public class AccountController {
         Collection<GetOfferingDTO> favouriteEvents = accountService.getFavouriteOfferings(accountId);
         return ResponseEntity.ok(favouriteEvents);
     }
-    @PostMapping(value="/{accountId}/favourite-offerings", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addOfferingToFavourites(@PathVariable int accountId, @RequestBody AddFavouriteOfferingDTO addFavouriteOfferingDTO) {
-        accountService.addOfferingToFavourites(accountId, addFavouriteOfferingDTO.getOfferingId());
+    @PostMapping(value="/{accountId}/favourite-offerings/{offeringId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> addOfferingToFavourites(@PathVariable int accountId, @PathVariable int offeringId) {
+        accountService.addOfferingToFavourites(accountId, offeringId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     @DeleteMapping(value="/{accountId}/favourite-offerings/{offeringId}")
