@@ -10,10 +10,12 @@ import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
+import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,7 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -42,57 +43,21 @@ public class OfferingService {
     private ModelMapper modelMapper = new ModelMapper();
 
 
-    public List<GetOfferingDTO> findAll(){
-        List<Offering> offerings = offeringRepository.findAll();
+    public List<GetOfferingDTO> findAll() {
+        List<Offering> offerings = offeringRepository.findAll().stream()
+                .filter(offering -> {
+                    if (offering instanceof Product) {
+                        return ((Product) offering).getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service) {
+                        return ((Service) offering).getCurrentDetails().isVisible();
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
 
         return offerings.stream()
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
-    }
-
-    public List<GetOfferingDTO> getAllOfferings(
-            Boolean isServiceFilter,
-            String name,
-            Integer categoryId,
-            String location,
-            Double minPrice,
-            Double maxPrice,
-            Integer minDiscount,
-            Integer serviceDuration,
-            Double minRating,
-            Boolean searchByAvailability
-    ) {
-
-        if (isServiceFilter == Boolean.TRUE) {
-            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
-                    .and(ServiceSpecification.hasCategoryId(categoryId))
-                    .and(ServiceSpecification.hasLocation(location))
-                    .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
-                    .and(ServiceSpecification.minDiscount(minDiscount))
-                    .and(ServiceSpecification.minRating(minRating))
-                    .and(ServiceSpecification.hasServiceDuration(serviceDuration))
-                    .and(ServiceSpecification.isAvailable(searchByAvailability));
-
-            return serviceRepository.findAll(serviceSpecification).stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        } else if (isServiceFilter == Boolean.FALSE) {
-            Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                    .and(ProductSpecification.hasCategoryId(categoryId))
-                    .and(ProductSpecification.hasLocation(location))
-                    .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
-                    .and(ProductSpecification.minDiscount(minDiscount))
-                    .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability));
-
-            return productRepository.findAll(productSpecification).stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        } else {
-            return offeringRepository.findAll().stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        }
     }
 
     @Transactional(readOnly = true)
@@ -139,7 +104,6 @@ public class OfferingService {
         }
 
         Page<? extends Offering> pagedOfferings;
-
         if (isServiceFilter == Boolean.TRUE) {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
                     .and(ServiceSpecification.hasCategoryId(categoryId))
@@ -149,7 +113,7 @@ public class OfferingService {
                     .and(ServiceSpecification.minRating(minRating))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability))
-                    .and(ServiceSpecification.isVisible());  // Added visibility filter
+                    .and(ServiceSpecification.isVisible());
 
             pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
 
@@ -161,39 +125,57 @@ public class OfferingService {
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
                     .and(ProductSpecification.isAvailable(searchByAvailability))
-                    .and(ProductSpecification.isVisible());  // Added visibility filter
+                    .and(ProductSpecification.isVisible());
 
             pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
         } else {
-            Specification<Offering> combinedSpec = (root, query, criteriaBuilder) -> {
-                // Create disjunction for Product and Service
-                var disjunction = criteriaBuilder.disjunction();
-
-                // For Product, join with ProductDetails and filter based on visibility
-                disjunction.getExpressions().add(
-                        criteriaBuilder.and(
-                                criteriaBuilder.equal(root.type(), criteriaBuilder.literal(Product.class)),
-                                criteriaBuilder.isTrue(root.join("currentDetails", JoinType.LEFT).get("isVisible")) // ProductDetails is accessed here
+            Specification<Offering> visibilitySpec = (root, query, cb) -> {
+                Subquery<Product> productSubquery = query.subquery(Product.class);
+                Root<Product> productRoot = productSubquery.from(Product.class);
+                productSubquery.select(productRoot).where(
+                        cb.and(
+                                cb.equal(productRoot.get("id"), root.get("id")),
+                                cb.isTrue(productRoot.get("currentDetails").get("isVisible"))
                         )
                 );
 
-                // For Service, join with ServiceDetails and filter based on visibility
-                disjunction.getExpressions().add(
-                        criteriaBuilder.and(
-                                criteriaBuilder.equal(root.type(), criteriaBuilder.literal(Service.class)),
-                                criteriaBuilder.isTrue(root.join("currentDetails", JoinType.LEFT).get("isVisible")) // ServiceDetails is accessed here
+                Subquery<Service> serviceSubquery = query.subquery(Service.class);
+                Root<Service> serviceRoot = serviceSubquery.from(Service.class);
+                serviceSubquery.select(serviceRoot).where(
+                        cb.and(
+                                cb.equal(serviceRoot.get("id"), root.get("id")),
+                                cb.isTrue(serviceRoot.get("currentDetails").get("isVisible"))
                         )
                 );
 
-                return disjunction;
+                return cb.or(
+                        cb.and(cb.equal(root.type(), Product.class), cb.exists(productSubquery)),
+                        cb.and(cb.equal(root.type(), Service.class), cb.exists(serviceSubquery))
+                );
             };
-
-// Use the combined specification to fetch offerings
-            pagedOfferings = offeringRepository.findAll(combinedSpec, pageable);
+            pagedOfferings = offeringRepository.findAll(visibilitySpec, pageable);
         }
 
-        List<GetOfferingDTO> offeringDTOs = pagedOfferings.getContent().stream()
+        List<Offering> filteredOfferings = pagedOfferings.getContent().stream()
+                .map(offering -> (Offering) offering)
+                .filter(offering -> {
+                    if (offering instanceof Product) {
+                        Product product = (Product) offering;
+                        return product.getCurrentDetails() != null && product.getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service) {
+                        Service service = (Service) offering;
+                        return service.getCurrentDetails() != null && service.getCurrentDetails().isVisible();
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
+
+        if ("averageRating".equalsIgnoreCase(sortBy)) {
+            filteredOfferings.sort(getOfferingComparator(sortDirection));
+        }
+
+        List<GetOfferingDTO> offeringDTOs = filteredOfferings.stream()
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
 
@@ -202,16 +184,50 @@ public class OfferingService {
 
     @Transactional(readOnly = true)
     public List<GetOfferingDTO> findTopOfferings(Integer accountId) {
-        List<Offering> offerings = offeringRepository.findAll();
+        String location = null;
+
         if (accountId != null) {
             Location userLocation = accountService.findUserLocation(accountId);
-
             if (userLocation != null) {
-                offerings = offerings.stream()
-                        .filter(offering -> offering.getProvider().getLocation() != null &&
-                                offering.getProvider().getLocation().getCity().equalsIgnoreCase(userLocation.getCity()))
-                        .collect(Collectors.toList());
+                location = userLocation.getCity();
             }
+        }
+
+        final String finalLocation = location;
+
+        List<Offering> offerings = offeringRepository.findAll().stream()
+                .filter(offering -> {
+                    boolean isVisible = false;
+                    if (offering instanceof Product) {
+                        isVisible = ((Product) offering).getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service) {
+                        isVisible = ((Service) offering).getCurrentDetails().isVisible();
+                    }
+
+                    if (finalLocation != null && isVisible) {
+                        if (offering instanceof Product) {
+                            return finalLocation.equals(((Product) offering).getProvider().getLocation().getCity());
+                        } else if (offering instanceof Service) {
+                            return finalLocation.equals(((Service) offering).getProvider().getLocation().getCity());
+                        }
+                    }
+
+                    return isVisible;
+                })
+                .collect(Collectors.toList());
+
+        // If no offerings found for the user's city, display all visible offerings
+        if (offerings.isEmpty() && finalLocation != null) {
+            offerings = offeringRepository.findAll().stream()
+                    .filter(offering -> {
+                        if (offering instanceof Product) {
+                            return ((Product) offering).getCurrentDetails().isVisible();
+                        } else if (offering instanceof Service) {
+                            return ((Service) offering).getCurrentDetails().isVisible();
+                        }
+                        return false;
+                    })
+                    .collect(Collectors.toList());
         }
 
         return offerings.stream()
@@ -221,6 +237,8 @@ public class OfferingService {
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
+
+
     @Transactional(readOnly = true)
     public List<GetCommentDTO> getComments(int offeringId) {
         Optional<Offering> offering = offeringRepository.findById(offeringId);
@@ -238,6 +256,14 @@ public class OfferingService {
     public List<GetOfferingDTO> getOfferingsByProviderId(int providerId) {
         return offeringRepository.findAll().stream()
                 .filter(offering -> offering.getProvider().getId() == providerId)
+                .filter(offering -> {
+                    if (offering instanceof Product) {
+                        return ((Product) offering).getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service) {
+                        return ((Service) offering).getCurrentDetails().isVisible();
+                    }
+                    return false;
+                })
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }

@@ -62,30 +62,6 @@ public class EventService {
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
-
-    public List<GetEventDTO> getAllEvents(
-            Integer eventTypeId,
-            String location,
-            Integer maxParticipants,
-            Double minRating,
-            LocalDate startDate,
-            LocalDate endDate,
-            String name
-    ) {
-        Specification<Event> specification = Specification.where(EventSpecification.hasEventTypeId(eventTypeId))
-                .and(EventSpecification.hasLocation(location))
-                .and(EventSpecification.maxParticipants(maxParticipants))
-                .and(EventSpecification.betweenDates(startDate, endDate))
-                .and(EventSpecification.hasName(name));
-
-        List<Event> events = eventRepository.findAll(specification);
-
-        return events.stream()
-                .map(this::mapToGetEventDTO)
-                .collect(Collectors.toList());
-    }
-
-
     public PagedResponse<GetEventDTO> getAllEvents(
             Pageable pageable,
             Integer eventTypeId,
@@ -156,9 +132,8 @@ public class EventService {
             }
         }
 
-        // Filter events by isOpen and limit to top 5
         return events.stream()
-                .filter(Event::isOpen) // Ensure only open events are included
+                .filter(Event::isOpen)
                 .sorted((e1, e2) -> e2.getDateCreated().compareTo(e1.getDateCreated()))
                 .limit(5)
                 .map(this::mapToGetEventDTO)
