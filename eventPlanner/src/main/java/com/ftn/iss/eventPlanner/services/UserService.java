@@ -1,10 +1,10 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
-import com.ftn.iss.eventPlanner.dto.user.CreateUserDTO;
-import com.ftn.iss.eventPlanner.dto.user.CreatedUserDTO;
-import com.ftn.iss.eventPlanner.dto.user.GetUserDTO;
+import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.*;
@@ -157,5 +157,18 @@ public class UserService {
         if(account.getRole() == Role.PROVIDER)
             userDetails.setCompany(modelMapper.map(((Provider) user).getCompany(), GetCompanyDTO.class));
         return userDetails;
+    }
+    public UpdatedUserDTO updateUser(int accountId, UpdateUserDTO updateUserDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
+            throw new IllegalArgumentException("User with given account ID is not a provider or organizer");
+        User user = account.getUser();
+        user.setFirstName(updateUserDTO.getFirstName());
+        user.setLastName(updateUserDTO.getLastName());
+        user.setPhoneNumber(updateUserDTO.getPhoneNumber());
+        user.setLocation(modelMapper.map(locationService.create(updateUserDTO.getLocation()), Location.class));
+        userRepository.save(user);
+        return modelMapper.map(user, UpdatedUserDTO.class);
     }
 }
