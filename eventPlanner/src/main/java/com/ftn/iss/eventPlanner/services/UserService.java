@@ -171,4 +171,18 @@ public class UserService {
         userRepository.save(user);
         return modelMapper.map(user, UpdatedUserDTO.class);
     }
+
+    public UpdatedCompanyDTO updateCompany(int accountId, UpdateCompanyDTO updateCompanyDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()!=Role.PROVIDER)
+            throw new IllegalArgumentException("User with given account ID is not a provider");
+        Provider provider = (Provider) account.getUser();
+        Company company = provider.getCompany();
+        company.setPhoneNumber(updateCompanyDTO.getPhoneNumber());
+        company.setDescription(updateCompanyDTO.getDescription());
+        company.setLocation(modelMapper.map(locationService.create(updateCompanyDTO.getLocation()), Location.class));
+        companyRepository.save(company);
+        return modelMapper.map(company, UpdatedCompanyDTO.class);
+    }
 }
