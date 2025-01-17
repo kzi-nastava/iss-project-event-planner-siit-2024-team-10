@@ -45,6 +45,13 @@ public class UserController {
         return new ResponseEntity<UpdatedUserDTO>(updatedUserDTO, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
+    @PutMapping(value = "/{accountId}/company", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedCompanyDTO> updateCompany(@Valid @RequestBody UpdateCompanyDTO company, @PathVariable int accountId) {
+        UpdatedCompanyDTO updatedCompanyDTO = userService.updateCompany(accountId, company);
+        return new ResponseEntity<>(updatedCompanyDTO, HttpStatus.OK);
+    }
+
     @PutMapping(value = "/{id}/changePassword", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO,@PathVariable int id) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
