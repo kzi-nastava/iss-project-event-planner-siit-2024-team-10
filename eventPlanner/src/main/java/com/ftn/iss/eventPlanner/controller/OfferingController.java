@@ -47,7 +47,16 @@ public class OfferingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
+    @GetMapping(value="/providerId", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetOfferingDTO>> getProvidersOfferings(@PathVariable int providerId) {
+        try {
+            List<GetOfferingDTO> offerings = offeringService.findProvidersOfferings(providerId);
 
+            return ResponseEntity.ok(offerings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
+    }
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getOfferings(
             @RequestParam(required = false) Boolean isServiceFilter,
