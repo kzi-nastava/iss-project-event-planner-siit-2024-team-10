@@ -185,4 +185,14 @@ public class UserService {
         companyRepository.save(company);
         return modelMapper.map(company, UpdatedCompanyDTO.class);
     }
+
+    public void changePassword(int accountId, ChangePasswordDTO changePasswordDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(!passwordEncoder.matches(changePasswordDTO.getOldPassword(), account.getPassword())){
+            throw new IllegalArgumentException("Old password is incorrect");
+        }
+        account.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
+        accountRepository.save(account);
+    }
 }

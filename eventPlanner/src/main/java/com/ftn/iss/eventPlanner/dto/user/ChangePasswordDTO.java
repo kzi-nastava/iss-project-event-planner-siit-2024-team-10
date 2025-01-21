@@ -1,4 +1,4 @@
-package com.ftn.iss.eventPlanner.dto;
+package com.ftn.iss.eventPlanner.dto.user;
 
 import lombok.Getter;
 import lombok.Setter;
