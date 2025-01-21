@@ -1,16 +1,11 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
-import com.ftn.iss.eventPlanner.dto.company.CreatedCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
-import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.services.UserService;
 import jakarta.validation.Valid;
-import org.hibernate.annotations.CollectionTypeRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -52,8 +46,9 @@ public class UserController {
         return new ResponseEntity<>(updatedCompanyDTO, HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{id}/changePassword", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO,@PathVariable int id) {
+    @PutMapping("/{accountId}/password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO, @PathVariable int accountId) {
+        userService.changePassword(accountId, changePasswordDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
