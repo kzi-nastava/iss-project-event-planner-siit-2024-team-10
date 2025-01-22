@@ -15,7 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,6 +34,8 @@ public class UserService {
     private ProviderRepository providerRepository;
     @Autowired
     private OrganizerRepository organizerRepository;
+    @Autowired
+    private EventRepository eventRepository;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
@@ -193,6 +197,20 @@ public class UserService {
             throw new IllegalArgumentException("Old password is incorrect");
         }
         account.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
+        accountRepository.save(account);
+    }
+
+    public void deactivateAccount(int accountId){
+        Account account=accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.EVENT_ORGANIZER){
+            Organizer organizer=(Organizer) account.getUser();
+            List<Event> events = eventRepository.findByOrganizerId(organizer.getId());
+            if(events.stream().anyMatch(event -> event.getDate().isAfter(LocalDate.now())))
+                throw new IllegalArgumentException("Organizer has upcoming events, can't deactivate account");
+        }
+        //TODO if provider check upcoming reservations
+        account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
     }
 }
