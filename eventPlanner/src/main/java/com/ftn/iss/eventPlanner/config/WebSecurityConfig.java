@@ -92,13 +92,16 @@ public class WebSecurityConfig {
                         "api/offerings*","api/offerings/*",
                         "api/accounts/*/favourite-events",
                         "api/accounts/*/favourite-offerings",
+                        "/socket/**",
+                        "api/messages/*/*",
                         "api/comments*","api/images","api/images/*","api/offerings/*/comments",
                         "api/offerings/provider/*")
                 .requestMatchers(HttpMethod.POST,
                         "api/accounts/*/favourite-events",
                         "api/accounts/*/favourite-offerings",
                         "api/events/*/stats/participants",
-                        "api/events/*/ratings")
+                        "api/events/*/ratings",
+                        "api/messages/**")
                 .requestMatchers(HttpMethod.DELETE,
                         "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
     }

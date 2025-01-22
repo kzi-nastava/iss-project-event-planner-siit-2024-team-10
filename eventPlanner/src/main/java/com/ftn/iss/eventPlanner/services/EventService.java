@@ -363,6 +363,7 @@ public class EventService {
         organizerDTO.setPhoneNumber(event.getOrganizer().getPhoneNumber());
         organizerDTO.setProfilePhoto(event.getOrganizer().getProfilePhoto());
         organizerDTO.setLocation(modelMapper.map(event.getOrganizer().getLocation(), GetLocationDTO.class));
+        organizerDTO.setAccountId(event.getOrganizer().getAccount().getId());
         return organizerDTO;
     }
 

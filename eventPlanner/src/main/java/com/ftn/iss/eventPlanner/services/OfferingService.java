@@ -60,6 +60,51 @@ public class OfferingService {
                 .collect(Collectors.toList());
     }
 
+
+    public List<GetOfferingDTO> getAllOfferings(
+            Boolean isServiceFilter,
+            String name,
+            Integer categoryId,
+            String location,
+            Double minPrice,
+            Double maxPrice,
+            Integer minDiscount,
+            Integer serviceDuration,
+            Double minRating,
+            Boolean searchByAvailability
+    ) {
+
+        if (isServiceFilter == Boolean.TRUE) {
+            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
+                    .and(ServiceSpecification.hasCategoryId(categoryId))
+                    .and(ServiceSpecification.hasLocation(location))
+                    .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
+                    .and(ServiceSpecification.minDiscount(minDiscount))
+                    .and(ServiceSpecification.minRating(minRating))
+                    .and(ServiceSpecification.hasServiceDuration(serviceDuration))
+                    .and(ServiceSpecification.isAvailable(searchByAvailability));
+
+            return serviceRepository.findAll(serviceSpecification).stream()
+                    .map(this::mapToGetOfferingDTO)
+                    .collect(Collectors.toList());
+        } else if (isServiceFilter == Boolean.FALSE) {
+            Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
+                    .and(ProductSpecification.hasCategoryId(categoryId))
+                    .and(ProductSpecification.hasLocation(location))
+                    .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
+                    .and(ProductSpecification.minDiscount(minDiscount))
+                    .and(ProductSpecification.minRating(minRating))
+                    .and(ProductSpecification.isAvailable(searchByAvailability));
+
+            return productRepository.findAll(productSpecification).stream()
+                    .map(this::mapToGetOfferingDTO)
+                    .collect(Collectors.toList());
+        } else {
+            return offeringRepository.findAll().stream()
+                    .map(this::mapToGetOfferingDTO)
+                    .collect(Collectors.toList());
+        }
+    }
     @Transactional(readOnly = true)
     public PagedResponse<GetOfferingDTO> getAllOfferings(
             Pageable pageable,
@@ -310,14 +355,14 @@ public class OfferingService {
         }
         return dto;
     }
-
-    private double calculateAverageRating(Offering offering) {
-        if (offering.getComments() == null || offering.getComments().isEmpty()) {
+    public double calculateAverageRating(Offering offering) {
+        List<GetCommentDTO> comments = getComments(offering.getId());
+        if (comments == null || comments.isEmpty()) {
             return 0.0;
         }
 
-        OptionalDouble average = offering.getComments().stream()
-                .mapToInt(Comment::getRating)
+        OptionalDouble average = comments.stream()
+                .mapToInt(GetCommentDTO::getRating)
                 .average();
 
         return average.orElse(0.0);
@@ -333,6 +378,7 @@ public class OfferingService {
         providerDTO.setProfilePhoto(offering.getProvider().getProfilePhoto());
         providerDTO.setLocation(modelMapper.map(offering.getProvider().getLocation(), GetLocationDTO.class));
         providerDTO.setCompany(setGetCompanyDTO(offering));
+        providerDTO.setAccountId(offering.getProvider().getAccount().getId());
         return providerDTO;
     }
 
