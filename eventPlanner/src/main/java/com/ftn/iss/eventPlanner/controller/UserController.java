@@ -52,10 +52,6 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable("id") int id) {
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
     @PutMapping("/{userID}/favorites")
     public ResponseEntity<CreatedFavoriteDTO> addToFavorites(@PathVariable int userID, @RequestBody CreateFavoriteDTO createFavoriteDTO) {
         CreatedFavoriteDTO createdFavoriteDTO = new CreatedFavoriteDTO();
@@ -75,4 +71,9 @@ public class UserController {
         return ResponseEntity.ok(HttpStatus.NO_CONTENT);
     }
 
+    @PutMapping("/{accountId}/deactivate")
+    public ResponseEntity<?> deactivateAccount(@PathVariable("accountId") int accountId) {
+        userService.deactivateAccount(accountId);
+        return ResponseEntity.ok(HttpStatus.NO_CONTENT);
+    }
 }
