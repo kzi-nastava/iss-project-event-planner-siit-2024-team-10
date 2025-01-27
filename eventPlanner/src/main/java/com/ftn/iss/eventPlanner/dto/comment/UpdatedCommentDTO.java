@@ -9,7 +9,7 @@ import lombok.Setter;
 public class UpdatedCommentDTO {
     private int id;
     private String content;
-    private Status status;
+    private int rating;
 
     public UpdatedCommentDTO() {}
 }

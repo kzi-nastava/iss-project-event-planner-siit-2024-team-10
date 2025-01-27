@@ -19,4 +19,5 @@ public class GetProviderDTO {
     private String profilePhoto;
     private GetLocationDTO location;
     private GetCompanyDTO company;
+    private int accountId;
 }

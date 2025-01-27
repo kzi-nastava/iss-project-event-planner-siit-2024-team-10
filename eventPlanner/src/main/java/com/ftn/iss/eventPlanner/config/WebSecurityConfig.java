@@ -91,10 +91,20 @@ public class WebSecurityConfig {
                         "api/categories*","api/categories/*",
                         "api/offerings*","api/offerings/*",
                         "api/accounts/*/favourite-events",
-                        "api/reservations/*")
-                .requestMatchers(HttpMethod.POST, "api/accounts/*/favourite-events","api/events/*/ratings")
-                .requestMatchers(HttpMethod.DELETE, "api/accounts/*/favourite-events/*");
-
+                        "api/accounts/*/favourite-offerings",
+                        "/socket/**",
+                        "api/messages/*/*",
+                        "api/comments*","api/images","api/images/*","api/offerings/*/comments",
+                        "api/reservations/*",
+                        "api/offerings/provider/*")
+                .requestMatchers(HttpMethod.POST,
+                        "api/accounts/*/favourite-events",
+                        "api/accounts/*/favourite-offerings",
+                        "api/events/*/stats/participants",
+                        "api/events/*/ratings",
+                        "api/messages/**")
+                .requestMatchers(HttpMethod.DELETE,
+                        "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
     }
 
     @Bean

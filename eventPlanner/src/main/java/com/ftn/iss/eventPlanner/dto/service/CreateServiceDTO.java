@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.dto.service;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -39,11 +40,11 @@ public class CreateServiceDTO {
 
     @NotNull
     private List<String> photos;
-    @NotNull
-    private boolean isVisible;
-    @NotNull
+    @JsonProperty("isAvailable")
     private boolean isAvailable;
 
+    @JsonProperty("isVisible")
+    private boolean isVisible;
     @NotNull
     private int maxDuration;
 

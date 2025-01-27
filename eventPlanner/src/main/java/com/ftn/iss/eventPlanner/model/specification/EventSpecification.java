@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.model.specification;
 import com.ftn.iss.eventPlanner.model.EventStats;
+import com.ftn.iss.eventPlanner.model.Product;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
@@ -54,5 +55,7 @@ public class EventSpecification {
             return criteriaBuilder.greaterThanOrEqualTo(statsJoin.get("averageRating"), minRating);
         };
     }
-
+    public static Specification<Event> isOpen() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isOpen"), true);
+    }
 }

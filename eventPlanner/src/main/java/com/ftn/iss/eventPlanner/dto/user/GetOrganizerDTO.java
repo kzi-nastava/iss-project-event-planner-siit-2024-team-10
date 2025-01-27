@@ -18,4 +18,5 @@ public class GetOrganizerDTO {
     private String phoneNumber;
     private String profilePhoto;
     private GetLocationDTO location;
+    private int accountId;
 }
