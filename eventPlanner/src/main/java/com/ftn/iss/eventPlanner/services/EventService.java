@@ -117,6 +117,17 @@ public class EventService {
 
         return new PagedResponse<>(eventDTOs, pagedEvents.getTotalPages(), pagedEvents.getTotalElements());
     }
+    public List<GetEventDTO> findEventsByOrganizer(Integer accountId){
+        List<Event> events = eventRepository.findAll();
+        List<GetEventDTO> eventDTOs = new ArrayList<>();
+        if (accountId != null) {
+            eventDTOs = events.stream()
+                    .filter(event -> event.getOrganizer().getAccount().getId() == accountId)
+                    .map(this::mapToGetEventDTO)
+                    .collect(Collectors.toList());
+        }
+        return eventDTOs;
+    }
 
     public List<GetEventDTO> findTopEvents(Integer accountId) {
         List<Event> events = eventRepository.findAll();
