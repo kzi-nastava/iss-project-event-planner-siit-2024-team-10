@@ -55,14 +55,11 @@ public class EventService {
     @Autowired
     private AgendaItemRepository agendaItemRepository;
 
-    @Autowired
-    private DTOMapper dtoMapper;
-
     public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
 
         return events.stream()
-                .map(dtoMapper::mapToGetEventDTO)
+                .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
     public PagedResponse<GetEventDTO> getAllEvents(

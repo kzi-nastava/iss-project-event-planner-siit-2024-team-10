@@ -2,12 +2,7 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
-import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.CreateRatingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.CreatedRatingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.GetRatingDTO;
-import com.ftn.iss.eventPlanner.model.Status;
 import com.ftn.iss.eventPlanner.services.CommentService;
 import com.ftn.iss.eventPlanner.services.OfferingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,5 +133,6 @@ public class OfferingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
+
 
 }

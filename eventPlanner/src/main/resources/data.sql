@@ -143,9 +143,9 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                        ( 'Service',1 ,1,  9, FALSE, FALSE),
                                                                                        ( 'Service',2 ,1,  10, FALSE, FALSE);
 
-INSERT INTO reservation (start_time, end_time, status, event_id, service_id) VALUES
-                                                                                     ( '2024-01-15 09:00:00', '2024-01-15 17:00:00', 1, 1, NULL),
-                                                                                     ( '2024-03-10 08:00:00', '2024-03-10 20:00:00', 0, 2, 1);
+INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
+                                                                                     ( '2025-01-15 09:00:00', '2024-01-15 17:00:00', 1, 1, 3,'2024-12-12 08:00:00'),
+                                                                                     ( '2025-03-10 08:00:00', '2024-03-10 20:00:00', 0, 2, 1,'2024-12-12 08:00:00');
 
 INSERT INTO offerings_comments (offering_id, comments_id) VALUES
                                                              (1, 1),

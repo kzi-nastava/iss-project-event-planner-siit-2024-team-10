@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.comment.GetCommentDTO;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
@@ -9,9 +10,12 @@ import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
+import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,7 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.*;
@@ -34,7 +38,10 @@ public class OfferingService {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
-    private DTOMapper dtoMapper;
+    private AccountService accountService;
+
+    private ModelMapper modelMapper = new ModelMapper();
+
 
     public List<GetOfferingDTO> findAll() {
         List<Offering> offerings = offeringRepository.findAll().stream()
@@ -49,9 +56,10 @@ public class OfferingService {
                 .collect(Collectors.toList());
 
         return offerings.stream()
-                .map(dtoMapper::mapToGetOfferingDTO)
+                .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
+
 
     public List<GetOfferingDTO> getAllOfferings(
             Boolean isServiceFilter,
@@ -77,7 +85,7 @@ public class OfferingService {
                     .and(ServiceSpecification.isAvailable(searchByAvailability));
 
             return serviceRepository.findAll(serviceSpecification).stream()
-                    .map(dtoMapper::mapToGetOfferingDTO)
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
         } else if (isServiceFilter == Boolean.FALSE) {
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
@@ -89,11 +97,11 @@ public class OfferingService {
                     .and(ProductSpecification.isAvailable(searchByAvailability));
 
             return productRepository.findAll(productSpecification).stream()
-                    .map(dtoMapper::mapToGetOfferingDTO)
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
         } else {
             return offeringRepository.findAll().stream()
-                    .map(dtoMapper::mapToGetOfferingDTO)
+                    .map(this::mapToGetOfferingDTO)
                     .collect(Collectors.toList());
         }
     }
@@ -213,7 +221,7 @@ public class OfferingService {
         }
 
         List<GetOfferingDTO> offeringDTOs = filteredOfferings.stream()
-                .map(dtoMapper::mapToGetOfferingDTO)
+                .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
 
         return new PagedResponse<>(offeringDTOs, pagedOfferings.getTotalPages(), pagedOfferings.getTotalElements());
@@ -347,13 +355,14 @@ public class OfferingService {
         }
         return dto;
     }
-
-    private double calculateAverageRating(Offering offering) {
-        if (offering.getRatings() == null || offering.getRatings().isEmpty()) {
+    public double calculateAverageRating(Offering offering) {
+        List<GetCommentDTO> comments = getComments(offering.getId());
+        if (comments == null || comments.isEmpty()) {
             return 0.0;
         }
-        OptionalDouble average = offering.getRatings().stream()
-                .mapToInt(Rating::getScore)
+
+        OptionalDouble average = comments.stream()
+                .mapToInt(GetCommentDTO::getRating)
                 .average();
 
         return average.orElse(0.0);
@@ -369,6 +378,7 @@ public class OfferingService {
         providerDTO.setProfilePhoto(offering.getProvider().getProfilePhoto());
         providerDTO.setLocation(modelMapper.map(offering.getProvider().getLocation(), GetLocationDTO.class));
         providerDTO.setCompany(setGetCompanyDTO(offering));
+        providerDTO.setAccountId(offering.getProvider().getAccount().getId());
         return providerDTO;
     }
 
