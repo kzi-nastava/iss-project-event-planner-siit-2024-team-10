@@ -377,4 +377,18 @@ public class ReservationService {
         reservation.setStatus(Status.CANCELED);
         reservationRepository.save(reservation);
     }
+
+    public void acceptReservation(int reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
+        reservation.setStatus(Status.ACCEPTED);
+        reservationRepository.save(reservation);
+    }
+
+    public void rejectReservation(int reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
+        reservation.setStatus(Status.DENIED);
+        reservationRepository.save(reservation);
+    }
 }

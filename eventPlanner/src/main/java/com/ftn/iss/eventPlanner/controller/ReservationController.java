@@ -80,4 +80,18 @@ public class ReservationController {
         reservationService.cancelReservation(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PreAuthorize("hasAnyAuthority('PRODUCER')")
+    @PutMapping(value="/{reservationId}/accept", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> acceptReservation(@PathVariable("reservationId") int reservationId) throws Exception {
+        reservationService.acceptReservation(reservationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('PRODUCER')")
+    @PutMapping(value="/{reservationId}/reject", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> rejectReservation(@PathVariable("reservationId") int reservationId) throws Exception {
+        reservationService.rejectReservation(reservationId);
+        return ResponseEntity.noContent().build();
+    }
 }
