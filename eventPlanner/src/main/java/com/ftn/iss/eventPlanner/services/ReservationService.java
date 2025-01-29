@@ -1,34 +1,51 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.EventPlannerApplication;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.reservation.CreateReservationDTO;
+import com.ftn.iss.eventPlanner.dto.reservation.CreatedReservationDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
-import com.ftn.iss.eventPlanner.model.Event;
-import com.ftn.iss.eventPlanner.model.Offering;
-import com.ftn.iss.eventPlanner.model.Reservation;
-import com.ftn.iss.eventPlanner.model.ServiceDetails;
+import com.ftn.iss.eventPlanner.model.*;
+import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.ReservationRepository;
+import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private EventRepository eventRepository;
+    @Autowired
+    private ServiceRepository serviceRepository;
 
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private EventPlannerApplication eventPlannerApplication;
 
     public List<GetReservationDTO> findAll(){
         List<Reservation> reservations = reservationRepository.findAll();
@@ -212,4 +229,132 @@ public class ReservationService {
         return serviceDTO;
     }
 
+    private void isDateWithinReservationPeriod(LocalTime startTime, Event event, ServiceDetails serviceDetails) {
+        LocalDate eventDate = event.getDate();
+        LocalDateTime reservationStart = LocalDateTime.of(eventDate, startTime);
+
+        long requiredHoursInAdvance = serviceDetails.getReservationPeriod();
+        LocalDateTime latestAllowedReservationTime = reservationStart.minusHours(requiredHoursInAdvance);
+
+        if(LocalDateTime.now().isAfter(latestAllowedReservationTime)){
+            throw new IllegalArgumentException("Reservation must be made within the reservation period.");
+        };
+    }
+    public void validateReservationTime(LocalTime startTime, LocalTime endTime, ServiceDetails serviceDetails) {
+        if (startTime == null || endTime == null) {
+            throw new IllegalArgumentException("Start time and end time must be provided");
+        }
+
+        long selectedDuration = Duration.between(startTime, endTime).toMinutes();
+
+        if (selectedDuration <= 0) {
+            throw new IllegalArgumentException("End time must be after start time");
+        }
+
+        long minDurationInMinutes = serviceDetails.getMinDuration() * 60;
+        long maxDurationInMinutes = serviceDetails.getMaxDuration() * 60;
+
+        if (selectedDuration < minDurationInMinutes || selectedDuration > maxDurationInMinutes) {
+            throw new IllegalArgumentException("Selected duration is not within the service's duration limits");
+        }
+    }
+
+    private void checkServiceAvailability(LocalDate date, LocalTime startTime, LocalTime endTime, com.ftn.iss.eventPlanner.model.Service service) {
+        List<Reservation> allReservations = reservationRepository.findAll();
+
+        List<Reservation> relevantReservations = allReservations.stream()
+                .filter(reservation -> reservation.getService().getId() == service.getId() && reservation.getEvent().getDate().equals(date))
+                .collect(Collectors.toList());
+
+        LocalDateTime providedStart = LocalDateTime.of(date, startTime);
+        LocalDateTime providedEnd = LocalDateTime.of(date, endTime);
+
+        for (Reservation reservation : relevantReservations) {
+            LocalDateTime reservationStartDateTime = LocalDateTime.of(date,  reservation.getStartTime());
+            LocalDateTime reservationEndDateTime = LocalDateTime.of(date, reservation.getEndTime());
+
+            if ((providedStart.isBefore(reservationEndDateTime) && providedStart.isAfter(reservationStartDateTime)) ||
+                    (providedEnd.isBefore(reservationEndDateTime) && providedEnd.isAfter(reservationStartDateTime)) ||
+                    (providedStart.isEqual(reservationStartDateTime) || providedEnd.isEqual(reservationEndDateTime))) {
+                throw new IllegalArgumentException("Service not available at selected time.");
+            }
+        }
+    }
+    private void isServiceReservedForEvent(Event event, com.ftn.iss.eventPlanner.model.Service service) {
+        List<Reservation> allReservations = reservationRepository.findAll();
+
+        for (Reservation reservation : allReservations) {
+            if (reservation.getService().getId() == service.getId() && reservation.getEvent().getId() == event.getId()) {
+                throw new IllegalArgumentException("You've already made a reservation for selected event.");
+            }
+        }
+    }
+
+    public CreatedReservationDTO create(CreateReservationDTO reservation) {
+        Reservation createdReservation = new Reservation();
+        Event event = eventRepository.findById(reservation.getEvent())
+                .orElseThrow(() -> new NotFoundException("Event with ID " + reservation.getEvent() + " not found"));
+        com.ftn.iss.eventPlanner.model.Service service = serviceRepository.findById(reservation.getService())
+                .orElseThrow(()-> new NotFoundException("Service with ID " + reservation.getService() + "not found"));
+
+        LocalTime startTime = reservation.getStartTime();
+        LocalTime endTime = reservation.getEndTime();
+
+        isServiceReservedForEvent(event, service);
+        isDateWithinReservationPeriod(startTime, event, service.getCurrentDetails());
+        validateReservationTime(startTime, endTime,service.getCurrentDetails());
+        checkServiceAvailability(event.getDate(), startTime, endTime, service);
+
+        createdReservation.setService(service);
+        createdReservation.setEvent(event);
+        createdReservation.setStartTime(startTime);
+        createdReservation.setEndTime(endTime);
+        createdReservation.setTimestamp(LocalDateTime.now());
+        if(service.getCurrentDetails().isAutoConfirm()){
+            createdReservation.setStatus(Status.ACCEPTED);
+        }else{
+            createdReservation.setStatus(Status.PENDING);
+        }
+
+        createdReservation = reservationRepository.save(createdReservation);
+        reservationRepository.flush();
+
+        CreatedReservationDTO createdReservationDTO = modelMapper.map(createdReservation, CreatedReservationDTO.class);
+        createdReservationDTO.setServiceId(createdReservation.getService().getId());
+        createdReservationDTO.setEventId(createdReservation.getEvent().getId());
+
+        sendConfirmation(event, service);
+
+        return createdReservationDTO;
+    }
+    private void sendConfirmation(Event event, com.ftn.iss.eventPlanner.model.Service service) {
+        EmailDetails emailDetails=new EmailDetails();
+        emailDetails.setRecipient(event.getOrganizer().getAccount().getEmail());
+        emailDetails.setSubject("Reservation Confirmation");
+        emailDetails.setMsgBody("You've successfully reserved "+service.getCurrentDetails().getName()+" for "+event.getName()+"!");
+        emailService.sendSimpleEmail(emailDetails);
+
+        emailDetails=new EmailDetails();
+        emailDetails.setRecipient(service.getProvider().getAccount().getEmail());
+        emailDetails.setSubject("Your Service Has Gotten A Reservation");
+        if (service.getCurrentDetails().isAutoConfirm()){
+            emailDetails.setMsgBody("Your service "+service.getCurrentDetails().getName()+" has been reserved for "+event.getName()+" by "+event.getOrganizer().getFirstName()+" "+event.getOrganizer().getLastName()+" and has been automatically accepted.");
+        }else{
+            emailDetails.setMsgBody("Your service "+service.getCurrentDetails().getName()+" has been reserved for "+event.getName()+" by "+event.getOrganizer().getFirstName()+" "+event.getOrganizer().getLastName()+" and has been added to pending reservation where you can confirm/deny it.");
+        }
+        emailService.sendSimpleEmail(emailDetails);
+    }
+
+    public List<GetEventDTO> findEventsByOrganizer(Integer accountId) {
+        List<Event> events = eventRepository.findAll();
+        List<GetEventDTO> eventDTOs = new ArrayList<>();
+        if (accountId != null) {
+            eventDTOs = events.stream()
+                    .filter(event -> event.getOrganizer().getAccount().getId() == accountId)
+                    .filter(event -> !event.getDate().isBefore(LocalDate.now()))
+                    .map(this::mapToGetEventDTO)
+                    .collect(Collectors.toList());
+        }
+        return eventDTOs;
+    }
 }

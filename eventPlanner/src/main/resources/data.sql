@@ -37,11 +37,11 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
                                                                                                                                      (4,2,1,7,1,15, 3.2);
 
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
-                                                                                                                                                   ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2024-01-15 12:00', FALSE, 1, '2024-03-10', 1),
-                                                                                                                                                   ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2024-03-10 15:00', FALSE, 2, '2024-03-03',2),
-                                                                                                                                                   ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2024-07-20 09:00', FALSE, 3, '2024-05-01',3),
-                                                                                                                                                   ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2024-10-15 08:30', FALSE, 2, '2024-08-12',4),
-                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2024-09-01 18:00', FALSE, 1, '2024-07-15',5);
+                                                                                                                                                   ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2025-01-15 12:00', FALSE, 1, '2025-03-10', 1),
+                                                                                                                                                   ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2025-03-10 15:00', FALSE, 2, '2025-03-03',2),
+                                                                                                                                                   ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20 09:00', FALSE, 3, '2025-05-01',3),
+                                                                                                                                                   ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
+                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5);
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
                                                                                                 ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
@@ -144,8 +144,8 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                        ( 'Service',2 ,1,  10, FALSE, FALSE);
 
 INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
-                                                                                     ( '2025-01-15 09:00:00', '2024-01-15 17:00:00', 1, 1, 3,'2024-12-12 08:00:00'),
-                                                                                     ( '2025-03-10 08:00:00', '2024-03-10 20:00:00', 0, 2, 1,'2024-12-12 08:00:00');
+                                                                                     ( '2025-01-15 09:00:00', '2025-01-15 17:00:00', 1, 1, 13,'2025-12-12 08:00:00'),
+                                                                                     ( '2025-03-10 08:00:00', '2025-03-10 20:00:00', 0, 2, 11,'2025-12-12 08:00:00');
 
 INSERT INTO offerings_comments (offering_id, comments_id) VALUES
                                                              (1, 1),
