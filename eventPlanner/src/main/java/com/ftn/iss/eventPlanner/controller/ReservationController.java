@@ -43,11 +43,6 @@ public class ReservationController {
         return new ResponseEntity<>(reservations, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/{id}/service-details", produces = "application/json")
-    public ResponseEntity<GetServiceDTO> getServiceDetailsByReservationId(@PathVariable("id") int id) {
-        GetServiceDTO serviceDetails = reservationService.findServiceDetailsByReservationId(id);
-        return new ResponseEntity<>(serviceDetails, HttpStatus.OK);
-    }
 
     @GetMapping(value = "/{organizerId}", produces = "application/json")
     public ResponseEntity<Collection<GetReservationDTO>> getReservationsByOrganizer(@PathVariable("organizerId") int organizerId) {
@@ -79,10 +74,10 @@ public class ReservationController {
         return new ResponseEntity<>(createdReservation, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedReservationDTO> updateReservation(@RequestBody UpdateReservationDTO reservation, @PathVariable("id") int id) throws Exception {
-        UpdatedReservationDTO updatedReservation = new UpdatedReservationDTO();
-        // TO-DO
-        return new ResponseEntity<>(updatedReservation, HttpStatus.CREATED);
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> cancelReservation(@PathVariable("id") int id) throws Exception {
+        reservationService.cancelReservation(id);
+        return ResponseEntity.noContent().build();
     }
 }

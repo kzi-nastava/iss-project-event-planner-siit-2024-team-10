@@ -68,7 +68,7 @@ public class ReservationService {
                 .toList();
     }
 
-    public GetServiceDTO findServiceDetailsByReservationId(int id){
+    public ServiceDetails findServiceDetailsByReservationId(int id){
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("Reservation with ID " + id + " not found"));
 
@@ -85,7 +85,7 @@ public class ReservationService {
                     .orElse(service.getCurrentDetails());
         }
 
-        return mapServiceDetailsDTO(service, serviceDetails);
+        return serviceDetails;
     }
 
     public List<GetReservationDTO> findByOrganizerId(int organizerId) {
@@ -240,6 +240,16 @@ public class ReservationService {
             throw new IllegalArgumentException("Reservation must be made within the reservation period.");
         };
     }
+
+    private void isDateWithinCancellationPeriod(Event event, ServiceDetails serviceDetails){
+        LocalDate eventDate = event.getDate();
+
+        int requiredDaysInAdvance = serviceDetails.getCancellationPeriod();
+
+        if(LocalDateTime.now().isAfter(eventDate.minusDays(requiredDaysInAdvance).atStartOfDay())){
+            throw new IllegalArgumentException("Cancellation must be made within the reservation period.");
+        }
+    }
     public void validateReservationTime(LocalTime startTime, LocalTime endTime, ServiceDetails serviceDetails) {
         if (startTime == null || endTime == null) {
             throw new IllegalArgumentException("Start time and end time must be provided");
@@ -356,5 +366,15 @@ public class ReservationService {
                     .collect(Collectors.toList());
         }
         return eventDTOs;
+    }
+
+    public void cancelReservation(int id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Reservation with ID " + id + " not found"));
+        ServiceDetails reservationServiceDetails = findServiceDetailsByReservationId(id);
+
+        isDateWithinCancellationPeriod(reservation.getEvent(), reservationServiceDetails);
+        reservation.setStatus(Status.CANCELED);
+        reservationRepository.save(reservation);
     }
 }
