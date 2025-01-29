@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="EventReport"
+              pageWidth="595"
+              pageHeight="842"
+              columnWidth="500"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20">
+
+    <parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+    <parameter name="AgendaSubreport" class="net.sf.jasperreports.engine.JasperReport"/>
+
+    <field name="eventName"/>
+    <field name="eventType"/>
+    <field name="description"/>
+    <field name="location"/>
+    <field name="eventDate"/>
+    <field name="participants" class="java.lang.Integer"/>
+    <field name="organizerName" class="java.lang.String"/>
+    <field name="organizerLocation" class="java.lang.String"/>
+    <field name="organizerEmail" class="java.lang.String"/>
+    <field name="organizerPhone" class="java.lang.String"/>
+    <field name="agendaItems" class="java.util.List"/>
+
+    <title>
+        <band height="150">
+            <textField>
+                <reportElement x="0" y="0" width="535" height="30"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="16" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{eventName}]]></textFieldExpression>
+            </textField>
+
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="40" width="535" height="20"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="14"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{eventType}]]></textFieldExpression>
+            </textField>
+
+            <textField pattern="MMMM d, yyyy">
+                <reportElement x="0" y="70" width="535" height="20"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{eventDate}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="90" width="535" height="20"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{location}]]></textFieldExpression>
+            </textField>
+
+            <textField isStretchWithOverflow="true">
+                <reportElement x="40" y="120" width="455" height="30"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <detail>
+        <band height="100" isSplitAllowed="true">
+            <staticText>
+                <reportElement x="0" y="10" width="535" height="20"/>
+                <textElement textAlignment="Left">
+                    <font size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Organizer Information]]></text>
+            </staticText>
+
+            <textField>
+                <reportElement x="40" y="40" width="200" height="20"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Name: " + $F{organizerName}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="40" y="60" width="200" height="20"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Location: " + $F{organizerLocation}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="290" y="40" width="245" height="20"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Email: " + $F{organizerEmail}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="290" y="60" width="245" height="20"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Phone: " + $F{organizerPhone}]]></textFieldExpression>
+            </textField>
+        </band>
+
+        <band height="50" isSplitAllowed="true">
+            <staticText>
+                <reportElement x="0" y="10" width="535" height="20"/>
+                <textElement textAlignment="Left">
+                    <font size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Participation]]></text>
+            </staticText>
+
+            <textField>
+                <reportElement x="40" y="30" width="200" height="20"/>
+                <textElement/>
+                <textFieldExpression><![CDATA["Number of Participants: " + $F{participants}]]></textFieldExpression>
+            </textField>
+        </band>
+
+        <band height="200" isSplitAllowed="true">
+            <staticText>
+                <reportElement x="0" y="10" width="535" height="20"/>
+                <textElement textAlignment="Left">
+                    <font size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Agenda]]></text>
+            </staticText>
+
+            <subreport>
+                <reportElement x="0" y="40" width="535" height="100"/>
+                <dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{agendaItems})]]></dataSourceExpression>
+                <subreportExpression><![CDATA[$P{AgendaSubreport}]]></subreportExpression>
+            </subreport>
+
+        </band>
+    </detail>
+</jasperReport>
