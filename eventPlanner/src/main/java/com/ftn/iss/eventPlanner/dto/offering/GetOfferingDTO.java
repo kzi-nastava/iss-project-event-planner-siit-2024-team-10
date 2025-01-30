@@ -24,6 +24,7 @@ public class GetOfferingDTO {
     private double averageRating;
     @JsonProperty("isProduct")
     private boolean isProduct;
+    private List<String> photos;
 
     public GetOfferingDTO() {
     }

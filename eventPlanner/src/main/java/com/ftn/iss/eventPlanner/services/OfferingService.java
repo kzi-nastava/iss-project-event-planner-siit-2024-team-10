@@ -237,7 +237,7 @@ public class OfferingService {
             dto.setPrice(pr.getCurrentDetails().getPrice());
             dto.setDiscount(pr.getCurrentDetails().getDiscount());
             dto.setLocation(modelMapper.map(pr.getProvider().getLocation(), GetLocationDTO.class));
-
+            dto.setPhotos(pr.getCurrentDetails().getPhotos());
             dto.setProduct(true);
         }
         else{
@@ -248,7 +248,7 @@ public class OfferingService {
             dto.setDiscount(service.getCurrentDetails().getDiscount());
             dto.setLocation(modelMapper.map(service.getProvider().getLocation(), GetLocationDTO.class));
             dto.setSpecification(service.getCurrentDetails().getSpecification());
-
+            dto.setPhotos(service.getCurrentDetails().getPhotos());
             dto.setProduct(false);
         }
         return dto;
