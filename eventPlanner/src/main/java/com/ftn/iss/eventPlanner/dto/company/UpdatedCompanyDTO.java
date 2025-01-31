@@ -13,7 +13,6 @@ public class UpdatedCompanyDTO {
     private int id;
     private String phoneNumber;
     private String description;
-    private List<String> photos;
     private CreatedLocationDTO location;
 
     public UpdatedCompanyDTO() {}
@@ -22,7 +21,6 @@ public class UpdatedCompanyDTO {
         this.id=id;
         this.phoneNumber = phoneNumber;
         this.description = description;
-        this.photos = photos;
         this.location = location;
     }
 }
