@@ -89,9 +89,9 @@ INSERT INTO message (content, timestamp, sender_id, receiver_id, is_read) VALUES
                                                                                   ( 'Hello, when is the event?', '2023-12-05 09:00:00', 1, 2, FALSE),
                                                                                   ( 'Can you provide more details?', '2023-12-06 10:00:00', 2, 1, TRUE);
 
-INSERT INTO notification (is_read, content) VALUES
-                                                    ( FALSE, 'Your account has been updated.'),
-                                                    ( TRUE, 'Event registration confirmed.');
+INSERT INTO notification (is_read, content, title, date) VALUES
+                                                    ( FALSE, 'Your account has been updated.','Service Reservation','2025-01-05 09:00:00'),
+                                                    ( TRUE, 'Event registration confirmed.', 'Event Confirmation', '2025-01-04 09:00:00');
 
 
 INSERT INTO product_details (name, description, price, discount, is_visible, is_available, timestamp) VALUES
