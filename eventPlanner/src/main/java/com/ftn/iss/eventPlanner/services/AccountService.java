@@ -1,10 +1,8 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.model.Account;
-import com.ftn.iss.eventPlanner.model.AccountStatus;
 import com.ftn.iss.eventPlanner.model.Event;
 import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
@@ -15,12 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
