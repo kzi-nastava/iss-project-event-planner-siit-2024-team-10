@@ -185,7 +185,6 @@ public class OfferingService {
         return offerings.stream()
                 .filter(offering -> offering.getProvider().getId() == providerId)
                 .filter(offering -> !offering.isDeleted())
-                .limit(5)
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
