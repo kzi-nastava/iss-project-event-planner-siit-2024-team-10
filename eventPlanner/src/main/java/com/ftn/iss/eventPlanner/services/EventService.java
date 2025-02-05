@@ -302,6 +302,62 @@ public class EventService {
         return JasperExportManager.exportReportToPdf(jasperPrint);
     }
 
+    public byte[] generateEventInfoReport(int eventId) throws JRException {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+
+        String reportPath = "template/event_report.jrxml";
+        String agendaReportPath = "template/agenda_subreport.jrxml";
+
+        InputStream reportStream = getClass().getClassLoader().getResourceAsStream(reportPath);
+        InputStream agendaReportStream = getClass().getClassLoader().getResourceAsStream(agendaReportPath);
+
+        if (reportStream == null || agendaReportStream == null) {
+            throw new JRException("Could not find report templates");
+        }
+
+        JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+        JasperReport agendaSubreport = JasperCompileManager.compileReport(agendaReportStream);
+
+        List<HashMap<String, Object>> reportData = new ArrayList<>();
+        HashMap<String, Object> data = new HashMap<>();
+
+        data.put("eventName", event.getName());
+        data.put("eventType", event.getEventType().getName());
+        data.put("description", event.getDescription());
+        data.put("location", event.getLocation().toString());
+        data.put("eventDate", event.getDate().toString());
+        data.put("participants", event.getStats().getParticipantsCount());
+
+        Organizer organizer = event.getOrganizer();
+        data.put("organizerName", organizer.getFirstName()+" "+organizer.getLastName());
+        data.put("organizerLocation", organizer.getLocation().toString());
+        data.put("organizerEmail", organizer.getAccount().getEmail());
+        data.put("organizerPhone", organizer.getPhoneNumber());
+
+        List<HashMap<String, Object>> agendaItems = new ArrayList<>();
+        for (AgendaItem item : event.getAgenda().stream().filter(agendaItem -> !agendaItem.isDeleted()).sorted(Comparator.comparing(AgendaItem::getStartTime)).collect(Collectors.toList())) {
+            HashMap<String, Object> agendaItem = new HashMap<>();
+            agendaItem.put("itemName", item.getName());
+            agendaItem.put("itemDescription", item.getDescription());
+            agendaItem.put("startTime", item.getStartTime().toString());
+            agendaItem.put("endTime", item.getEndTime().toString());
+            agendaItem.put("itemLocation", item.getLocation());
+            agendaItems.add(agendaItem);
+        }
+        data.put("agendaItems", agendaItems);
+
+        reportData.add(data);
+        JRDataSource jrDataSource = new JRBeanCollectionDataSource(reportData);
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("AgendaSubreport", agendaSubreport);
+
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, jrDataSource);
+
+        return JasperExportManager.exportReportToPdf(jasperPrint);
+    }
+
     public GetEventStatsDTO addParticipant(int eventId){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));

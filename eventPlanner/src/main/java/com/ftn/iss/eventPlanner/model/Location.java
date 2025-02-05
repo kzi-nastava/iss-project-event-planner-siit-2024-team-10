@@ -22,4 +22,9 @@ public class Location {
 
     public Location() {
     }
+
+    @Override
+    public String toString() {
+        return street+" "+houseNumber+", "+city+", "+country;
+    }
 }
