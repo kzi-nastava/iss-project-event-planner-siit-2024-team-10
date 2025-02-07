@@ -1,5 +1,8 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.controller.AuthenticationController;
+import com.ftn.iss.eventPlanner.dto.GetNotificationDTO;
+import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.Notification;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
@@ -11,9 +14,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,36 +32,41 @@ public class NotificationService {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private AuthenticationController authenticationController;
 
-    public void sendNotification(String title, String content, Account account) {
+    public void sendNotification(String title, String content, Integer recipient) {
         Notification notification = new Notification();
         notification.setTitle(title);
         notification.setContent(content);
         notification.setDate(LocalDateTime.now());
         notification.setRead(false);
+        Account recipientAccount = accountRepository.findById(recipient)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+
+        recipientAccount.getNotifications().add(notification);
 
         notification = notificationRepository.save(notification);
+        accountRepository.save(recipientAccount);
 
-        account.getNotifications().add(notification);
-        accountRepository.save(account);
-
-        if (!account.isNotificationsSilenced()) {
+        if (!recipientAccount.isNotificationsSilenced()) {
             Map<String, String> message = new HashMap<>();
             message.put("type", "NOTIFICATION");
             message.put("title", notification.getTitle());
             message.put("content", notification.getContent());
             message.put("id", notification.getId().toString());
             message.put("date", notification.getDate().toString());
-            message.put("toId", String.valueOf(account.getId()));
+            message.put("toId", String.valueOf(recipient));
 
             messagingTemplate.convertAndSend(
-                    "/socket-publisher/" + account.getId(),
+                    "/socket-publisher/" + recipient,
                     message
             );
         }
     }
 
-    public Page<Notification> getAccountNotifications(Account account, Pageable pageable) {
+    public PagedResponse<GetNotificationDTO> getAccountNotifications(Pageable pageable, int accountId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
         Set<Notification> allNotifications = account.getNotifications();
 
         List<Notification> sortedNotifications = new ArrayList<>(allNotifications);
@@ -69,28 +79,45 @@ public class NotificationService {
                 sortedNotifications.subList(start, end) :
                 new ArrayList<>();
 
-        return new PageImpl<>(
-                pageContent,
-                pageable,
-                sortedNotifications.size()
-        );
+        Page<Notification> pagedNotifications = new PageImpl<>(pageContent);
+
+        List<GetNotificationDTO> notificationDTOs = pagedNotifications.getContent().stream()
+                .map(this::mapToNotificationDTO)
+                .collect(Collectors.toList());
+
+        return new PagedResponse<>(notificationDTOs, pagedNotifications.getTotalPages(), pagedNotifications.getTotalElements());
     }
 
-    public void markAsRead(Long notificationId, Account account) {
+    private GetNotificationDTO mapToNotificationDTO(Notification notification) {
+        GetNotificationDTO dto = new GetNotificationDTO();
+
+        dto.setId(notification.getId());
+        dto.setTitle(notification.getTitle());
+        dto.setDate(notification.getDate());
+        dto.setRead(notification.isRead());
+        return dto;
+    }
+
+    public void markAsRead(Integer notificationId) {
         notificationRepository.findById(notificationId)
                 .ifPresent(notification -> {
                     notification.setRead(true);
                     notificationRepository.save(notification);
                 });
     }
-    public void markAllAsRead(Account account){
+
+    public void markAllAsRead(Integer accountId){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
         Set<Notification> allNotifications = account.getNotifications();
         for (Notification notification : allNotifications) {
-            markAsRead(notification.getId(), account);
+            markAsRead(notification.getId());
         }
     }
 
-    public void toggleNotifications(Account account, boolean silenced) {
+    public void toggleNotifications(Integer accountId, boolean silenced) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
         account.setNotificationsSilenced(silenced);
         accountRepository.save(account);
     }
