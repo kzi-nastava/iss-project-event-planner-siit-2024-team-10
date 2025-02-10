@@ -12,9 +12,7 @@ public class UpdatedUserDTO {
     private String firstName;
     private String lastName;
     private String phoneNumber;
-    private String profilePhoto;
     private CreatedLocationDTO location;
-    private UpdatedCompanyDTO company;
 
     public UpdatedUserDTO() {}
 }
