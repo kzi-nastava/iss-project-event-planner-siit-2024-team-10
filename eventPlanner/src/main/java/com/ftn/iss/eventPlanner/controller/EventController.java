@@ -9,6 +9,7 @@ import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
 import net.sf.jasperreports.engine.JRException;
+import org.apache.commons.collections4.Get;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -67,8 +68,19 @@ public class EventController {
         }
     }
 
+    @GetMapping(value="/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<GetEventDTO>> findEventsByOrganizer(@RequestParam Integer accountId){
+        try{
+            List<GetEventDTO> events = eventService.findEventsByOrganizer(accountId);
+            return new ResponseEntity<>(events, HttpStatus.OK);
+        }
+        catch (IllegalArgumentException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedEventDTO> createEvent(@Valid @RequestBody CreateEventDTO event) {
         try{
             CreatedEventDTO createdEventType = eventService.create(event);

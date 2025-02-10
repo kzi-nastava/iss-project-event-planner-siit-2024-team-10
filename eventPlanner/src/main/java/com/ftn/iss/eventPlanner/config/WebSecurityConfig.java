@@ -95,6 +95,7 @@ public class WebSecurityConfig {
                         "/socket/**",
                         "api/messages/*/*",
                         "api/comments*","api/images","api/images/*","api/offerings/*/comments",
+                        "api/reservations/*",
                         "api/offerings/provider/*",
                         "api/users/*")
                 .requestMatchers(HttpMethod.POST,

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -15,10 +16,10 @@ public class Reservation {
     private int id;
 
     @Column(nullable = false)
-    private LocalDateTime startTime;
+    private LocalTime startTime;
 
     @Column(nullable = false)
-    private LocalDateTime endTime;
+    private LocalTime endTime;
 
     @Column(nullable = false)
     @Enumerated
@@ -28,6 +29,9 @@ public class Reservation {
     private Event event;
     @ManyToOne
     private Service service;
+
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
 
     public Reservation() {
     }
