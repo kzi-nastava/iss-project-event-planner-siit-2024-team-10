@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class GetNotificationDTO {
     private int id;
     private String title;
-    private String description;
+    private String content;
     private LocalDateTime date;
     private boolean read;
 }

@@ -25,7 +25,7 @@ public class Notification {
     private LocalDateTime date;
 
     @Column(nullable = false)
-    private boolean isRead;
+    private boolean read;
 
     public Notification() {
     }

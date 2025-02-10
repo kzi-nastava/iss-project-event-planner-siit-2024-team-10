@@ -95,13 +95,15 @@ public class WebSecurityConfig {
                         "/socket/**",
                         "api/messages/*/*",
                         "api/comments*","api/images","api/images/*","api/offerings/*/comments",
-                        "api/offerings/provider/*")
+                        "api/offerings/provider/*",
+                        "api/notifications/*")
                 .requestMatchers(HttpMethod.POST,
                         "api/accounts/*/favourite-events",
                         "api/accounts/*/favourite-offerings",
                         "api/events/*/stats/participants",
                         "api/events/*/ratings",
-                        "api/messages/**")
+                        "api/messages/**",
+                        "api/notifications/*")
                 .requestMatchers(HttpMethod.DELETE,
                         "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
     }

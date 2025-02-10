@@ -79,7 +79,11 @@ public class NotificationService {
                 sortedNotifications.subList(start, end) :
                 new ArrayList<>();
 
-        Page<Notification> pagedNotifications = new PageImpl<>(pageContent);
+        Page<Notification> pagedNotifications = new PageImpl<>(
+                pageContent,
+                pageable,
+                sortedNotifications.size()
+        );
 
         List<GetNotificationDTO> notificationDTOs = pagedNotifications.getContent().stream()
                 .map(this::mapToNotificationDTO)
@@ -95,9 +99,11 @@ public class NotificationService {
         dto.setTitle(notification.getTitle());
         dto.setDate(notification.getDate());
         dto.setRead(notification.isRead());
+        dto.setContent(notification.getContent());
         return dto;
     }
 
+    @Transactional
     public void markAsRead(Integer notificationId) {
         notificationRepository.findById(notificationId)
                 .ifPresent(notification -> {
