@@ -6,14 +6,11 @@ import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.*;
 import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
-import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.collections4.Get;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -151,8 +148,16 @@ public class EventController {
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','ADMIN')")
     @GetMapping(value="/{eventId}/reports/open-event", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> getEventReport(@PathVariable int eventId) throws JRException {
+    public ResponseEntity<byte[]> getOpenEventReport(@PathVariable int eventId) throws JRException {
         byte[] pdfReport= eventService.generateOpenEventReport(eventId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=event_report.pdf")
+                .body(pdfReport);
+    }
+
+    @GetMapping(value="/{eventId}/reports/info", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getEventReport(@PathVariable int eventId) throws JRException {
+        byte[] pdfReport= eventService.generateEventInfoReport(eventId);
         return ResponseEntity.ok()
                 .header("Content-Disposition", "inline; filename=event_report.pdf")
                 .body(pdfReport);
