@@ -93,6 +93,7 @@ public class ReservationService {
 
         return reservations.stream()
                 .filter(reservation -> reservation.getEvent().getOrganizer().getId() == organizerId)
+                .filter(reservation -> reservation.getStatus() != Status.CANCELED)
                 .map(this::mapToGetReservationDTO)
                 .toList();
     }
@@ -102,6 +103,7 @@ public class ReservationService {
 
         return reservations.stream()
                 .filter(reservation -> reservation.getService().getProvider().getId() == providerId)
+                .filter(reservation -> reservation.getStatus() != Status.CANCELED)
                 .map(this::mapToGetReservationDTO)
                 .toList();
     }
