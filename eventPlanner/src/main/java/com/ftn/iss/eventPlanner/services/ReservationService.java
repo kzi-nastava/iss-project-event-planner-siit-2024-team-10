@@ -374,6 +374,16 @@ public class ReservationService {
         return eventDTOs;
     }
 
+    public List<GetReservationDTO> findPendingReservations(int providerId) {
+        List<Reservation> reservations = reservationRepository.findAll();
+
+        return reservations.stream()
+                .filter(reservation -> reservation.getService().getProvider().getId() == providerId)
+                .filter(reservation -> reservation.getStatus() == Status.PENDING)
+                .map(this::mapToGetReservationDTO)
+                .toList();
+    }
+
     public void cancelReservation(int id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + id + " not found"));

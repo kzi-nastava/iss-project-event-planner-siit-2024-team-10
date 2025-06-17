@@ -81,6 +81,12 @@ public class ReservationController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping(value = "/{providerId}/pending", produces = "application/json")
+    public ResponseEntity<Collection<GetReservationDTO>> getPendingReservationsByProvider(@PathVariable("providerId") int providerId) {
+        List<GetReservationDTO> reservations = reservationService.findPendingReservations(providerId);
+        return new ResponseEntity<>(reservations, HttpStatus.OK);
+    }
+    
     @PreAuthorize("hasAnyAuthority('PRODUCER')")
     @PutMapping(value="/{reservationId}/accept", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> acceptReservation(@PathVariable("reservationId") int reservationId) throws Exception {
