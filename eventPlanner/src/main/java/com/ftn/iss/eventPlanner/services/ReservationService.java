@@ -343,7 +343,11 @@ public class ReservationService {
         EmailDetails emailDetails=new EmailDetails();
         emailDetails.setRecipient(event.getOrganizer().getAccount().getEmail());
         emailDetails.setSubject("Reservation Confirmation");
-        emailDetails.setMsgBody("You've successfully reserved "+service.getCurrentDetails().getName()+" for "+event.getName()+"!");
+        if (service.getCurrentDetails().isAutoConfirm()){
+            emailDetails.setMsgBody("You've successfully reserved "+service.getCurrentDetails().getName()+" for "+event.getName()+"!");
+        }else{
+            emailDetails.setMsgBody("Reservation for service "+service.getCurrentDetails().getName()+" for your event "+event.getName()+" is pending. You will get a confirmation when it gets accepted/denied.");
+        }
         emailService.sendSimpleEmail(emailDetails);
 
         emailDetails=new EmailDetails();
