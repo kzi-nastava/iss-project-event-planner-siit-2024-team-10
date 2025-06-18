@@ -30,40 +30,8 @@ public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
 
-//    @Autowired
-//    private SimpMessagingTemplate messagingTemplate;
-//    @Autowired
-//    private AuthenticationController authenticationController;
-
-//    public void sendNotification(String title, String content, Integer recipient) {
-//        Notification notification = new Notification();
-//        notification.setTitle(title);
-//        notification.setContent(content);
-//        notification.setDate(LocalDateTime.now());
-//        notification.setRead(false);
-//        Account recipientAccount = accountRepository.findById(recipient)
-//                .orElseThrow(() -> new NotFoundException("Account not found"));
-//
-//        recipientAccount.getNotifications().add(notification);
-//
-//        notification = notificationRepository.save(notification);
-//        accountRepository.save(recipientAccount);
-//
-//        if (!recipientAccount.isNotificationsSilenced()) {
-//            Map<String, String> message = new HashMap<>();
-//            message.put("type", "NOTIFICATION");
-//            message.put("title", notification.getTitle());
-//            message.put("content", notification.getContent());
-//            message.put("id", notification.getId().toString());
-//            message.put("date", notification.getDate().toString());
-//            message.put("toId", String.valueOf(recipient));
-//
-//            messagingTemplate.convertAndSend(
-//                    "/socket-publisher/" + recipient,
-//                    message
-//            );
-//        }
-//    }
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     public PagedResponse<GetNotificationDTO> getAccountNotifications(Pageable pageable, int accountId) {
         Account account = accountRepository.findById(accountId)
@@ -115,6 +83,31 @@ public class NotificationService {
         dto.setRead(notification.isRead());
         dto.setContent(notification.getContent());
         return dto;
+    }
+
+    public void sendNotification(Integer recipientId, String title, String content) {
+        Account recipientAccount = accountRepository.findById(recipientId)
+                .orElseThrow(() -> new NotFoundException("Recipient account not found with ID: " + recipientId));
+
+        Notification notification = new Notification();
+        notification.setTitle(title);
+        notification.setContent(content);
+        notification.setDate(LocalDateTime.now());
+        notification.setRead(false);
+
+        notification = notificationRepository.save(notification);
+
+        recipientAccount.getNotifications().add(notification);
+        accountRepository.save(recipientAccount);
+
+        if (!recipientAccount.isNotificationsSilenced()) {
+            GetNotificationDTO notificationDTO = mapToNotificationDTO(notification);
+
+            messagingTemplate.convertAndSend(
+                    "/socket-publisher/" + recipientId,
+                    notificationDTO
+            );
+        }
     }
 
     @Transactional
