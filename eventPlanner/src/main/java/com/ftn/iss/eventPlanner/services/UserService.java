@@ -1,7 +1,10 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.user.CreateUserDTO;
-import com.ftn.iss.eventPlanner.dto.user.CreatedUserDTO;
+import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.*;
@@ -10,8 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,6 +34,8 @@ public class UserService {
     private ProviderRepository providerRepository;
     @Autowired
     private OrganizerRepository organizerRepository;
+    @Autowired
+    private EventRepository eventRepository;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
@@ -132,5 +140,77 @@ public class UserService {
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
         verificationTokenRepository.delete(verificationToken);
+    }
+
+    public GetUserDTO getUserDetails(int accountId){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        GetUserDTO userDetails = new GetUserDTO();
+        userDetails.setAccountId(account.getId());
+        userDetails.setEmail(account.getEmail());
+        userDetails.setRole(account.getRole());
+        if(account.getRole() == Role.AUTHENTICATED_USER || account.getRole() == Role.ADMIN)
+            return userDetails;
+        User user = account.getUser();
+        userDetails.setUserId(user.getId());
+        userDetails.setFirstName(user.getFirstName());
+        userDetails.setLastName(user.getLastName());
+        userDetails.setPhoneNumber(user.getPhoneNumber());
+        userDetails.setProfilePhoto(user.getProfilePhoto());
+        userDetails.setLocation(modelMapper.map(user.getLocation(), GetLocationDTO.class));
+        if(account.getRole() == Role.PROVIDER)
+            userDetails.setCompany(modelMapper.map(((Provider) user).getCompany(), GetCompanyDTO.class));
+        return userDetails;
+    }
+    public UpdatedUserDTO updateUser(int accountId, UpdateUserDTO updateUserDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
+            throw new IllegalArgumentException("User with given account ID is not a provider or organizer");
+        User user = account.getUser();
+        user.setFirstName(updateUserDTO.getFirstName());
+        user.setLastName(updateUserDTO.getLastName());
+        user.setPhoneNumber(updateUserDTO.getPhoneNumber());
+        user.setLocation(modelMapper.map(locationService.create(updateUserDTO.getLocation()), Location.class));
+        userRepository.save(user);
+        return modelMapper.map(user, UpdatedUserDTO.class);
+    }
+
+    public UpdatedCompanyDTO updateCompany(int accountId, UpdateCompanyDTO updateCompanyDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()!=Role.PROVIDER)
+            throw new IllegalArgumentException("User with given account ID is not a provider");
+        Provider provider = (Provider) account.getUser();
+        Company company = provider.getCompany();
+        company.setPhoneNumber(updateCompanyDTO.getPhoneNumber());
+        company.setDescription(updateCompanyDTO.getDescription());
+        company.setLocation(modelMapper.map(locationService.create(updateCompanyDTO.getLocation()), Location.class));
+        companyRepository.save(company);
+        return modelMapper.map(company, UpdatedCompanyDTO.class);
+    }
+
+    public void changePassword(int accountId, ChangePasswordDTO changePasswordDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(!passwordEncoder.matches(changePasswordDTO.getOldPassword(), account.getPassword())){
+            throw new IllegalArgumentException("Old password is incorrect");
+        }
+        account.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
+        accountRepository.save(account);
+    }
+
+    public void deactivateAccount(int accountId){
+        Account account=accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.EVENT_ORGANIZER){
+            Organizer organizer=(Organizer) account.getUser();
+            List<Event> events = eventRepository.findByOrganizerId(organizer.getId());
+            if(events.stream().anyMatch(event -> event.getDate().isAfter(LocalDate.now())))
+                throw new IllegalArgumentException("Organizer has upcoming events, can't deactivate account");
+        }
+        //TODO if provider check upcoming reservations
+        account.setStatus(AccountStatus.INACTIVE);
+        accountRepository.save(account);
     }
 }

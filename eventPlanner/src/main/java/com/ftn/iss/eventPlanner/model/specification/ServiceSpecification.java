@@ -1,6 +1,9 @@
 package com.ftn.iss.eventPlanner.model.specification;
 
+import com.ftn.iss.eventPlanner.model.Comment;
+import com.ftn.iss.eventPlanner.model.Product;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
@@ -60,11 +63,12 @@ public class ServiceSpecification {
             }
 
             Subquery<Double> subquery = query.subquery(Double.class);
-            Root<Service> subRoot = subquery.from(Service.class);
-            Join<Object, Object> ratingsJoin = subRoot.join("ratings");
+            Root<Service> offeringRoot = subquery.from(Service.class);
 
-            subquery.select(criteriaBuilder.avg(ratingsJoin.get("score")))
-                    .where(criteriaBuilder.equal(subRoot.get("id"), root.get("id")));
+            Join<Service, Comment> commentJoin = offeringRoot.join("comments", JoinType.LEFT);
+
+            subquery.select(criteriaBuilder.avg(commentJoin.get("rating")))
+                    .where(criteriaBuilder.equal(offeringRoot.get("id"), root.get("id")));
 
             return criteriaBuilder.greaterThanOrEqualTo(subquery, minRating);
         };
@@ -93,5 +97,9 @@ public class ServiceSpecification {
     public static Specification<Service> isAvailable(Boolean searchByAvailability) {
         return (root, query, criteriaBuilder) ->
                 searchByAvailability != null && searchByAvailability ? criteriaBuilder.isTrue(root.get("currentDetails").get("isAvailable")) : criteriaBuilder.conjunction();
+    }
+
+    public static Specification<Service> isVisible() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("currentDetails").get("isVisible"), true);
     }
 }

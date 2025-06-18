@@ -10,9 +10,12 @@ import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
+import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,11 +23,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
@@ -35,69 +38,36 @@ public class OfferingService {
     private ServiceRepository serviceRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private AccountService accountService;
 
     private ModelMapper modelMapper = new ModelMapper();
 
 
-    public List<GetOfferingDTO> findAll(){
-        List<Offering> offerings = offeringRepository.findAll();
+    public List<GetOfferingDTO> findAll() {
+        List<Offering> offerings = offeringRepository.findAll().stream()
+                .filter(offering -> {
+                    if (offering instanceof Product) {
+                        return ((Product) offering).getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service) {
+                        return ((Service) offering).getCurrentDetails().isVisible();
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
 
         return offerings.stream()
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<GetOfferingDTO> getAllOfferings(
-            Boolean isServiceFilter,
-            String name,
-            Integer categoryId,
-            String location,
-            Double minPrice,
-            Double maxPrice,
-            Integer minDiscount,
-            Integer serviceDuration,
-            Double minRating,
-            Boolean searchByAvailability
-    ) {
-
-        if (isServiceFilter == Boolean.TRUE) {
-            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
-                    .and(ServiceSpecification.hasCategoryId(categoryId))
-                    .and(ServiceSpecification.hasLocation(location))
-                    .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
-                    .and(ServiceSpecification.minDiscount(minDiscount))
-                    .and(ServiceSpecification.minRating(minRating))
-                    .and(ServiceSpecification.hasServiceDuration(serviceDuration))
-                    .and(ServiceSpecification.isAvailable(searchByAvailability));
-
-            return serviceRepository.findAll(serviceSpecification).stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        } else if (isServiceFilter == Boolean.FALSE) {
-            Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                    .and(ProductSpecification.hasCategoryId(categoryId))
-                    .and(ProductSpecification.hasLocation(location))
-                    .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
-                    .and(ProductSpecification.minDiscount(minDiscount))
-                    .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability));
-
-            return productRepository.findAll(productSpecification).stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        } else {
-            return offeringRepository.findAll().stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        }
-    }
     @Transactional(readOnly = true)
     public PagedResponse<GetOfferingDTO> getAllOfferings(
-            Pageable pageable,
+            Pageable initialPageable,
             Boolean isServiceFilter,
             String name,
             Integer categoryId,
-            String location,
+            String initialLocation,
             Double minPrice,
             Double maxPrice,
             Integer minDiscount,
@@ -105,8 +75,26 @@ public class OfferingService {
             Double minRating,
             Boolean searchByAvailability,
             String sortBy,
-            String sortDirection
+            String sortDirection,
+            Integer accountId
     ) {
+        final String userCity;
+        final String location;
+        final Pageable pageable;
+
+        String tempUserCity = null;
+        String tempLocation = initialLocation;
+        if (accountId != null && (initialLocation == null || initialLocation.isEmpty())) {
+            Location userLocation = accountService.findUserLocation(accountId);
+            if (userLocation != null) {
+                tempUserCity = userLocation.getCity();
+                tempLocation = tempUserCity;
+            }
+        }
+        userCity = tempUserCity;
+        location = tempLocation;
+
+        Pageable tempPageable = initialPageable;
         if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
             String sortField = switch (sortBy.toLowerCase()) {
                 case "price" -> "currentDetails.price";
@@ -121,10 +109,37 @@ public class OfferingService {
                         ? Sort.Direction.DESC
                         : Sort.Direction.ASC;
 
-                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                tempPageable = PageRequest.of(initialPageable.getPageNumber(), initialPageable.getPageSize(),
                         Sort.by(sortDirectionEnum, sortField));
             }
         }
+        pageable = tempPageable;
+
+        Function<Page<? extends Offering>, Page<? extends Offering>> retryWithoutLocation = (results) -> {
+            if (results.getTotalElements() == 0 && location != null && location.equals(userCity)) {
+                if (isServiceFilter == Boolean.TRUE) {
+                    Specification<Service> retrySpec = Specification.where(ServiceSpecification.hasName(name))
+                            .and(ServiceSpecification.hasCategoryId(categoryId))
+                            .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
+                            .and(ServiceSpecification.minDiscount(minDiscount))
+                            .and(ServiceSpecification.minRating(minRating))
+                            .and(ServiceSpecification.hasServiceDuration(serviceDuration))
+                            .and(ServiceSpecification.isAvailable(searchByAvailability))
+                            .and(ServiceSpecification.isVisible());
+                    return serviceRepository.findAll(retrySpec, pageable);
+                } else if (isServiceFilter == Boolean.FALSE) {
+                    Specification<Product> retrySpec = Specification.where(ProductSpecification.hasName(name))
+                            .and(ProductSpecification.hasCategoryId(categoryId))
+                            .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
+                            .and(ProductSpecification.minDiscount(minDiscount))
+                            .and(ProductSpecification.minRating(minRating))
+                            .and(ProductSpecification.isAvailable(searchByAvailability))
+                            .and(ProductSpecification.isVisible());
+                    return productRepository.findAll(retrySpec, pageable);
+                }
+            }
+            return results;
+        };
 
         Page<? extends Offering> pagedOfferings;
         if (isServiceFilter == Boolean.TRUE) {
@@ -135,9 +150,10 @@ public class OfferingService {
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
-                    .and(ServiceSpecification.isAvailable(searchByAvailability));
+                    .and(ServiceSpecification.isAvailable(searchByAvailability))
+                    .and(ServiceSpecification.isVisible());
 
-            pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
+            pagedOfferings = retryWithoutLocation.apply(serviceRepository.findAll(serviceSpecification, pageable));
 
         } else if (isServiceFilter == Boolean.FALSE) {
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
@@ -146,17 +162,53 @@ public class OfferingService {
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability));
+                    .and(ProductSpecification.isAvailable(searchByAvailability))
+                    .and(ProductSpecification.isVisible());
 
-            pagedOfferings = productRepository.findAll(productSpecification, pageable);
+            pagedOfferings = retryWithoutLocation.apply(productRepository.findAll(productSpecification, pageable));
 
         } else {
-            pagedOfferings = offeringRepository.findAll(pageable);
+            Specification<Offering> visibilitySpec = (root, query, cb) -> {
+                Subquery<Product> productSubquery = query.subquery(Product.class);
+                Root<Product> productRoot = productSubquery.from(Product.class);
+                productSubquery.select(productRoot).where(
+                        cb.and(
+                                cb.equal(productRoot.get("id"), root.get("id")),
+                                cb.isTrue(productRoot.get("currentDetails").get("isVisible"))
+                        )
+                );
+
+                Subquery<Service> serviceSubquery = query.subquery(Service.class);
+                Root<Service> serviceRoot = serviceSubquery.from(Service.class);
+                serviceSubquery.select(serviceRoot).where(
+                        cb.and(
+                                cb.equal(serviceRoot.get("id"), root.get("id")),
+                                cb.isTrue(serviceRoot.get("currentDetails").get("isVisible"))
+                        )
+                );
+
+                return cb.or(
+                        cb.and(cb.equal(root.type(), Product.class), cb.exists(productSubquery)),
+                        cb.and(cb.equal(root.type(), Service.class), cb.exists(serviceSubquery))
+                );
+            };
+            pagedOfferings = offeringRepository.findAll(visibilitySpec, pageable);
         }
 
         List<Offering> filteredOfferings = pagedOfferings.getContent().stream()
                 .map(offering -> (Offering) offering)
+                .filter(offering -> {
+                    if (offering instanceof Product) {
+                        Product product = (Product) offering;
+                        return product.getCurrentDetails() != null && product.getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service) {
+                        Service service = (Service) offering;
+                        return service.getCurrentDetails() != null && service.getCurrentDetails().isVisible();
+                    }
+                    return false;
+                })
                 .collect(Collectors.toList());
+
         if ("averageRating".equalsIgnoreCase(sortBy)) {
             filteredOfferings.sort(getOfferingComparator(sortDirection));
         }
@@ -167,9 +219,53 @@ public class OfferingService {
 
         return new PagedResponse<>(offeringDTOs, pagedOfferings.getTotalPages(), pagedOfferings.getTotalElements());
     }
+
     @Transactional(readOnly = true)
-    public List<GetOfferingDTO> findTopOfferings() {
-        List<Offering> offerings = offeringRepository.findAll();
+    public List<GetOfferingDTO> findTopOfferings(Integer accountId) {
+        String location = null;
+
+        if (accountId != null) {
+            Location userLocation = accountService.findUserLocation(accountId);
+            if (userLocation != null) {
+                location = userLocation.getCity();
+            }
+        }
+
+        final String finalLocation = location;
+
+        List<Offering> offerings = offeringRepository.findAll().stream()
+                .filter(offering -> {
+                    boolean isVisible = false;
+                    if (offering instanceof Product) {
+                        isVisible = ((Product) offering).getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service) {
+                        isVisible = ((Service) offering).getCurrentDetails().isVisible();
+                    }
+
+                    if (finalLocation != null && isVisible) {
+                        if (offering instanceof Product) {
+                            return finalLocation.equals(((Product) offering).getProvider().getLocation().getCity());
+                        } else if (offering instanceof Service) {
+                            return finalLocation.equals(((Service) offering).getProvider().getLocation().getCity());
+                        }
+                    }
+
+                    return isVisible;
+                })
+                .collect(Collectors.toList());
+
+        if (offerings.isEmpty() && finalLocation != null) {
+            offerings = offeringRepository.findAll().stream()
+                    .filter(offering -> {
+                        if (offering instanceof Product) {
+                            return ((Product) offering).getCurrentDetails().isVisible();
+                        } else if (offering instanceof Service) {
+                            return ((Service) offering).getCurrentDetails().isVisible();
+                        }
+                        return false;
+                    })
+                    .collect(Collectors.toList());
+        }
 
         return offerings.stream()
                 .sorted((o1, o2) -> Double.compare(
@@ -178,6 +274,8 @@ public class OfferingService {
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
+
+
     @Transactional(readOnly = true)
     public List<GetOfferingDTO> findProvidersOfferings(int providerId) {
         List<Offering> offerings = offeringRepository.findAll();
@@ -202,10 +300,17 @@ public class OfferingService {
         }
     }
     @Transactional
-
     public List<GetOfferingDTO> getOfferingsByProviderId(int providerId) {
         return offeringRepository.findAll().stream()
                 .filter(offering -> offering.getProvider().getId() == providerId)
+                .filter(offering -> {
+                    if (offering instanceof Product) {
+                        return ((Product) offering).getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service) {
+                        return ((Service) offering).getCurrentDetails().isVisible();
+                    }
+                    return false;
+                })
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }

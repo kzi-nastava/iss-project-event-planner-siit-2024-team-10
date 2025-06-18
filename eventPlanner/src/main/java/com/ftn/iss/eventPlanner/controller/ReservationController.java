@@ -1,81 +1,97 @@
 package com.ftn.iss.eventPlanner.controller;
 
+import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
+import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.*;
-import com.ftn.iss.eventPlanner.model.Status;
+import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
+import com.ftn.iss.eventPlanner.services.ReservationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {
 
+    @Autowired
+    private ReservationService reservationService;
+
     @GetMapping(produces = "application/json")
     public ResponseEntity<Collection<GetReservationDTO>> getReservations() {
-        Collection<GetReservationDTO> reservations = new ArrayList<>();
-
-        GetReservationDTO reservation1 = new GetReservationDTO();
-        reservation1.setId(1);
-        reservation1.setStartTime(LocalDateTime.of(2024, 11, 27, 10, 0));
-        reservation1.setEndTime(LocalDateTime.of(2024, 11, 27, 12, 0));
-        reservation1.setStatus(Status.ACCEPTED);
-        reservation1.setEventId(101);
-        reservation1.setServiceId(201);
-        reservations.add(reservation1);
-
-        GetReservationDTO reservation2 = new GetReservationDTO();
-        reservation2.setId(2);
-        reservation2.setStartTime(LocalDateTime.of(2024, 11, 28, 14, 0));
-        reservation2.setEndTime(LocalDateTime.of(2024, 11, 28, 16, 0));
-        reservation2.setStatus(Status.PENDING);
-        reservation2.setEventId(102);
-        reservation2.setServiceId(202);
-        reservations.add(reservation2);
-
+        List<GetReservationDTO> reservations = reservationService.findAll();
         return new ResponseEntity<>(reservations, HttpStatus.OK);
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<GetReservationDTO> getReservation(@PathVariable("id") int id) {
-        GetReservationDTO reservation = new GetReservationDTO();
-        reservation.setId(id);
-        reservation.setStartTime(LocalDateTime.of(2024, 11, 27, 10, 0));
-        reservation.setEndTime(LocalDateTime.of(2024, 11, 27, 12, 0));
-        reservation.setStatus(Status.PENDING);
-        reservation.setEventId(101);
-        reservation.setServiceId(201);
-
+        GetReservationDTO reservation = reservationService.findById(id);
         return new ResponseEntity<>(reservation, HttpStatus.OK);
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedReservationDTO> createReservation(@RequestBody CreateReservationDTO reservation) throws Exception {
-        CreatedReservationDTO createdReservation = new CreatedReservationDTO();
-        createdReservation.setId(1);
-        createdReservation.setStatus(reservation.getStatus());
-        createdReservation.setStartTime(reservation.getStartTime());
-        createdReservation.setEndTime(reservation.getEndTime());
-        createdReservation.setEventId(reservation.getEventId());
-        createdReservation.setServiceId(reservation.getServiceId());
-
-        return new ResponseEntity<CreatedReservationDTO>(createdReservation, HttpStatus.CREATED);
+    @GetMapping(value = "/{serviceId}", produces = "application/json")
+    public ResponseEntity<Collection<GetReservationDTO>> getReservationsByService(@PathVariable("serviceId") int serviceId) {
+        List<GetReservationDTO> reservations = reservationService.findByServiceId(serviceId);
+        return new ResponseEntity<>(reservations, HttpStatus.OK);
     }
 
-    @PutMapping(value="/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedReservationDTO> updateReservation(@RequestBody UpdateReservationDTO reservation, @PathVariable("id") int id) throws Exception {
-        UpdatedReservationDTO updatedReservation = new UpdatedReservationDTO();
-        updatedReservation.setId(1);
-        updatedReservation.setStatus(reservation.getStatus());
-        updatedReservation.setStartTime(reservation.getStartTime());
-        updatedReservation.setEndTime(reservation.getEndTime());
-        updatedReservation.setEventId(reservation.getEventId());
-        updatedReservation.setServiceId(reservation.getServiceId());
 
-        return new ResponseEntity<UpdatedReservationDTO>(updatedReservation, HttpStatus.CREATED);
+    @GetMapping(value = "/{organizerId}", produces = "application/json")
+    public ResponseEntity<Collection<GetReservationDTO>> getReservationsByOrganizer(@PathVariable("organizerId") int organizerId) {
+        List<GetReservationDTO> reservations = reservationService.findByOrganizerId(organizerId);
+        return new ResponseEntity<>(reservations, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{providerId}", produces = "application/json")
+    public ResponseEntity<Collection<GetReservationDTO>> getReservationsByProvider(@PathVariable("providerId") int providerId) {
+        List<GetReservationDTO> reservations = reservationService.findByProviderId(providerId);
+        return new ResponseEntity<>(reservations, HttpStatus.OK);
+    }
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @GetMapping(value = "/events/{organizerId}", produces = "application/json")
+    public ResponseEntity<List<GetEventDTO>> findEventsByOrganizer(@PathVariable("organizerId") int organizerId) {
+        try{
+            List<GetEventDTO> events = reservationService.findEventsByOrganizer(organizerId);
+            return new ResponseEntity<>(events, HttpStatus.OK);
+        }
+        catch (IllegalArgumentException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CreatedReservationDTO> createReservation(@RequestBody CreateReservationDTO reservation) throws Exception {
+        CreatedReservationDTO createdReservation = reservationService.create(reservation);
+        return new ResponseEntity<>(createdReservation, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> cancelReservation(@PathVariable("id") int id) throws Exception {
+        reservationService.cancelReservation(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('PRODUCER')")
+    @PutMapping(value="/{reservationId}/accept", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> acceptReservation(@PathVariable("reservationId") int reservationId) throws Exception {
+        reservationService.acceptReservation(reservationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('PRODUCER')")
+    @PutMapping(value="/{reservationId}/reject", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> rejectReservation(@PathVariable("reservationId") int reservationId) throws Exception {
+        reservationService.rejectReservation(reservationId);
+        return ResponseEntity.noContent().build();
     }
 }

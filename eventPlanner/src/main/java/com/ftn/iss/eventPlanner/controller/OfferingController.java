@@ -2,12 +2,7 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
-import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.CreateRatingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.CreatedRatingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.GetRatingDTO;
-import com.ftn.iss.eventPlanner.model.Status;
 import com.ftn.iss.eventPlanner.services.CommentService;
 import com.ftn.iss.eventPlanner.services.OfferingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +33,9 @@ public class OfferingController {
     }
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings() {
+    public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings(
+            @RequestParam(required = false) Integer accountId
+    ) {
         try {
             List<GetOfferingDTO> offerings = offeringService.findTopOfferings();
 
@@ -95,12 +92,14 @@ public class OfferingController {
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) Boolean isAvailable,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDirection
+            @RequestParam(required = false) String sortDirection,
+            @RequestParam(required = false) Integer accountId
+
     ){
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     pageable, isServiceFilter, name, categoryId, location, startPrice,
-                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection);
+                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection,accountId);
 
 
             return ResponseEntity.ok(offerings);
@@ -167,5 +166,6 @@ public class OfferingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
+
 
 }

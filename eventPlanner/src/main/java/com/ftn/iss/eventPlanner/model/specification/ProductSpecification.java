@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.model.specification;
 
+import com.ftn.iss.eventPlanner.model.Comment;
 import com.ftn.iss.eventPlanner.model.Product;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -62,26 +63,24 @@ public class ProductSpecification {
             }
 
             Subquery<Double> subquery = query.subquery(Double.class);
-            Root<Product> subRoot = subquery.from(Product.class);
-            Join<Object, Object> ratingsJoin = subRoot.join("ratings");
+            Root<Product> offeringRoot = subquery.from(Product.class);
 
-            subquery.select(criteriaBuilder.avg(ratingsJoin.get("score")))
-                    .where(criteriaBuilder.equal(subRoot.get("id"), root.get("id")));
+            Join<Product, Comment> commentJoin = offeringRoot.join("comments", JoinType.LEFT);
+
+            subquery.select(criteriaBuilder.avg(commentJoin.get("rating")))
+                    .where(criteriaBuilder.equal(offeringRoot.get("id"), root.get("id")));
 
             return criteriaBuilder.greaterThanOrEqualTo(subquery, minRating);
         };
     }
-
-
-
-
-
-
 
     public static Specification<Product> isAvailable(Boolean searchByAvailability) {
         return (root, query, criteriaBuilder) ->
                 searchByAvailability != null && searchByAvailability ? criteriaBuilder.isTrue(root.get("currentDetails").get("isAvailable")) : criteriaBuilder.conjunction();
     }
 
+    public static Specification<Product> isVisible() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("currentDetails").get("isVisible"), true);
+    }
 
 }

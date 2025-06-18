@@ -37,11 +37,11 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
                                                                                                                                      (4,2,1,7,1,15, 3.2);
 
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
-                                                                                                                                                   ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2024-01-15 12:00', FALSE, 1, '2024-03-10', 1),
-                                                                                                                                                   ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2024-03-10 15:00', FALSE, 2, '2024-03-03',2),
-                                                                                                                                                   ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2024-07-20 09:00', FALSE, 3, '2024-05-01',3),
-                                                                                                                                                   ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, FALSE, '2024-10-15 08:30', FALSE, 2, '2024-08-12',4),
-                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2024-09-01 18:00', FALSE, 1, '2024-07-15',5);
+                                                                                                                                                   ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2025-01-15 12:00', FALSE, 1, '2025-03-10', 1),
+                                                                                                                                                   ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2025-03-10 15:00', FALSE, 2, '2025-03-03',2),
+                                                                                                                                                   ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20 09:00', FALSE, 3, '2025-05-01',3),
+                                                                                                                                                   ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
+                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5);
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
                                                                                                 ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
@@ -51,18 +51,40 @@ INSERT INTO budget_item (amount, purchase_date, is_deleted, category_id, offerin
                                                                                               ( 200.00, '2023-11-02 15:00:00', FALSE, 2, NULL);
 
 INSERT INTO comment (content, status, commenter_id, rating) VALUES
-                                                                    ( 'Great event!', 1, 1, 5),
-                                                                    ( 'Could be better.', 1, 2, 3),
-                                                                    ( 'Excellent organization!', 1, 3, 5),
-                                                                    ( 'Not satisfied with the service.', 0, 1, 2),
-                                                                    ( 'Highly recommend.', 1, 2, 4),
-                                                                    ( 'Average experience.', 1, 2, 3),
-                                                                    ( 'Loved the venue!', 0, 1, 4),
-                                                                    ( 'Staff was very helpful.', 1, 1, 5),
-                                                                    ( 'Disappointed with the food.', 1, 1, 2),
-                                                                    ( 'Best event I’ve attended!', 1, 2, 5);
-
-
+                                                                ('Great event!', 1, 1, 5),
+                                                                ('Could be better.', 1, 2, 3),
+                                                                ('Excellent organization!', 1, 3, 5),
+                                                                ('Not satisfied with the service.', 0, 1, 2),
+                                                                ('Highly recommend.', 1, 2, 4),
+                                                                ('Average experience.', 1, 2, 3),
+                                                                ('Loved the venue!', 0, 1, 4),
+                                                                ('Staff was very helpful.', 1, 1, 5),
+                                                                ('Disappointed with the food.', 1, 1, 2),
+                                                                ('Best event I’ve attended!', 1, 2, 5),
+                                                                ('The decorations were stunning.', 1, 3, 4),
+                                                                ('The sound system was poor.', 1, 4, 2),
+                                                                ('Loved the music!', 1, 1, 5),
+                                                                ('The event was well organized.', 1, 2, 5),
+                                                                ('Seating arrangement could be better.', 1, 3, 3),
+                                                                ('Venue was difficult to find.', 0, 2, 2),
+                                                                ('The host was amazing.', 1, 1, 5),
+                                                                ('Food was excellent.', 1, 4, 5),
+                                                                ('Average decoration.', 1, 3, 3),
+                                                                ('Not worth the price.', 1, 4, 2),
+                                                                ('Would love to attend again.', 1, 2, 5),
+                                                                ('The event started late.', 1, 3, 2),
+                                                                ('The location was convenient.', 1, 1, 4),
+                                                                ('The organizers were friendly.', 1, 4, 5),
+                                                                ('There was a delay in service.', 0, 2, 3),
+                                                                ('Everything was perfect.', 1, 1, 5),
+                                                                ('The food was too spicy.', 1, 3, 2),
+                                                                ('The lighting was great.', 1, 2, 4),
+                                                                ('The stage design was creative.', 1, 4, 5),
+                                                                ('The event exceeded my expectations.', 1, 1, 5),
+                                                                ('The parking area was small.', 0, 3, 3),
+                                                                ('Good value for money.', 1, 4, 4),
+                                                                ('The event was too crowded.', 1, 2, 2),
+                                                                ('I had a wonderful time.', 1, 1, 5);
 INSERT INTO message (content, timestamp, sender_id, receiver_id, is_read) VALUES
                                                                                   ( 'Hello, when is the event?', '2023-12-05 09:00:00', 1, 2, FALSE),
                                                                                   ( 'Can you provide more details?', '2023-12-06 10:00:00', 2, 1, TRUE);
@@ -86,14 +108,14 @@ INSERT INTO product_details (name, description, price, discount, is_visible, is_
 
 
 INSERT INTO service_details (name, description, specification, price, discount, fixed_time, max_duration, min_duration, cancellation_period, reservation_period, is_visible, is_available, auto_confirm, timestamp) VALUES
-                                                                                                                                                                                                                            ( 'Wedding Photography', 'Professional photography for weddings.', 'Includes pre-event shoot, event coverage, and photo album.', 1200.00, 100.0, TRUE, 8, 6, 48, 72, TRUE, TRUE, TRUE, '2023-10-30 09:00:00'),
-                                                                                                                                                                                                                            ( 'Event Catering', 'Complete catering service for events.', 'Includes setup, serving, and cleanup for up to 200 guests.', 5000.00, 500.0, TRUE, 10, 4, 72, 96, TRUE, TRUE, FALSE, '2023-11-03 11:30:00'),
+                                                                                                                                                                                                                            ( 'Wedding Photography', 'Professional photography for weddings.', 'Includes pre-event shoot, event coverage, and photo album.', 1200.00, 10.0, TRUE, 6, 6, 48, 72, TRUE, TRUE, TRUE, '2023-10-30 09:00:00'),
+                                                                                                                                                                                                                            ( 'Event Catering', 'Complete catering service for events.', 'Includes setup, serving, and cleanup for up to 200 guests.', 5000.00, 50.0, TRUE, 10, 4, 72, 96, TRUE, TRUE, FALSE, '2023-11-03 11:30:00'),
                                                                                                                                                                                                                             ( 'DJ Service', 'Professional DJ for weddings and parties.', 'Includes sound system and personalized playlist.', 700.00, 50.0, TRUE, 6, 3, 24, 48, TRUE, TRUE, TRUE, '2023-11-06 19:00:00'),
-                                                                                                                                                                                                                            ( 'Conference Setup', 'Venue setup for business conferences.', 'Includes table arrangements, projector setup, and refreshments.', 1500.00, 150.0, TRUE, 5, 3, 48, 72, TRUE, TRUE, FALSE, '2023-11-10 08:00:00'),
-                                                                                                                                                                                                                            ( 'Event Security', 'Security personnel for large events.', 'Up to 5 guards equipped for crowd management.', 1000.00, 100.0, TRUE, 8, 4, 24, 48, TRUE, TRUE, TRUE, '2023-11-14 20:15:00'),
+                                                                                                                                                                                                                            ( 'Conference Setup', 'Venue setup for business conferences.', 'Includes table arrangements, projector setup, and refreshments.', 1500.00, 15.0, TRUE, 5, 3, 48, 72, TRUE, TRUE, FALSE, '2023-11-10 08:00:00'),
+                                                                                                                                                                                                                            ( 'Event Security', 'Security personnel for large events.', 'Up to 5 guards equipped for crowd management.', 1000.00, 10.0, TRUE, 8, 4, 24, 48, TRUE, TRUE, TRUE, '2023-11-14 20:15:00'),
                                                                                                                                                                                                                             ( 'Floral Arrangement', 'Custom floral arrangements for weddings or funerals.', 'Includes bouquets, table arrangements, and venue decor.', 300.00, 25.0, TRUE, 6, 2, 24, 48, TRUE, TRUE, FALSE, '2023-11-16 10:10:00'),
-                                                                                                                                                                                                                            ( 'Master of Ceremonies', 'Experienced MC for formal events.', 'Includes script preparation and event hosting.', 400.00, 40.0, TRUE, 6, 3, 24, 48, TRUE, TRUE, TRUE, '2023-11-19 14:25:00'),
-                                                                                                                                                                                                                            ( 'Funeral Planning', 'Comprehensive funeral arrangement services.', 'Includes venue setup, catering, and floral decor.', 2000.00, 200.0, TRUE, 10, 6, 72, 96, TRUE, TRUE, FALSE, '2023-11-22 09:50:00'),
+                                                                                                                                                                                                                            ( 'Master of Ceremonies', 'Experienced MC for formal events.', 'Includes script preparation and event hosting.', 400.00, 40.0, TRUE, 6, 3, 24, 48, FALSE, TRUE, TRUE, '2023-11-19 14:25:00'),
+                                                                                                                                                                                                                            ( 'Funeral Planning', 'Comprehensive funeral arrangement services.', 'Includes venue setup, catering, and floral decor.', 2000.00, 20.0, TRUE, 10, 6, 72, 96, TRUE, TRUE, FALSE, '2023-11-22 09:50:00'),
                                                                                                                                                                                                                             ( 'Party Balloon Setup', 'Balloon decorations for birthdays and celebrations.', 'Includes customized balloon arches and centerpieces.', 250.00, 20.0, TRUE, 4, 2, 24, 48, TRUE, TRUE, TRUE, '2023-11-25 13:40:00'),
                                                                                                                                                                                                                             ( 'Event Clean-Up', 'Post-event cleanup service.', 'Includes garbage disposal and venue tidying.', 500.00, 50.0, TRUE, 5, 2, 24, 48, TRUE, TRUE, FALSE, '2023-11-28 18:00:00');
 
@@ -121,6 +143,37 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                        ( 'Service',1 ,1,  9, FALSE, FALSE),
                                                                                        ( 'Service',2 ,1,  10, FALSE, FALSE);
 
-INSERT INTO reservation (start_time, end_time, status, event_id, service_id) VALUES
-                                                                                     ( '2024-01-15 09:00:00', '2024-01-15 17:00:00', 1, 1, NULL),
-                                                                                     ( '2024-03-10 08:00:00', '2024-03-10 20:00:00', 0, 2, 1);
+INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
+                                                                                     ( '2025-01-15 09:00:00', '2025-01-15 17:00:00', 1, 1, 13,'2025-12-12 08:00:00'),
+                                                                                     ( '2025-03-10 08:00:00', '2025-03-10 20:00:00', 0, 2, 11,'2025-12-12 08:00:00');
+
+INSERT INTO offerings_comments (offering_id, comments_id) VALUES
+                                                             (1, 1),
+                                                             (1, 2),
+                                                             (2, 3),
+                                                             (2, 4),
+                                                             (3, 5),
+                                                             (3, 6),
+                                                             (4, 7),
+                                                             (5, 8),
+                                                             (5, 9),
+                                                             (6, 10),
+                                                             (7, 11),
+                                                             (7, 12),
+                                                             (8, 13),
+                                                             (8, 14),
+                                                             (9, 15),
+                                                             (9, 16),
+                                                             (10, 17),
+                                                             (11, 18),
+                                                             (12, 19),
+                                                             (13, 20),
+                                                             (14, 21),
+                                                             (14, 22),
+                                                             (15, 23),
+                                                             (16, 24),
+                                                             (16, 25),
+                                                             (17, 26),
+                                                             (18, 27),
+                                                             (19, 28),
+                                                             (20, 29);
