@@ -126,6 +126,7 @@ public class NotificationService {
         for (Notification notification : allNotifications) {
             markAsRead(notification.getId());
         }
+        sendNotification(2, "Congrats","You read the notifs, this is coming from "+accountId);
     }
 
     public void toggleNotifications(Integer accountId, boolean silenced) {
