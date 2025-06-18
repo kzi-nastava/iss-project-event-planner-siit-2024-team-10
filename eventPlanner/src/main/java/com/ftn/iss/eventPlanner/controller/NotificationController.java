@@ -5,6 +5,7 @@ import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,8 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @GetMapping("/{accountId}")
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
+    @GetMapping(value = "/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResponse<GetNotificationDTO>> getNotifications(
             Pageable pageable,
             @PathVariable int accountId) {
@@ -25,10 +27,10 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}/read")
-    public ResponseEntity<Void> markAsRead(
-            @PathVariable Integer id) {
-        notificationService.markAsRead(id);
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
+    @PutMapping(value = "/{accountId}/read")
+    public ResponseEntity<?> markAsRead(@PathVariable Integer accountId) {
+        notificationService.markAsRead(accountId);
         return ResponseEntity.ok().build();
     }
 
