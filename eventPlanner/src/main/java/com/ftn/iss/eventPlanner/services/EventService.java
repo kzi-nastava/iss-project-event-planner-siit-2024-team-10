@@ -2,11 +2,8 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.agendaitem.*;
-import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
-import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+import com.ftn.iss.eventPlanner.dto.event.*;
 
-import com.ftn.iss.eventPlanner.dto.event.CreatedEventRatingDTO;
-import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
@@ -175,6 +172,32 @@ public class EventService {
         event = eventRepository.save(event);
         eventRepository.flush();
         return modelMapper.map(event, CreatedEventDTO.class);
+    }
+
+    public UpdatedEventDTO update (int eventId, UpdateEventDTO updateEventDTO){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        if(updateEventDTO.getDate().isBefore(LocalDate.now())){
+            throw new IllegalArgumentException("Event date must be in the future");
+        }
+        event.setName(updateEventDTO.getName());
+        event.setDescription(updateEventDTO.getDescription());
+        event.setMaxParticipants(updateEventDTO.getMaxParticipants());
+        //TODO check if event is already full
+        event.setOpen(updateEventDTO.isOpen());
+        event.setDate(updateEventDTO.getDate());
+        //TODO check if date is changed, if so, check for reservations
+        Location location = modelMapper.map(locationService.create(updateEventDTO.getLocation()), Location.class);
+        event.setLocation(location);
+        EventType eventType = null;
+        if(updateEventDTO.getEventTypeId()!=0) {
+            eventType = eventTypeRepository.findById(updateEventDTO.getEventTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + updateEventDTO.getEventTypeId() + " not found"));
+        }
+        event.setEventType(eventType);
+        event = eventRepository.save(event);
+        eventRepository.flush();
+        return modelMapper.map(event, UpdatedEventDTO.class);
     }
 
     public Collection<GetAgendaItemDTO> getAgenda(int eventId){
