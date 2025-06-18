@@ -46,6 +46,8 @@ public class EventService {
     @Autowired
     private OrganizerRepository organizerRepository;
     @Autowired
+    private ReservationRepository reservationRepository;
+    @Autowired
     private AccountService accountService;
 
     private ModelMapper modelMapper = new ModelMapper();
@@ -177,16 +179,14 @@ public class EventService {
     public UpdatedEventDTO update (int eventId, UpdateEventDTO updateEventDTO){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
-        if(updateEventDTO.getDate().isBefore(LocalDate.now())){
-            throw new IllegalArgumentException("Event date must be in the future");
-        }
         event.setName(updateEventDTO.getName());
         event.setDescription(updateEventDTO.getDescription());
         event.setMaxParticipants(updateEventDTO.getMaxParticipants());
         //TODO check if event is already full
         event.setOpen(updateEventDTO.isOpen());
+        //TODO: check invitations if publicity is changed
+        checkDate(event, updateEventDTO.getDate());
         event.setDate(updateEventDTO.getDate());
-        //TODO check if date is changed, if so, check for reservations
         Location location = modelMapper.map(locationService.create(updateEventDTO.getLocation()), Location.class);
         event.setLocation(location);
         EventType eventType = null;
@@ -198,6 +198,18 @@ public class EventService {
         event = eventRepository.save(event);
         eventRepository.flush();
         return modelMapper.map(event, UpdatedEventDTO.class);
+    }
+
+    private void checkDate(Event event, LocalDate date){
+        if(event.getDate().isEqual(date))
+            return;
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Event date must be in the future");
+        }
+        reservationRepository.findByEventId(event.getId()).stream()
+                .filter(r -> r.getStatus() == Status.ACCEPTED || r.getStatus() == Status.PENDING)
+                .findAny()
+                .ifPresent(r -> { throw new IllegalArgumentException("Event date can't be changed when it has reservations"); });
     }
 
     public Collection<GetAgendaItemDTO> getAgenda(int eventId){
