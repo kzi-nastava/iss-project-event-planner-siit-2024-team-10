@@ -181,11 +181,16 @@ public class EventService {
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         event.setName(updateEventDTO.getName());
         event.setDescription(updateEventDTO.getDescription());
-        event.setMaxParticipants(updateEventDTO.getMaxParticipants());
-        //TODO check if event is already full
         event.setOpen(updateEventDTO.isOpen());
         //TODO: check invitations if publicity is changed
-        checkDate(event, updateEventDTO.getDate());
+        if(updateEventDTO.getMaxParticipants() < event.getStats().getParticipantsCount()) {
+            throw new IllegalArgumentException("Max participants cannot be less than current participants count");
+        }
+        if(updateEventDTO.getMaxParticipants() < event.getGuestList().size()) {
+            throw new IllegalArgumentException("Max participants cannot be less than current guest list size");
+        }
+        event.setMaxParticipants(updateEventDTO.getMaxParticipants());
+        checkDateUpdate(event, updateEventDTO.getDate());
         event.setDate(updateEventDTO.getDate());
         Location location = modelMapper.map(locationService.create(updateEventDTO.getLocation()), Location.class);
         event.setLocation(location);
@@ -200,7 +205,7 @@ public class EventService {
         return modelMapper.map(event, UpdatedEventDTO.class);
     }
 
-    private void checkDate(Event event, LocalDate date){
+    private void checkDateUpdate(Event event, LocalDate date){
         if(event.getDate().isEqual(date))
             return;
         if (date.isBefore(LocalDate.now())) {
