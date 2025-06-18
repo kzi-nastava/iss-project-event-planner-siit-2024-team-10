@@ -5,6 +5,7 @@ import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,22 +32,22 @@ public class NotificationController {
     @PutMapping(value = "/{accountId}/read")
     public ResponseEntity<?> markAsRead(@PathVariable Integer accountId) {
         notificationService.markAsRead(accountId);
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
     @PutMapping("/{accountId}/read-all")
-    public ResponseEntity<Void> readAll(@PathVariable Integer accountId) {
+    public ResponseEntity<?> readAll(@PathVariable Integer accountId) {
         notificationService.markAllAsRead(accountId);
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
     @PutMapping("{accountId}/toggle")
-    public ResponseEntity<Void> toggleNotifications(
+    public ResponseEntity<?> toggleNotifications(
             @PathVariable Integer accountId,
             @RequestParam boolean silenced) {
         notificationService.toggleNotifications(accountId, silenced);
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
