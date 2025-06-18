@@ -84,7 +84,7 @@ public class WebSecurityConfig {
         return (web) -> web.ignoring()
                 .requestMatchers(HttpMethod.GET, "/", "/webjars/*", "/*.html", "favicon.ico",
                         "/*/*.html", "/*/*.css", "/*/*.js",
-                        "/api/events*","/api/events/*","api/events/*/agenda",
+                        "/api/events*","/api/events/*","api/events/*/agenda","api/events/*/reports/info",
                         "/api/event-types*","/api/event-types/*",
                         "api/services*","api/services/*",
                         "api/products*","api/products/*",
@@ -95,15 +95,15 @@ public class WebSecurityConfig {
                         "/socket/**",
                         "api/messages/*/*",
                         "api/comments*","api/images","api/images/*","api/offerings/*/comments",
+                        "api/reservations/*",
                         "api/offerings/provider/*",
-                        "api/notifications/*")
+                        "api/users/*")
                 .requestMatchers(HttpMethod.POST,
                         "api/accounts/*/favourite-events",
                         "api/accounts/*/favourite-offerings",
                         "api/events/*/stats/participants",
                         "api/events/*/ratings",
-                        "api/messages/**",
-                        "api/notifications/*")
+                        "api/messages/**")
                 .requestMatchers(HttpMethod.DELETE,
                         "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
     }

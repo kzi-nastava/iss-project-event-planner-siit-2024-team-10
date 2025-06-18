@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
@@ -60,58 +61,13 @@ public class OfferingService {
                 .collect(Collectors.toList());
     }
 
-
-    public List<GetOfferingDTO> getAllOfferings(
-            Boolean isServiceFilter,
-            String name,
-            Integer categoryId,
-            String location,
-            Double minPrice,
-            Double maxPrice,
-            Integer minDiscount,
-            Integer serviceDuration,
-            Double minRating,
-            Boolean searchByAvailability
-    ) {
-
-        if (isServiceFilter == Boolean.TRUE) {
-            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
-                    .and(ServiceSpecification.hasCategoryId(categoryId))
-                    .and(ServiceSpecification.hasLocation(location))
-                    .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
-                    .and(ServiceSpecification.minDiscount(minDiscount))
-                    .and(ServiceSpecification.minRating(minRating))
-                    .and(ServiceSpecification.hasServiceDuration(serviceDuration))
-                    .and(ServiceSpecification.isAvailable(searchByAvailability));
-
-            return serviceRepository.findAll(serviceSpecification).stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        } else if (isServiceFilter == Boolean.FALSE) {
-            Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                    .and(ProductSpecification.hasCategoryId(categoryId))
-                    .and(ProductSpecification.hasLocation(location))
-                    .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
-                    .and(ProductSpecification.minDiscount(minDiscount))
-                    .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability));
-
-            return productRepository.findAll(productSpecification).stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        } else {
-            return offeringRepository.findAll().stream()
-                    .map(this::mapToGetOfferingDTO)
-                    .collect(Collectors.toList());
-        }
-    }
     @Transactional(readOnly = true)
     public PagedResponse<GetOfferingDTO> getAllOfferings(
-            Pageable pageable,
+            Pageable initialPageable,
             Boolean isServiceFilter,
             String name,
             Integer categoryId,
-            String location,
+            String initialLocation,
             Double minPrice,
             Double maxPrice,
             Integer minDiscount,
@@ -122,13 +78,23 @@ public class OfferingService {
             String sortDirection,
             Integer accountId
     ) {
-        if (accountId != null && (location == null || location.isEmpty())) {
+        final String userCity;
+        final String location;
+        final Pageable pageable;
+
+        String tempUserCity = null;
+        String tempLocation = initialLocation;
+        if (accountId != null && (initialLocation == null || initialLocation.isEmpty())) {
             Location userLocation = accountService.findUserLocation(accountId);
             if (userLocation != null) {
-                location = userLocation.getCity();
+                tempUserCity = userLocation.getCity();
+                tempLocation = tempUserCity;
             }
         }
+        userCity = tempUserCity;
+        location = tempLocation;
 
+        Pageable tempPageable = initialPageable;
         if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
             String sortField = switch (sortBy.toLowerCase()) {
                 case "price" -> "currentDetails.price";
@@ -143,10 +109,37 @@ public class OfferingService {
                         ? Sort.Direction.DESC
                         : Sort.Direction.ASC;
 
-                pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                tempPageable = PageRequest.of(initialPageable.getPageNumber(), initialPageable.getPageSize(),
                         Sort.by(sortDirectionEnum, sortField));
             }
         }
+        pageable = tempPageable;
+
+        Function<Page<? extends Offering>, Page<? extends Offering>> retryWithoutLocation = (results) -> {
+            if (results.getTotalElements() == 0 && location != null && location.equals(userCity)) {
+                if (isServiceFilter == Boolean.TRUE) {
+                    Specification<Service> retrySpec = Specification.where(ServiceSpecification.hasName(name))
+                            .and(ServiceSpecification.hasCategoryId(categoryId))
+                            .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
+                            .and(ServiceSpecification.minDiscount(minDiscount))
+                            .and(ServiceSpecification.minRating(minRating))
+                            .and(ServiceSpecification.hasServiceDuration(serviceDuration))
+                            .and(ServiceSpecification.isAvailable(searchByAvailability))
+                            .and(ServiceSpecification.isVisible());
+                    return serviceRepository.findAll(retrySpec, pageable);
+                } else if (isServiceFilter == Boolean.FALSE) {
+                    Specification<Product> retrySpec = Specification.where(ProductSpecification.hasName(name))
+                            .and(ProductSpecification.hasCategoryId(categoryId))
+                            .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
+                            .and(ProductSpecification.minDiscount(minDiscount))
+                            .and(ProductSpecification.minRating(minRating))
+                            .and(ProductSpecification.isAvailable(searchByAvailability))
+                            .and(ProductSpecification.isVisible());
+                    return productRepository.findAll(retrySpec, pageable);
+                }
+            }
+            return results;
+        };
 
         Page<? extends Offering> pagedOfferings;
         if (isServiceFilter == Boolean.TRUE) {
@@ -160,7 +153,7 @@ public class OfferingService {
                     .and(ServiceSpecification.isAvailable(searchByAvailability))
                     .and(ServiceSpecification.isVisible());
 
-            pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
+            pagedOfferings = retryWithoutLocation.apply(serviceRepository.findAll(serviceSpecification, pageable));
 
         } else if (isServiceFilter == Boolean.FALSE) {
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
@@ -172,7 +165,7 @@ public class OfferingService {
                     .and(ProductSpecification.isAvailable(searchByAvailability))
                     .and(ProductSpecification.isVisible());
 
-            pagedOfferings = productRepository.findAll(productSpecification, pageable);
+            pagedOfferings = retryWithoutLocation.apply(productRepository.findAll(productSpecification, pageable));
 
         } else {
             Specification<Offering> visibilitySpec = (root, query, cb) -> {
@@ -261,7 +254,6 @@ public class OfferingService {
                 })
                 .collect(Collectors.toList());
 
-        // If no offerings found for the user's city, display all visible offerings
         if (offerings.isEmpty() && finalLocation != null) {
             offerings = offeringRepository.findAll().stream()
                     .filter(offering -> {

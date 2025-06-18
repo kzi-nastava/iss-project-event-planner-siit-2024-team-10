@@ -1,19 +1,17 @@
 package com.ftn.iss.eventPlanner.dto.reservation;
 
-import com.ftn.iss.eventPlanner.model.Status;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
 public class CreateReservationDTO {
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private Status status;
-    private int eventId;
-    private int serviceId;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private int event;
+    private int service;
 
     public CreateReservationDTO() {
     }
