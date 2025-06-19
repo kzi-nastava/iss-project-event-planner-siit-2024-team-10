@@ -30,9 +30,6 @@ public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
     public PagedResponse<GetNotificationDTO> getAccountNotifications(Pageable pageable, int accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found with ID: " + accountId));
@@ -99,15 +96,6 @@ public class NotificationService {
 
         recipientAccount.getNotifications().add(notification);
         accountRepository.save(recipientAccount);
-
-        if (!recipientAccount.isNotificationsSilenced()) {
-            GetNotificationDTO notificationDTO = mapToNotificationDTO(notification);
-
-            messagingTemplate.convertAndSend(
-                    "/socket-publisher/" + recipientId,
-                    notificationDTO
-            );
-        }
     }
 
     @Transactional

@@ -29,9 +29,9 @@ public class NotificationController {
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','AUTHENTICATED_USER','ADMIN')")
-    @PutMapping(value = "/{accountId}/read")
-    public ResponseEntity<?> markAsRead(@PathVariable Integer accountId) {
-        notificationService.markAsRead(accountId);
+    @PutMapping(value = "/read/{notificationId}")
+    public ResponseEntity<?> markAsRead(@PathVariable Integer notificationId) {
+        notificationService.markAsRead(notificationId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
