@@ -1,6 +1,5 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.controller.AuthenticationController;
 import com.ftn.iss.eventPlanner.dto.GetNotificationDTO;
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.model.Account;
@@ -30,6 +29,9 @@ public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     public PagedResponse<GetNotificationDTO> getAccountNotifications(Pageable pageable, int accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found with ID: " + accountId));
@@ -40,6 +42,9 @@ public class NotificationService {
         Page<Notification> pagedNotifications = applyPagination(sortedNotifications, pageable);
 
         List<GetNotificationDTO> notificationDTOs = mapNotificationsToDTOs(pagedNotifications.getContent());
+
+        sendNotification(2, "Congrats","You read the notifs, this is coming from "+accountId);
+
 
         return new PagedResponse<>(
                 notificationDTOs,
@@ -96,6 +101,15 @@ public class NotificationService {
 
         recipientAccount.getNotifications().add(notification);
         accountRepository.save(recipientAccount);
+
+        String recipientUsername = recipientAccount.getUsername();
+        if (recipientUsername != null) {
+            GetNotificationDTO notificationDTO = mapToNotificationDTO(notification);
+            messagingTemplate.convertAndSend("/socket-publisher/notifications/" + recipientAccount.getId(), notificationDTO);
+            System.out.println("Real-time notification sent to user " + recipientUsername + ": " + title);
+        } else {
+            System.err.println("Could not send real-time notification: Recipient account " + recipientId + " has no username.");
+        }
     }
 
     @Transactional
@@ -114,7 +128,6 @@ public class NotificationService {
         for (Notification notification : allNotifications) {
             markAsRead(notification.getId());
         }
-        sendNotification(2, "Congrats","You read the notifs, this is coming from "+accountId);
     }
 
     public void toggleNotifications(Integer accountId, boolean silenced) {
