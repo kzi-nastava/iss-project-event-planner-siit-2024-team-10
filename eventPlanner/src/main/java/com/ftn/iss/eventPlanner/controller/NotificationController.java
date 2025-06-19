@@ -19,7 +19,7 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','AUTHENTICATED_USER','ADMIN')")
     @GetMapping(value = "/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResponse<GetNotificationDTO>> getNotifications(
             Pageable pageable,
@@ -28,21 +28,21 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','AUTHENTICATED_USER','ADMIN')")
     @PutMapping(value = "/{accountId}/read")
     public ResponseEntity<?> markAsRead(@PathVariable Integer accountId) {
         notificationService.markAsRead(accountId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','AUTHENTICATED_USER','ADMIN')")
     @PutMapping("/{accountId}/read-all")
     public ResponseEntity<?> readAll(@PathVariable Integer accountId) {
         notificationService.markAllAsRead(accountId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','AUTHENTICATED_USER','ADMIN')")
     @PutMapping("{accountId}/toggle")
     public ResponseEntity<?> toggleNotifications(
             @PathVariable Integer accountId,
