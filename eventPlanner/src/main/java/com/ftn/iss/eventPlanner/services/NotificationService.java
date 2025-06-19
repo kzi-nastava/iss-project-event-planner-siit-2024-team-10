@@ -43,8 +43,6 @@ public class NotificationService {
 
         List<GetNotificationDTO> notificationDTOs = mapNotificationsToDTOs(pagedNotifications.getContent());
 
-        sendNotification(2, "Congrats","You read the notifs, this is coming from "+accountId);
-
 
         return new PagedResponse<>(
                 notificationDTOs,
@@ -106,9 +104,8 @@ public class NotificationService {
         if (recipientUsername != null) {
             GetNotificationDTO notificationDTO = mapToNotificationDTO(notification);
             messagingTemplate.convertAndSend("/socket-publisher/notifications/" + recipientAccount.getId(), notificationDTO);
-            System.out.println("Real-time notification sent to user " + recipientUsername + ": " + title);
         } else {
-            System.err.println("Could not send real-time notification: Recipient account " + recipientId + " has no username.");
+            throw new IllegalArgumentException("Could not send real-time notification: Recipient account " + recipientId + " has no username.");
         }
     }
 
