@@ -20,6 +20,7 @@ public class GetOfferingDTO {
     private String specification;
     private GetLocationDTO location;
     private double price;
+    private List<String> photos;
     private double discount;
     private double averageRating;
     @JsonProperty("isProduct")

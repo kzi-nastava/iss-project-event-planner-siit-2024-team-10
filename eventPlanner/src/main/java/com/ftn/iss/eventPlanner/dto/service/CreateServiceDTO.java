@@ -10,12 +10,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateServiceDTO {
-    @Valid
-
-    @NotNull
-    private int category;
-    @NotNull
-    private String categoryProposal;
+    private int categoryId;
+    private String categoryProposalName;
+    private String categoryProposalDescription;
 
     @NotNull
     private boolean pending;
