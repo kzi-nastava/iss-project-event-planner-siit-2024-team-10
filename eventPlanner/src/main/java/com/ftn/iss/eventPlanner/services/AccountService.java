@@ -2,9 +2,7 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
-import com.ftn.iss.eventPlanner.model.Account;
-import com.ftn.iss.eventPlanner.model.Event;
-import com.ftn.iss.eventPlanner.model.Offering;
+import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
@@ -83,5 +81,12 @@ public class AccountService implements UserDetailsService {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
         account.getFavouriteOfferings().removeIf(e -> e.getId() == offeringId);
         accountRepository.save(account);
+    }
+    public Location findUserLocation(int accountId){
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        if (account.getRole().equals(Role.PROVIDER)||account.getRole().equals(Role.EVENT_ORGANIZER)) {
+            return account.getUser().getLocation();
+        }
+        return null;
     }
 }
