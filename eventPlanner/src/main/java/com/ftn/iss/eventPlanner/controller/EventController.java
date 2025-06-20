@@ -91,6 +91,7 @@ public class EventController {
         }
     }
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value = "/{eventId}", consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedEventDTO> updateEvent(@Valid @RequestBody UpdateEventDTO event, @PathVariable int eventId) throws Exception {
         UpdatedEventDTO createdEventType = eventService.update(eventId, event);
