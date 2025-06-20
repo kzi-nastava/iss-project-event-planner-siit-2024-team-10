@@ -51,42 +51,54 @@ public class ServiceService {
      * @return A DTO representing the created service.
      */
     public CreatedServiceDTO create(CreateServiceDTO serviceDTO) {
-        Service service = modelMapper.map(serviceDTO,Service.class);
-        ServiceDetails currentDetails = modelMapper.map(serviceDTO,ServiceDetails.class);
-        service.setId(0);
-
-        // set current details and history
-        currentDetails.setTimestamp(LocalDateTime.now());
-
-        // modelMapper.map(serviceDTO, service);
-        service.setCurrentDetails(currentDetails);
-
-        // Check if the category is pending
-        // TODO: category will be created and added with id but not yet approved
-        OfferingCategory category = offeringCategoryRepository.findById(serviceDTO.getCategory()).get();
-        service.setCategory(category);
-
+        Service service = new Service();
+        service.setPending(false);
+        if(serviceDTO.getCategoryId() == 0){
+            if(serviceDTO.getCategoryProposalName()==null)
+                throw new IllegalArgumentException("Category proposal is required");
+            OfferingCategory category = new OfferingCategory();
+            category.setName(serviceDTO.getCategoryProposalName());
+            category.setDescription(serviceDTO.getCategoryProposalDescription());
+            category.setPending(true);
+            category=offeringCategoryRepository.save(category);
+            service.setCategory(category);
+            service.setPending(true);
+        }
+        else{
+            OfferingCategory category = offeringCategoryRepository.findById(serviceDTO.getCategoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("Category with ID " + serviceDTO.getCategoryId() + " not found"));
+            service.setCategory(category);
+        }
         Provider provider = providerRepository.findById(serviceDTO.getProvider()).get();
         service.setProvider(provider);
 
-        if (category.isPending()) {
-            service.setPending(true);
-        } else {
-            service.setCategory(category);
-            service.setPending(false);
-        }
+        ServiceDetails serviceDetails = new ServiceDetails();
+        serviceDetails.setName(serviceDTO.getName());
+        serviceDetails.setDescription(serviceDTO.getDescription());
+        serviceDetails.setSpecification(serviceDTO.getSpecification());
+        serviceDetails.setPrice(serviceDTO.getPrice());
+        serviceDetails.setDiscount(serviceDTO.getDiscount());
+        serviceDetails.setPhotos(serviceDTO.getPhotos());
+        serviceDetails.setVisible(serviceDTO.isVisible());
+        serviceDetails.setAvailable(serviceDTO.isAvailable());
+        serviceDetails.setTimestamp(LocalDateTime.now());
+        serviceDetails.setMaxDuration(serviceDTO.getMaxDuration());
+        serviceDetails.setMinDuration(serviceDTO.getMinDuration());
+        serviceDetails.setReservationPeriod(serviceDTO.getReservationPeriod());
+        serviceDetails.setCancellationPeriod(serviceDTO.getCancellationPeriod());
+        serviceDetails.setAutoConfirm(serviceDTO.isAutoConfirm());
 
-        Service savedService = serviceRepository.save(service);
-
-        return modelMapper.map(savedService, CreatedServiceDTO.class);
+        service.setCurrentDetails(serviceDetails);
+        service = serviceRepository.save(service);
+        return modelMapper.map(service, CreatedServiceDTO.class);
     }
     public List<GetServiceDTO> findAll(
-        String name,
-        Integer eventTypeId,
-        Integer categoryId,
-        Double minPrice,
-        Double maxPrice,
-        Boolean searchByAvailability
+            String name,
+            Integer eventTypeId,
+            Integer categoryId,
+            Double minPrice,
+            Double maxPrice,
+            Boolean searchByAvailability
     ) {
         Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
                 .and(ServiceSpecification.hasCategoryId(categoryId))
