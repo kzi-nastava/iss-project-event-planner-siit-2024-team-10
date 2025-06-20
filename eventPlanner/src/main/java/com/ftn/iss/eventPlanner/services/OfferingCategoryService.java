@@ -55,7 +55,7 @@ public class OfferingCategoryService {
     public boolean delete(int id) {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
-        if (hasOfferings(id)){
+        if (!hasOfferings(id)){
             offeringCategory.setDeleted(true);
             offeringCategoryRepository.save(offeringCategory);
             return true;
