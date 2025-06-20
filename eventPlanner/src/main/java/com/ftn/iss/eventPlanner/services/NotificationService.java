@@ -127,10 +127,16 @@ public class NotificationService {
         }
     }
 
-    public void toggleNotifications(Integer accountId, boolean silenced) {
+    public Boolean getNotificationsSilenced(Integer accountId){
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));
-        account.setNotificationsSilenced(silenced);
+        return account.isNotificationsSilenced();
+    }
+
+    public void toggleNotifications(Integer accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+        account.setNotificationsSilenced(!account.isNotificationsSilenced());
         accountRepository.save(account);
     }
 }

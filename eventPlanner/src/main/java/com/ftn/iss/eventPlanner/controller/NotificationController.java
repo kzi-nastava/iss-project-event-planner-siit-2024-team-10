@@ -43,11 +43,18 @@ public class NotificationController {
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','AUTHENTICATED_USER','ADMIN')")
-    @PutMapping("{accountId}/toggle")
+    @GetMapping("{accountId}/toggle")
+    public ResponseEntity<Boolean> isNotificationSilenced(
+            @PathVariable Integer accountId) {
+        Boolean response = notificationService.getNotificationsSilenced(accountId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','AUTHENTICATED_USER','ADMIN')")
+    @PutMapping("{accountId}/change-toggle")
     public ResponseEntity<?> toggleNotifications(
-            @PathVariable Integer accountId,
-            @RequestParam boolean silenced) {
-        notificationService.toggleNotifications(accountId, silenced);
+            @PathVariable Integer accountId) {
+        notificationService.toggleNotifications(accountId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
