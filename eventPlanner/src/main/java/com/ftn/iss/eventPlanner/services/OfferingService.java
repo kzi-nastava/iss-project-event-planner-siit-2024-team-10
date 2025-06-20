@@ -10,6 +10,7 @@ import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
+import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
@@ -35,6 +36,8 @@ public class OfferingService {
     private ServiceRepository serviceRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private OfferingCategoryRepository offeringCategoryRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -328,5 +331,15 @@ public class OfferingService {
             throw e;
         }
     }
-
+    public void changeCategory(int oldCategoryId, int newCategoryId) {
+        List<Offering> offerings = offeringRepository.findAll();
+        for(Offering offering : offerings){
+            if(offering.getCategory().getId() == oldCategoryId){
+                offering.getCategory().setId(newCategoryId);
+                offering.setPending(false);
+                offeringRepository.save(offering);
+                break;
+            }
+        }
+    }
 }

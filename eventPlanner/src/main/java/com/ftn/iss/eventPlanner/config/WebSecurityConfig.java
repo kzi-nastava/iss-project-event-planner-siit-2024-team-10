@@ -96,12 +96,13 @@ public class WebSecurityConfig {
                         "api/messages/*/*",
                         "api/comments*","api/images","api/images/*","api/offerings/*/comments",
                         "api/reservations/*",
-                        "api/offerings/provider/*",
+                        "api/offerings/provider/*","api/offerings/*/change/*","api/offerings/*/change",
                         "api/users/*")
                 .requestMatchers(HttpMethod.POST,
                         "api/accounts/*/favourite-events",
                         "api/accounts/*/favourite-offerings",
                         "api/events/*/stats/participants",
+                        "api/offerings/*/change/*",
                         "api/events/*/ratings",
                         "api/messages/**")
                 .requestMatchers(HttpMethod.DELETE,
