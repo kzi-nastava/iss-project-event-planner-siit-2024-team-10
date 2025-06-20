@@ -1,6 +1,5 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.EventPlannerApplication;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
@@ -44,6 +43,8 @@ public class ReservationService {
     private ModelMapper modelMapper;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private ScheduledNotificationService scheduledNotificationService;
 
     public List<GetReservationDTO> findAll(){
         List<Reservation> reservations = reservationRepository.findAll();
@@ -313,6 +314,8 @@ public class ReservationService {
         createdReservationDTO.setEventId(createdReservation.getEvent().getId());
 
         sendConfirmation(event, service);
+
+        scheduledNotificationService.scheduleReservationReminder(createdReservation);
 
         return createdReservationDTO;
     }
