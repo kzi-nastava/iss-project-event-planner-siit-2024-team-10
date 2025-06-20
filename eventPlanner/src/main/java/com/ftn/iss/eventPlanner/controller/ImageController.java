@@ -18,11 +18,14 @@ import java.nio.file.Paths;
 @RestController
 @RequestMapping("/api/images")
 public class ImageController {
-
-    @GetMapping(value = "/{fileName}",produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{fileName}")  // Remove produces = MediaType.APPLICATION_JSON_VALUE
     public ResponseEntity<Resource> getImage(@PathVariable String fileName) throws IOException {
         Path imagePath = Paths.get("data/" + fileName);
         Resource resource = new UrlResource(imagePath.toUri());
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
 
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
