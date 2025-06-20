@@ -5,15 +5,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
 public class UpdateReservationDTO {
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private Status status;
     private int eventId;
     private int serviceId;
+    private LocalDateTime timestamp;
 
     public UpdateReservationDTO() {
     }
