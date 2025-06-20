@@ -43,12 +43,13 @@ public class OfferingCategoryService {
         offeringCategory = offeringCategoryRepository.save(offeringCategory);
         return modelMapper.map(offeringCategory,CreatedOfferingCategoryDTO.class);
     }
-    public UpdatedOfferingCategoryDTO update(int id, UpdateOfferingCategoryDTO updateEventTypeDTO) {
+    public UpdatedOfferingCategoryDTO update(int id, UpdateOfferingCategoryDTO updateOfferingCategoryDTO) {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
 
-        modelMapper.map(updateEventTypeDTO, offeringCategory);
+        modelMapper.map(updateOfferingCategoryDTO, offeringCategory);
         offeringCategory = offeringCategoryRepository.save(offeringCategory);
+        approve(id);
         return modelMapper.map(offeringCategory, UpdatedOfferingCategoryDTO.class);
     }
 
@@ -67,6 +68,12 @@ public class OfferingCategoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
         offeringCategory.setPending(false);
         offeringCategoryRepository.save(offeringCategory);
+        for(Offering offering : offeringRepository.findAll()){
+            if(offering.getCategory().getId() == id) {
+                offering.setPending(false);
+                offeringRepository.save(offering);
+            }
+        }
     }
 
     public boolean hasOfferings(int id) {
