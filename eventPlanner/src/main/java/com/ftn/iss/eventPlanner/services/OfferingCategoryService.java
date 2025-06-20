@@ -3,8 +3,10 @@ package com.ftn.iss.eventPlanner.services;
 import com.ftn.iss.eventPlanner.dto.eventtype.*;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.*;
 import com.ftn.iss.eventPlanner.model.EventType;
+import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.model.OfferingCategory;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
+import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 public class OfferingCategoryService {
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
+    @Autowired
+    private OfferingRepository offeringRepository;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -48,16 +52,29 @@ public class OfferingCategoryService {
         return modelMapper.map(offeringCategory, UpdatedOfferingCategoryDTO.class);
     }
 
-    public void delete(int id) {
+    public boolean delete(int id) {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
-        offeringCategory.setDeleted(true);
-        offeringCategoryRepository.save(offeringCategory);
+        if (hasOfferings(id)){
+            offeringCategory.setDeleted(true);
+            offeringCategoryRepository.save(offeringCategory);
+            return true;
+        }
+        return false;
     }
     public void approve(int id){
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
         offeringCategory.setPending(false);
         offeringCategoryRepository.save(offeringCategory);
+    }
+
+    public boolean hasOfferings(int id) {
+        List<Offering> offerings = offeringRepository.findAll();
+        for (Offering offering : offerings)
+            if (offering.getCategory().getId() == id && !offering.isDeleted()) {
+                return true;
+            }
+        return false;
     }
 }
