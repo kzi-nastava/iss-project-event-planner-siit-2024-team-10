@@ -103,13 +103,8 @@ public class NotificationService {
         recipientAccount.getNotifications().add(notification);
         accountRepository.save(recipientAccount);
 
-        String recipientUsername = recipientAccount.getUsername();
-        if (recipientUsername != null) {
-            GetNotificationDTO notificationDTO = mapToNotificationDTO(notification);
-            messagingTemplate.convertAndSend("/socket-publisher/notifications/" + recipientAccount.getId(), notificationDTO);
-        } else {
-            throw new IllegalArgumentException("Could not send real-time notification: Recipient account " + recipientId + " has no username.");
-        }
+        GetNotificationDTO notificationDTO = mapToNotificationDTO(notification);
+        messagingTemplate.convertAndSend("/socket-publisher/notifications/" + recipientAccount.getId(), notificationDTO);
     }
 
     @Transactional
