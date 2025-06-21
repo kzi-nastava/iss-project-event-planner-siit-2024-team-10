@@ -46,7 +46,7 @@ public class NotificationController {
     @GetMapping("{accountId}/toggle")
     public ResponseEntity<Boolean> isNotificationSilenced(
             @PathVariable Integer accountId) {
-        Boolean response = notificationService.getNotificationsSilenced(accountId);
+        Boolean response = notificationService.isNotificationsSilenced(accountId);
         return ResponseEntity.ok(response);
     }
 
