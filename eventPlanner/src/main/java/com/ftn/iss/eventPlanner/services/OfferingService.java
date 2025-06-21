@@ -258,10 +258,6 @@ public class OfferingService {
         dto.setAverageRating(calculateAverageRating(offering));
         if (offering.getClass().equals(Product.class)) {
             Product pr = (Product) offering;
-            if (!pr.getCurrentDetails().isVisible())
-            {
-                return null;
-            }
             dto.setName(pr.getCurrentDetails().getName());
             dto.setDescription(pr.getCurrentDetails().getDescription());
             dto.setPrice(pr.getCurrentDetails().getPrice());
@@ -272,10 +268,6 @@ public class OfferingService {
         }
         else{
             Service service = (Service) offering;
-            if (!service.getCurrentDetails().isVisible())
-            {
-                return null;
-            }
             dto.setName(service.getCurrentDetails().getName());
             dto.setDescription(service.getCurrentDetails().getDescription());
             dto.setPrice(service.getCurrentDetails().getPrice());
