@@ -228,7 +228,7 @@ public class OfferingService {
 
     // HELPER FUNCTIONS
 
-    private GetOfferingDTO mapToGetOfferingDTO(Offering offering) {
+    public GetOfferingDTO mapToGetOfferingDTO(Offering offering) {
         GetOfferingDTO dto = new GetOfferingDTO();
 
         dto.setId(offering.getId());

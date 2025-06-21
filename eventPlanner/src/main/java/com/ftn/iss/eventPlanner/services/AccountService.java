@@ -28,6 +28,8 @@ public class AccountService implements UserDetailsService {
     private AccountRepository accountRepository;
     @Autowired
     private OfferingRepository offeringRepository;
+    @Autowired
+    private OfferingService offeringService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -69,10 +71,12 @@ public class AccountService implements UserDetailsService {
     public Collection<GetOfferingDTO> getFavouriteOfferings(int accountId) {
         Account account = accountRepository.findByIdWithFavouriteOfferings(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));
+
         return account.getFavouriteOfferings().stream()
-                .map(offering -> modelMapper.map(offering, GetOfferingDTO.class))
+                .map(offeringService::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
+
     @Transactional
     public void addOfferingToFavourites(int accountId, int offeringId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
