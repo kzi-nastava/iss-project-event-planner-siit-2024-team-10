@@ -71,7 +71,8 @@ public class OfferingService {
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
-                    .and(ServiceSpecification.isAvailable(searchByAvailability));
+                    .and(ServiceSpecification.isAvailable(searchByAvailability))
+                    .and(ServiceSpecification.isVisible());
 
             return serviceRepository.findAll(serviceSpecification).stream()
                     .map(this::mapToGetOfferingDTO)
@@ -83,7 +84,8 @@ public class OfferingService {
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability));
+                    .and(ProductSpecification.isAvailable(searchByAvailability))
+                    .and(ProductSpecification.isVisible());
 
             return productRepository.findAll(productSpecification).stream()
                     .map(this::mapToGetOfferingDTO)
@@ -138,8 +140,8 @@ public class OfferingService {
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
-                    .and(ServiceSpecification.isAvailable(searchByAvailability));
-
+                    .and(ServiceSpecification.isAvailable(searchByAvailability))
+                    .and(ServiceSpecification.isVisible());
             pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
 
         } else if (isServiceFilter == Boolean.FALSE) {
@@ -149,7 +151,8 @@ public class OfferingService {
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability));
+                    .and(ProductSpecification.isAvailable(searchByAvailability))
+                    .and(ProductSpecification.isVisible());
 
             pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
