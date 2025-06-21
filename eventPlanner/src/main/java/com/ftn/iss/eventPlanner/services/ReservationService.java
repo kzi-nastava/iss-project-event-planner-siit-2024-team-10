@@ -27,7 +27,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +44,7 @@ public class ReservationService {
     private EmailService emailService;
     @Autowired
     private ScheduledNotificationService scheduledNotificationService;
+
 
     public List<GetReservationDTO> findAll(){
         List<Reservation> reservations = reservationRepository.findAll();
