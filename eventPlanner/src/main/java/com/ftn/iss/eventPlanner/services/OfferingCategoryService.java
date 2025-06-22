@@ -52,8 +52,7 @@ public class OfferingCategoryService {
 
         modelMapper.map(updateOfferingCategoryDTO, offeringCategory);
         offeringCategory = offeringCategoryRepository.save(offeringCategory);
-        approve(id);
-        notificationService.sendNotification(offeringCategory.getCreatorId(),"Updated category: " + offeringCategory.getName(), "New category is now: " + offeringCategory.getName() + " " + " with description " + offeringCategory.getDescription());
+        approve(id, "Your category has been updated and approved");
         return modelMapper.map(offeringCategory, UpdatedOfferingCategoryDTO.class);
     }
 
@@ -67,7 +66,7 @@ public class OfferingCategoryService {
         }
         return false;
     }
-    public void approve(int id){
+    public void approve(int id, String title){
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
         offeringCategory.setPending(false);
@@ -78,6 +77,7 @@ public class OfferingCategoryService {
                 offeringRepository.save(offering);
             }
         }
+        notificationService.sendNotification(offeringCategory.getCreatorId(),title, "Your category" + offeringCategory.getName() + " " + " with description " + offeringCategory.getDescription() + " - your offerings have been approved and are now visible on your page!");
     }
 
     public boolean hasOfferings(int id) {

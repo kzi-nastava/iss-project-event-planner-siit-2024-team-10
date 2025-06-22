@@ -75,7 +75,7 @@ public class OfferingCategoryController {
     @PutMapping(value = "/{id}/approve")
     public ResponseEntity<Void> approve(@PathVariable int id) {
         try {
-            offeringCategoryService.approve(id);
+            offeringCategoryService.approve(id, "Your category has been approved");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

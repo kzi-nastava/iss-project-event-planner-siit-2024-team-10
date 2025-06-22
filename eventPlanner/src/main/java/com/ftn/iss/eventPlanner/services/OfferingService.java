@@ -29,6 +29,10 @@ public class OfferingService {
     @Autowired
     private OfferingRepository offeringRepository;
     @Autowired
+    private OfferingCategoryService offeringCategoryService;
+    @Autowired
+    private  NotificationService notificationService;
+    @Autowired
     private ServiceRepository serviceRepository;
     @Autowired
     private ProductRepository productRepository;
@@ -38,7 +42,7 @@ public class OfferingService {
     private ModelMapper modelMapper = new ModelMapper();
 
 
-    public List<GetOfferingDTO> findAll(){
+    public List<GetOfferingDTO> findAll() {
         List<Offering> offerings = offeringRepository.findAll();
 
         return offerings.stream()
@@ -90,6 +94,7 @@ public class OfferingService {
                     .collect(Collectors.toList());
         }
     }
+
     @Transactional(readOnly = true)
     public PagedResponse<GetOfferingDTO> getAllOfferings(
             Pageable pageable,
@@ -188,6 +193,7 @@ public class OfferingService {
 
         return new PagedResponse<>(offeringDTOs, pagedOfferings.getTotalPages(), pagedOfferings.getTotalElements());
     }
+
     @Transactional(readOnly = true)
     public List<GetOfferingDTO> findTopOfferings() {
         List<Offering> offerings = offeringRepository.findAll();
@@ -208,6 +214,7 @@ public class OfferingService {
                 .collect(Collectors.toList());
 
     }
+
     @Transactional(readOnly = true)
     public List<GetOfferingDTO> findProvidersOfferings(int providerId) {
         List<Offering> offerings = offeringRepository.findAll();
@@ -218,6 +225,7 @@ public class OfferingService {
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
+
     @Transactional(readOnly = true)
     public List<GetCommentDTO> getComments(int offeringId) {
         Optional<Offering> offering = offeringRepository.findById(offeringId);
@@ -231,6 +239,7 @@ public class OfferingService {
             return Collections.emptyList();
         }
     }
+
     @Transactional
 
     public List<GetOfferingDTO> getOfferingsByProviderId(int providerId) {
@@ -239,6 +248,7 @@ public class OfferingService {
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
     }
+
     private GetCommentDTO mapToGetCommentDTO(Comment comment) {
         return new GetCommentDTO(
                 comment.getId(),
@@ -268,8 +278,7 @@ public class OfferingService {
             dto.setLocation(modelMapper.map(pr.getProvider().getLocation(), GetLocationDTO.class));
             dto.setPhotos(pr.getCurrentDetails().getPhotos());
             dto.setProduct(true);
-        }
-        else{
+        } else {
             Service service = (Service) offering;
             dto.setName(service.getCurrentDetails().getName());
             dto.setDescription(service.getCurrentDetails().getDescription());
@@ -282,6 +291,7 @@ public class OfferingService {
         }
         return dto;
     }
+
     public double calculateAverageRating(Offering offering) {
         List<GetCommentDTO> comments = getComments(offering.getId());
         if (comments == null || comments.isEmpty()) {
@@ -295,7 +305,7 @@ public class OfferingService {
         return average.orElse(0.0);
     }
 
-    private GetProviderDTO setGetProviderDTO(Offering offering){
+    private GetProviderDTO setGetProviderDTO(Offering offering) {
         GetProviderDTO providerDTO = new GetProviderDTO();
         providerDTO.setId(offering.getProvider().getId());
         providerDTO.setEmail(offering.getProvider().getAccount().getEmail());
@@ -309,7 +319,7 @@ public class OfferingService {
         return providerDTO;
     }
 
-    private GetCompanyDTO setGetCompanyDTO(Offering offering){
+    private GetCompanyDTO setGetCompanyDTO(Offering offering) {
         GetCompanyDTO companyDTO = new GetCompanyDTO();
         companyDTO.setName(offering.getProvider().getCompany().getName());
         companyDTO.setEmail(offering.getProvider().getAccount().getEmail());
@@ -358,11 +368,16 @@ public class OfferingService {
             throw e;
         }
     }
+
     public void changeCategory(int oldCategoryId, int newCategoryId) {
         List<Offering> offerings = offeringRepository.findAll();
-        for(Offering offering : offerings){
-            if(offering.getCategory().getId() == oldCategoryId){
-                offering.getCategory().setId(newCategoryId);
+        for (Offering offering : offerings) {
+            if (offering.getCategory().getId() == oldCategoryId) {
+                // find new category
+                OfferingCategory newCategory = offeringCategoryRepository.findById(newCategoryId).get();
+                // notify old creator that his category is changed for another
+                notificationService.sendNotification(offering.getCategory().getCreatorId(), "Category change", "Your category " + offering.getCategory().getName() + " has been changed for " + newCategory.getName() + " - your offerings have now been approved and are visible on your page under new category.");
+                offering.setCategory(newCategory);
                 offering.setPending(false);
                 offeringRepository.save(offering);
                 break;

@@ -5,9 +5,9 @@ INSERT INTO location ( city, country, street, house_number) VALUES
 
 INSERT INTO account (email, password, role, last_password_reset_date,notifications_silenced, status, user_id) VALUES
                                                                                                                      ( 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', TRUE, 0, null),
-                                                                                                                     ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', TRUE, 0, null),
-                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', TRUE, 0, null);
+                                                                                                                     ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                     ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', FALSE, 0, null);
 
 
 INSERT INTO company ( email, name, phone_number, description, location_id) VALUES
@@ -20,9 +20,10 @@ INSERT INTO users ( dtype, first_name, last_name, phone_number, profile_photo, l
 UPDATE account SET user_id = 2 WHERE id = 2;
 UPDATE account SET user_id = 1 WHERE id = 3;
 
-INSERT INTO offering_category (name, description, is_deleted, pending) VALUES
+INSERT INTO offering_category (name, description, is_deleted, pending, creator_id) VALUES
                                                                                ('Electronics', 'Category for electronic items.', FALSE, FALSE, 2),
-                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE, 2);
+                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE, 2),
+                                                                                ( 'Nova kategorija', 'Category for home-related services.', FALSE, TRUE, 3);
 
 INSERT INTO event_type ( name, description, is_active) VALUES
                                                               ( 'Workshop', 'Hands-on learning sessions.', TRUE),
@@ -142,7 +143,7 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                        ( 'Service',1 ,1,  7, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  8, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  9, FALSE, FALSE),
-                                                                                       ( 'Service',2 ,1,  10, FALSE, FALSE);
+                                                                                       ( 'Service',3 ,1,  10, FALSE, TRUE);
 
 INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
                                                                                      ( '2025-01-15 09:00:00', '2025-01-15 17:00:00', 1, 1, 13,'2025-12-12 08:00:00'),
