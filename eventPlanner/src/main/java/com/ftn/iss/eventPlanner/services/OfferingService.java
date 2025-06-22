@@ -16,12 +16,8 @@ import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -71,8 +67,7 @@ public class OfferingService {
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
-                    .and(ServiceSpecification.isAvailable(searchByAvailability))
-                    .and(ServiceSpecification.isVisible());
+                    .and(ServiceSpecification.isAvailable(searchByAvailability));
 
             return serviceRepository.findAll(serviceSpecification).stream()
                     .map(this::mapToGetOfferingDTO)
@@ -84,8 +79,7 @@ public class OfferingService {
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
-                    .and(ProductSpecification.isAvailable(searchByAvailability))
-                    .and(ProductSpecification.isVisible());
+                    .and(ProductSpecification.isAvailable(searchByAvailability));
 
             return productRepository.findAll(productSpecification).stream()
                     .map(this::mapToGetOfferingDTO)
@@ -142,6 +136,7 @@ public class OfferingService {
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability))
                     .and(ServiceSpecification.isVisible());
+
             pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
 
         } else if (isServiceFilter == Boolean.FALSE) {
@@ -157,7 +152,27 @@ public class OfferingService {
             pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
         } else {
-            pagedOfferings = offeringRepository.findAll(pageable);
+            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.isVisible());
+
+            Specification<Product> productSpecification = Specification.where(ProductSpecification.isVisible());
+
+            List<Service> services = serviceRepository.findAll(serviceSpecification);
+            List<Product> products = productRepository.findAll(productSpecification);
+
+            List<Offering> combined = new ArrayList<>();
+            combined.addAll(services);
+            combined.addAll(products);
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), combined.size());
+
+            List<Offering> pagedContent = combined.subList(start, end);
+
+            pagedOfferings = new PageImpl<>(
+                    pagedContent,
+                    pageable,
+                    combined.size()
+            );
         }
 
         List<Offering> filteredOfferings = pagedOfferings.getContent().stream()
@@ -178,11 +193,20 @@ public class OfferingService {
         List<Offering> offerings = offeringRepository.findAll();
 
         return offerings.stream()
+                .filter(offering -> {
+                    if (offering instanceof Product p) {
+                        return p.getCurrentDetails().isVisible();
+                    } else if (offering instanceof Service s) {
+                        return s.getCurrentDetails().isVisible();
+                    }
+                    return false;
+                })
                 .sorted((o1, o2) -> Double.compare(
                         calculateAverageRating(o2), calculateAverageRating(o1)))
                 .limit(5)
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
+
     }
     @Transactional(readOnly = true)
     public List<GetOfferingDTO> findProvidersOfferings(int providerId) {

@@ -37,8 +37,8 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
                                                                                                                                      (4,2,1,7,1,15, 3.2);
 
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
-                                                                                                                                                   ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2025-01-15 12:00', FALSE, 1, '2025-03-10', 1),
-                                                                                                                                                   ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2025-03-10 15:00', FALSE, 2, '2025-03-03',2),
+                                                                                                                                                   ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2026-01-15 12:00', FALSE, 1, '2025-03-10', 1),
+                                                                                                                                                   ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2026-03-10 15:00', FALSE, 2, '2025-03-03',2),
                                                                                                                                                    ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20 09:00', FALSE, 3, '2025-05-01',3),
                                                                                                                                                    ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
                                                                                                                                                    ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5);
@@ -89,9 +89,10 @@ INSERT INTO message (content, timestamp, sender_id, receiver_id, is_read) VALUES
                                                                                   ( 'Hello, when is the event?', '2023-12-05 09:00:00', 1, 2, FALSE),
                                                                                   ( 'Can you provide more details?', '2023-12-06 10:00:00', 2, 1, TRUE);
 
-INSERT INTO notification (is_read, content) VALUES
-                                                    ( FALSE, 'Your account has been updated.'),
-                                                    ( TRUE, 'Event registration confirmed.');
+INSERT INTO notification (read, content, title, date) VALUES
+                                                    ( FALSE, 'Your account has been updated.','Account Updated','2025-02-08 09:00:00'),
+                                                    ( FALSE, 'The reserved service is in 1 hour.','Service Reservation','2025-02-05 09:00:00'),
+                                                    ( TRUE, 'Event registration confirmed.', 'Event Confirmation', '2025-01-04 09:00:00');
 
 
 INSERT INTO product_details (name, description, price, discount, is_visible, is_available, timestamp) VALUES
@@ -177,3 +178,7 @@ INSERT INTO offerings_comments (offering_id, comments_id) VALUES
                                                              (18, 27),
                                                              (19, 28),
                                                              (20, 29);
+INSERT INTO account_notifications (account_id, notifications_id) VALUES
+                                                                     (2, 1),
+                                                                     (2, 2),
+                                                                     (2,3);

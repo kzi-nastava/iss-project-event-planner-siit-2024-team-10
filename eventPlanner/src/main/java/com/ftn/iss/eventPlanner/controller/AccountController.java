@@ -4,6 +4,7 @@ import com.ftn.iss.eventPlanner.dto.event.AddFavouriteEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.services.AccountService;
+import com.ftn.iss.eventPlanner.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +19,8 @@ import java.util.Collection;
 public class AccountController {
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private NotificationService notificationService;
     @GetMapping(value="/{accountId}/favourite-events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetEventDTO>> getFavouriteEvents(@PathVariable int accountId) {
         Collection<GetEventDTO> favouriteEvents = accountService.getFavouriteEvents(accountId);
@@ -26,6 +29,7 @@ public class AccountController {
     @PostMapping(value="/{accountId}/favourite-events", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> addEventToFavourites(@PathVariable int accountId, @RequestBody AddFavouriteEventDTO addFavouriteEventDTO) {
         accountService.addEventToFavourites(accountId, addFavouriteEventDTO.getEventId());
+        notificationService.sendNotification(2,"lajk","superlajk");
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     @DeleteMapping(value="/{accountId}/favourite-events/{eventId}")

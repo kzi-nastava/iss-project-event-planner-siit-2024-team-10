@@ -1,6 +1,5 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.EventPlannerApplication;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
@@ -28,7 +27,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,7 +43,8 @@ public class ReservationService {
     @Autowired
     private EmailService emailService;
     @Autowired
-    private EventPlannerApplication eventPlannerApplication;
+    private ScheduledNotificationService scheduledNotificationService;
+
 
     public List<GetReservationDTO> findAll(){
         List<Reservation> reservations = reservationRepository.findAll();
@@ -93,6 +92,7 @@ public class ReservationService {
 
         return reservations.stream()
                 .filter(reservation -> reservation.getEvent().getOrganizer().getId() == organizerId)
+                .filter(reservation -> reservation.getStatus() != Status.CANCELED)
                 .map(this::mapToGetReservationDTO)
                 .toList();
     }
@@ -102,6 +102,7 @@ public class ReservationService {
 
         return reservations.stream()
                 .filter(reservation -> reservation.getService().getProvider().getId() == providerId)
+                .filter(reservation -> reservation.getStatus() != Status.CANCELED)
                 .map(this::mapToGetReservationDTO)
                 .toList();
     }
@@ -125,7 +126,7 @@ public class ReservationService {
         dto.setName(event.getName());
         dto.setDate(event.getDate());
         dto.setOrganizer(setGetOrganizerDTO(event));
-        if(event.getEventType()!=null)
+        if (event.getEventType() != null)
             dto.setEventType(modelMapper.map(event.getEventType(), GetEventTypeDTO.class));
 
         if (event.getLocation() != null) {
@@ -133,9 +134,9 @@ public class ReservationService {
         }
 
         dto.setMaxParticipants(event.getMaxParticipants());
-        if (event.getStats()!=null) {
+        if (event.getStats() != null) {
             dto.setAverageRating(event.getStats().getAverageRating());
-        }else{
+        } else {
             dto.setAverageRating(0);
         }
         dto.setDescription(event.getDescription());
@@ -143,7 +144,7 @@ public class ReservationService {
         return dto;
     }
 
-    private GetOrganizerDTO setGetOrganizerDTO(Event event){
+    private GetOrganizerDTO setGetOrganizerDTO(Event event) {
         GetOrganizerDTO organizerDTO = new GetOrganizerDTO();
         organizerDTO.setId(event.getOrganizer().getId());
         organizerDTO.setEmail(event.getOrganizer().getAccount().getEmail());
@@ -155,7 +156,7 @@ public class ReservationService {
         return organizerDTO;
     }
 
-    private  GetServiceDTO mapToGetServiceDTO(com.ftn.iss.eventPlanner.model.Service service) {
+    private GetServiceDTO mapToGetServiceDTO(com.ftn.iss.eventPlanner.model.Service service) {
         GetServiceDTO dto = new GetServiceDTO();
 
         dto.setId(service.getId());
@@ -178,7 +179,8 @@ public class ReservationService {
         dto.setAutoConfirm(service.getCurrentDetails().isAutoConfirm());
         return dto;
     }
-    public GetProviderDTO setGetProviderDTO(Offering offering){
+
+    public GetProviderDTO setGetProviderDTO(Offering offering) {
         GetProviderDTO providerDTO = new GetProviderDTO();
         providerDTO.setId(offering.getProvider().getId());
         providerDTO.setEmail(offering.getProvider().getAccount().getEmail());
@@ -190,7 +192,8 @@ public class ReservationService {
         providerDTO.setCompany(setGetCompanyDTO(offering));
         return providerDTO;
     }
-    public GetCompanyDTO setGetCompanyDTO(Offering offering){
+
+    public GetCompanyDTO setGetCompanyDTO(Offering offering) {
         GetCompanyDTO companyDTO = new GetCompanyDTO();
         companyDTO.setName(offering.getProvider().getCompany().getName());
         companyDTO.setEmail(offering.getProvider().getAccount().getEmail());
@@ -203,32 +206,6 @@ public class ReservationService {
         return companyDTO;
     }
 
-    public GetServiceDTO mapServiceDetailsDTO(com.ftn.iss.eventPlanner.model.Service service, ServiceDetails serviceDetails) {
-        GetServiceDTO serviceDTO = new GetServiceDTO();
-
-        serviceDTO.setName(serviceDetails.getName());
-        serviceDTO.setDescription(serviceDetails.getDescription());
-        serviceDTO.setSpecification(serviceDetails.getSpecification());
-        serviceDTO.setPrice(serviceDetails.getPrice());
-        serviceDTO.setDiscount(serviceDetails.getDiscount());
-        serviceDTO.setPhotos(serviceDetails.getPhotos());
-        serviceDTO.setVisible(serviceDetails.isVisible());
-        serviceDTO.setAvailable(serviceDetails.isAvailable());
-        serviceDTO.setMaxDuration(serviceDetails.getMaxDuration());
-        serviceDTO.setMinDuration(serviceDetails.getMinDuration());
-        serviceDTO.setCancellationPeriod(serviceDetails.getCancellationPeriod());
-        serviceDTO.setReservationPeriod(serviceDetails.getReservationPeriod());
-        serviceDTO.setAutoConfirm(serviceDetails.isAutoConfirm());
-
-        serviceDTO.setId(service.getId());
-        serviceDTO.setPending(service.isPending());
-        serviceDTO.setDeleted(service.isDeleted());
-        serviceDTO.setCategory(modelMapper.map(service.getCategory(), GetOfferingCategoryDTO.class));
-        serviceDTO.setProvider(setGetProviderDTO(service));
-
-        return serviceDTO;
-    }
-
     private void isDateWithinReservationPeriod(LocalTime startTime, Event event, ServiceDetails serviceDetails) {
         LocalDate eventDate = event.getDate();
         LocalDateTime reservationStart = LocalDateTime.of(eventDate, startTime);
@@ -236,20 +213,22 @@ public class ReservationService {
         long requiredHoursInAdvance = serviceDetails.getReservationPeriod();
         LocalDateTime latestAllowedReservationTime = reservationStart.minusHours(requiredHoursInAdvance);
 
-        if(LocalDateTime.now().isAfter(latestAllowedReservationTime)){
+        if (LocalDateTime.now().isAfter(latestAllowedReservationTime)) {
             throw new IllegalArgumentException("Reservation must be made within the reservation period.");
-        };
+        }
+        ;
     }
 
-    private void isDateWithinCancellationPeriod(Event event, ServiceDetails serviceDetails){
+    private void isDateWithinCancellationPeriod(Event event, ServiceDetails serviceDetails) {
         LocalDate eventDate = event.getDate();
 
         int requiredDaysInAdvance = serviceDetails.getCancellationPeriod();
 
-        if(LocalDateTime.now().isAfter(eventDate.minusDays(requiredDaysInAdvance).atStartOfDay())){
+        if (LocalDateTime.now().isAfter(eventDate.minusDays(requiredDaysInAdvance).atStartOfDay())) {
             throw new IllegalArgumentException("Cancellation must be made within the reservation period.");
         }
     }
+
     public void validateReservationTime(LocalTime startTime, LocalTime endTime, ServiceDetails serviceDetails) {
         if (startTime == null || endTime == null) {
             throw new IllegalArgumentException("Start time and end time must be provided");
@@ -273,14 +252,14 @@ public class ReservationService {
         List<Reservation> allReservations = reservationRepository.findAll();
 
         List<Reservation> relevantReservations = allReservations.stream()
-                .filter(reservation -> reservation.getService().getId() == service.getId() && reservation.getEvent().getDate().equals(date))
+                .filter(reservation -> reservation.getService().getProvider().getId() == service.getProvider().getId() && reservation.getEvent().getDate().equals(date))
                 .collect(Collectors.toList());
 
         LocalDateTime providedStart = LocalDateTime.of(date, startTime);
         LocalDateTime providedEnd = LocalDateTime.of(date, endTime);
 
         for (Reservation reservation : relevantReservations) {
-            LocalDateTime reservationStartDateTime = LocalDateTime.of(date,  reservation.getStartTime());
+            LocalDateTime reservationStartDateTime = LocalDateTime.of(date, reservation.getStartTime());
             LocalDateTime reservationEndDateTime = LocalDateTime.of(date, reservation.getEndTime());
 
             if ((providedStart.isBefore(reservationEndDateTime) && providedStart.isAfter(reservationStartDateTime)) ||
@@ -290,6 +269,7 @@ public class ReservationService {
             }
         }
     }
+
     private void isServiceReservedForEvent(Event event, com.ftn.iss.eventPlanner.model.Service service) {
         List<Reservation> allReservations = reservationRepository.findAll();
 
@@ -305,14 +285,14 @@ public class ReservationService {
         Event event = eventRepository.findById(reservation.getEvent())
                 .orElseThrow(() -> new NotFoundException("Event with ID " + reservation.getEvent() + " not found"));
         com.ftn.iss.eventPlanner.model.Service service = serviceRepository.findById(reservation.getService())
-                .orElseThrow(()-> new NotFoundException("Service with ID " + reservation.getService() + "not found"));
+                .orElseThrow(() -> new NotFoundException("Service with ID " + reservation.getService() + "not found"));
 
         LocalTime startTime = reservation.getStartTime();
         LocalTime endTime = reservation.getEndTime();
 
         isServiceReservedForEvent(event, service);
         isDateWithinReservationPeriod(startTime, event, service.getCurrentDetails());
-        validateReservationTime(startTime, endTime,service.getCurrentDetails());
+        validateReservationTime(startTime, endTime, service.getCurrentDetails());
         checkServiceAvailability(event.getDate(), startTime, endTime, service);
 
         createdReservation.setService(service);
@@ -320,9 +300,9 @@ public class ReservationService {
         createdReservation.setStartTime(startTime);
         createdReservation.setEndTime(endTime);
         createdReservation.setTimestamp(LocalDateTime.now());
-        if(service.getCurrentDetails().isAutoConfirm()){
+        if (service.getCurrentDetails().isAutoConfirm()) {
             createdReservation.setStatus(Status.ACCEPTED);
-        }else{
+        } else {
             createdReservation.setStatus(Status.PENDING);
         }
 
@@ -335,22 +315,29 @@ public class ReservationService {
 
         sendConfirmation(event, service);
 
+        scheduledNotificationService.scheduleReservationReminder(createdReservation);
+
         return createdReservationDTO;
     }
+
     private void sendConfirmation(Event event, com.ftn.iss.eventPlanner.model.Service service) {
-        EmailDetails emailDetails=new EmailDetails();
+        EmailDetails emailDetails = new EmailDetails();
         emailDetails.setRecipient(event.getOrganizer().getAccount().getEmail());
         emailDetails.setSubject("Reservation Confirmation");
-        emailDetails.setMsgBody("You've successfully reserved "+service.getCurrentDetails().getName()+" for "+event.getName()+"!");
+        if (service.getCurrentDetails().isAutoConfirm()){
+            emailDetails.setMsgBody("You've successfully reserved "+service.getCurrentDetails().getName()+" for "+event.getName()+"!");
+        }else{
+            emailDetails.setMsgBody("Reservation for service "+service.getCurrentDetails().getName()+" for your event "+event.getName()+" is pending. You will get a confirmation when it gets accepted/denied.");
+        }
         emailService.sendSimpleEmail(emailDetails);
 
-        emailDetails=new EmailDetails();
+        emailDetails = new EmailDetails();
         emailDetails.setRecipient(service.getProvider().getAccount().getEmail());
         emailDetails.setSubject("Your Service Has Gotten A Reservation");
-        if (service.getCurrentDetails().isAutoConfirm()){
-            emailDetails.setMsgBody("Your service "+service.getCurrentDetails().getName()+" has been reserved for "+event.getName()+" by "+event.getOrganizer().getFirstName()+" "+event.getOrganizer().getLastName()+" and has been automatically accepted.");
-        }else{
-            emailDetails.setMsgBody("Your service "+service.getCurrentDetails().getName()+" has been reserved for "+event.getName()+" by "+event.getOrganizer().getFirstName()+" "+event.getOrganizer().getLastName()+" and has been added to pending reservation where you can confirm/deny it.");
+        if (service.getCurrentDetails().isAutoConfirm()) {
+            emailDetails.setMsgBody("Your service " + service.getCurrentDetails().getName() + " has been reserved for " + event.getName() + " by " + event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName() + " and has been automatically accepted.");
+        } else {
+            emailDetails.setMsgBody("Your service " + service.getCurrentDetails().getName() + " has been reserved for " + event.getName() + " by " + event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName() + " and has been added to pending reservation where you can confirm/deny it.");
         }
         emailService.sendSimpleEmail(emailDetails);
     }
@@ -366,6 +353,16 @@ public class ReservationService {
                     .collect(Collectors.toList());
         }
         return eventDTOs;
+    }
+
+    public List<GetReservationDTO> findPendingReservations(int providerId) {
+        List<Reservation> reservations = reservationRepository.findAll();
+
+        return reservations.stream()
+                .filter(reservation -> reservation.getService().getProvider().getId() == providerId)
+                .filter(reservation -> reservation.getStatus() == Status.PENDING)
+                .map(this::mapToGetReservationDTO)
+                .toList();
     }
 
     public void cancelReservation(int id) {

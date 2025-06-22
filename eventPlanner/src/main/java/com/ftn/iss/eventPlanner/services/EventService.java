@@ -2,11 +2,8 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.agendaitem.*;
-import com.ftn.iss.eventPlanner.dto.event.CreateEventDTO;
-import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
+import com.ftn.iss.eventPlanner.dto.event.*;
 
-import com.ftn.iss.eventPlanner.dto.event.CreatedEventRatingDTO;
-import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
@@ -48,6 +45,8 @@ public class EventService {
     private EventStatsRepository eventStatsRepository;
     @Autowired
     private OrganizerRepository organizerRepository;
+    @Autowired
+    private ReservationRepository reservationRepository;
     @Autowired
     private AccountService accountService;
 
@@ -175,6 +174,47 @@ public class EventService {
         event = eventRepository.save(event);
         eventRepository.flush();
         return modelMapper.map(event, CreatedEventDTO.class);
+    }
+
+    public UpdatedEventDTO update (int eventId, UpdateEventDTO updateEventDTO){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        event.setName(updateEventDTO.getName());
+        event.setDescription(updateEventDTO.getDescription());
+        event.setOpen(updateEventDTO.isOpen());
+        //TODO: check invitations if publicity is changed
+        if(updateEventDTO.getMaxParticipants() < event.getStats().getParticipantsCount()) {
+            throw new IllegalArgumentException("Max participants cannot be less than current participants count");
+        }
+        if(updateEventDTO.getMaxParticipants() < event.getGuestList().size()) {
+            throw new IllegalArgumentException("Max participants cannot be less than current guest list size");
+        }
+        event.setMaxParticipants(updateEventDTO.getMaxParticipants());
+        checkDateUpdate(event, updateEventDTO.getDate());
+        event.setDate(updateEventDTO.getDate());
+        Location location = modelMapper.map(locationService.create(updateEventDTO.getLocation()), Location.class);
+        event.setLocation(location);
+        EventType eventType = null;
+        if(updateEventDTO.getEventTypeId()!=0) {
+            eventType = eventTypeRepository.findById(updateEventDTO.getEventTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + updateEventDTO.getEventTypeId() + " not found"));
+        }
+        event.setEventType(eventType);
+        event = eventRepository.save(event);
+        eventRepository.flush();
+        return modelMapper.map(event, UpdatedEventDTO.class);
+    }
+
+    private void checkDateUpdate(Event event, LocalDate date){
+        if(event.getDate().isEqual(date))
+            return;
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Event date must be in the future");
+        }
+        reservationRepository.findByEventId(event.getId()).stream()
+                .filter(r -> r.getStatus() == Status.ACCEPTED || r.getStatus() == Status.PENDING)
+                .findAny()
+                .ifPresent(r -> { throw new IllegalArgumentException("Event date can't be changed when it has reservations"); });
     }
 
     public Collection<GetAgendaItemDTO> getAgenda(int eventId){
