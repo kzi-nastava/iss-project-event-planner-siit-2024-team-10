@@ -46,9 +46,6 @@ INSERT INTO agenda_item (name, description, location, start_time, end_time, is_d
                                                                                                 ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
 
-INSERT INTO budget_item (amount, purchase_date, is_deleted, category_id, offering_id) VALUES
-                                                                                              ( 500.00, '2023-11-01 14:00:00', FALSE, 1, NULL),
-                                                                                              ( 200.00, '2023-11-02 15:00:00', FALSE, 2, NULL);
 
 INSERT INTO comment (content, status, commenter_id, rating) VALUES
                                                                 ('Great event!', 1, 1, 5),

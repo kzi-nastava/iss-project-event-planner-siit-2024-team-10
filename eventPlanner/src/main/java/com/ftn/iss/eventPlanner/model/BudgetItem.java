@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,8 +19,6 @@ public class BudgetItem {
     @Column(nullable = false)
     private double amount;
 
-    @Column
-    private LocalDateTime purchaseDate;
 
     @Column(nullable = false)
     private boolean isDeleted;
@@ -27,8 +26,8 @@ public class BudgetItem {
     @ManyToOne
     private OfferingCategory category;
 
-    @ManyToOne
-    private Offering offering;
+    @OneToMany(fetch = FetchType.LAZY)
+    private Set<Offering> offerings;
 
     public BudgetItem() {
     }
