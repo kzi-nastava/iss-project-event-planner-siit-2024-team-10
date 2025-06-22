@@ -46,7 +46,6 @@ INSERT INTO agenda_item (name, description, location, start_time, end_time, is_d
                                                                                                 ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
 
-
 INSERT INTO comment (content, status, commenter_id, rating) VALUES
                                                                 ('Great event!', 1, 1, 5),
                                                                 ('Could be better.', 1, 2, 3),
@@ -179,3 +178,6 @@ INSERT INTO account_notifications (account_id, notifications_id) VALUES
                                                                      (2, 1),
                                                                      (2, 2),
                                                                      (2,3);
+
+INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
+                                                                                         (1,2);

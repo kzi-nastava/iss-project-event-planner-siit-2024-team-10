@@ -19,12 +19,13 @@ public class BudgetItem {
     @Column(nullable = false)
     private double amount;
 
-
     @Column(nullable = false)
     private boolean isDeleted;
 
     @ManyToOne
     private OfferingCategory category;
+    @ManyToOne
+    private Event event;
 
     @OneToMany(fetch = FetchType.LAZY)
     private Set<Offering> offerings;
