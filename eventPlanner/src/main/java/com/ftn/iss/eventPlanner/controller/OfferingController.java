@@ -169,4 +169,14 @@ public class OfferingController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
+    @GetMapping(value="/all-non-paged", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetOfferingDTO>> getOfferings() {
+        try {
+            List<GetOfferingDTO> offerings = offeringService.findAll();
+
+            return ResponseEntity.ok(offerings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
+    }
 }
