@@ -21,8 +21,8 @@ UPDATE account SET user_id = 2 WHERE id = 2;
 UPDATE account SET user_id = 1 WHERE id = 3;
 
 INSERT INTO offering_category (name, description, is_deleted, pending) VALUES
-                                                                               ('Electronics', 'Category for electronic items.', FALSE, FALSE),
-                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE);
+                                                                               ('Electronics', 'Category for electronic items.', FALSE, FALSE, 2),
+                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE, 2);
 
 INSERT INTO event_type ( name, description, is_active) VALUES
                                                               ( 'Workshop', 'Hands-on learning sessions.', TRUE),

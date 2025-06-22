@@ -21,6 +21,8 @@ public class OfferingCategoryService {
     @Autowired
     private OfferingRepository offeringRepository;
     @Autowired
+    private NotificationService notificationService;
+    @Autowired
     private ModelMapper modelMapper;
 
     public List<GetOfferingCategoryDTO> findAll(){
@@ -40,6 +42,7 @@ public class OfferingCategoryService {
         modelMapper.map(createOfferingCategoryDTO,offeringCategory);
         offeringCategory.setDeleted(false);
         offeringCategory.setPending(true);
+        offeringCategory.setCreatorId(createOfferingCategoryDTO.getCreatorId());
         offeringCategory = offeringCategoryRepository.save(offeringCategory);
         return modelMapper.map(offeringCategory,CreatedOfferingCategoryDTO.class);
     }
@@ -50,6 +53,7 @@ public class OfferingCategoryService {
         modelMapper.map(updateOfferingCategoryDTO, offeringCategory);
         offeringCategory = offeringCategoryRepository.save(offeringCategory);
         approve(id);
+        notificationService.sendNotification(offeringCategory.getCreatorId(),"Updated category: " + offeringCategory.getName(), "New category is now: " + offeringCategory.getName() + " " + " with description " + offeringCategory.getDescription());
         return modelMapper.map(offeringCategory, UpdatedOfferingCategoryDTO.class);
     }
 

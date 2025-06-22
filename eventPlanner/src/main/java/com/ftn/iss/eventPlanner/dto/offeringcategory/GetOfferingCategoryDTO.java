@@ -11,4 +11,6 @@ public class GetOfferingCategoryDTO {
     private String description;
     private boolean isDeleted;
     private boolean pending;
+    private int creatorId;
+
 }
