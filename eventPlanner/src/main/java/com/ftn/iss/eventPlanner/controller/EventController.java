@@ -2,10 +2,7 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.agendaitem.*;
-import com.ftn.iss.eventPlanner.dto.budgetitem.CreateBudgetItemDTO;
-import com.ftn.iss.eventPlanner.dto.budgetitem.CreatedBudgetItemDTO;
-import com.ftn.iss.eventPlanner.dto.budgetitem.UpdateBudgetItemDTO;
-import com.ftn.iss.eventPlanner.dto.budgetitem.UpdatedBudgetItemDTO;
+import com.ftn.iss.eventPlanner.dto.budgetitem.*;
 import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.*;
@@ -199,23 +196,30 @@ public class EventController {
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value="/{eventId}/budget/{budgetItemId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedBudgetItemDTO> updateBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId, @RequestBody UpdateBudgetItemDTO updateBudgetItemDto) {
-        UpdatedBudgetItemDTO updatedBudgetItemDTO = budgetItemService.update(eventId, budgetItemId, updateBudgetItemDto);
+        UpdatedBudgetItemDTO updatedBudgetItemDTO = budgetItemService.update(budgetItemId, updateBudgetItemDto);
         return ResponseEntity.ok(updatedBudgetItemDTO);
     }
-/*
+
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
-    @DeleteMapping(value="/{eventId}/agenda/{agendaItemId}")
-    public ResponseEntity<Void> deleteBudgetItem(@PathVariable int eventId, @Valid @PathVariable int budgetItemId) {
-        budgetItemService.delete(eventId, budgetItemId);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping(value="/{eventId}/budget/{budgetItemId}")
+    public ResponseEntity<Boolean> deleteBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId) {
+        boolean deleted = budgetItemService.delete(eventId, budgetItemId);
+        return new ResponseEntity<>(deleted, HttpStatus.OK);
     }
 
-        @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value="/budget",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<GetBudgetItemDTO>> getAllBudgetItems() {
         List<GetBudgetItemDTO> budgetItems = budgetItemService.findAll();
         return new ResponseEntity<>(budgetItems, HttpStatus.OK);
     }
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @GetMapping(value = "/budget/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<GetBudgetItemDTO>> getBudgetItemsByEvent(@PathVariable int eventId) {
+        List<GetBudgetItemDTO> items = budgetItemService.findByEventId(eventId);
+        return new ResponseEntity<>(items, HttpStatus.OK);
+    }
 
+/*
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetBudgetItemDTO> getBudgetItemById(@PathVariable int id) {
         try {

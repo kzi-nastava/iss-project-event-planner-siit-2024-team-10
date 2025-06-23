@@ -32,7 +32,7 @@ public class BudgetItemService {
 
     public CreatedBudgetItemDTO create(int eventId, CreateBudgetItemDTO budgetItemDTO) {
         BudgetItem budgetItem = new BudgetItem();
-        budgetItem.setAmount(budgetItem.getAmount());
+        budgetItem.setAmount(budgetItemDTO.getAmount());
         budgetItem.setDeleted(false);
         budgetItem.setCategory(offeringCategoryRepository.findById(budgetItemDTO.getCategoryId()).get());
         budgetItem.setEvent(eventRepository.findById(budgetItemDTO.getEventId()).get());
@@ -44,7 +44,10 @@ public class BudgetItemService {
     }
 
     public List<GetBudgetItemDTO> findAll() {
-        List<BudgetItem> budgetItems = budgetItemRepository.findAll();
+        List<BudgetItem> budgetItems = budgetItemRepository.findAll()
+                .stream()
+                .collect(Collectors.toList());
+
         return budgetItems.stream()
                 .map(budgetItem -> modelMapper.map(budgetItem, GetBudgetItemDTO.class))
                 .collect(Collectors.toList());
@@ -56,11 +59,10 @@ public class BudgetItemService {
         return modelMapper.map(budgetItems, GetBudgetItemDTO.class);
     }
 
-    public UpdatedBudgetItemDTO update(int eventId, int budgetItemId, UpdateBudgetItemDTO updateBudgetItemDTO) {
+    public UpdatedBudgetItemDTO update(int budgetItemId, UpdateBudgetItemDTO updateBudgetItemDTO) {
         BudgetItem budgetItem = budgetItemRepository.findById(budgetItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemId + " not found"));
 
-        modelMapper.map(updateBudgetItemDTO, budgetItem);
         if(updateBudgetItemDTO.getAmount() != 0)
             budgetItem.setAmount(updateBudgetItemDTO.getAmount());
 
@@ -71,10 +73,23 @@ public class BudgetItemService {
         return modelMapper.map(budgetItem, UpdatedBudgetItemDTO.class);
     }
 
-    public void delete(int id) {
-        BudgetItem budgetItem = budgetItemRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + id + " not found"));
+    public boolean delete(int eventId, int budgetItemd) {
+        BudgetItem budgetItem = budgetItemRepository.findById(budgetItemd)
+                .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemd + " not found"));
+        if(budgetItem.getOfferings().size() != 0)
+            return false;
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
+        event.getBudget().remove(budgetItem);
+        eventRepository.save(event);
         budgetItem.setDeleted(true);
         budgetItemRepository.save(budgetItem);
+        return true;
+    }
+    public List<GetBudgetItemDTO> findByEventId(int eventId) {
+        return budgetItemRepository.findByEventId(eventId)
+                .stream()
+                .filter(item -> !item.isDeleted())
+                .map(budgetItem -> modelMapper.map(budgetItem, GetBudgetItemDTO.class))
+                .collect(Collectors.toList());
     }
 }

@@ -27,7 +27,7 @@ public class BudgetItem {
     @ManyToOne
     private Event event;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
     private Set<Offering> offerings;
 
     public BudgetItem() {
