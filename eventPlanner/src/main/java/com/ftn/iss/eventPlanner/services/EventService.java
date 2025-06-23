@@ -19,9 +19,11 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
@@ -32,6 +34,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.Comparator;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 public class EventService {
@@ -53,6 +56,17 @@ public class EventService {
     private ModelMapper modelMapper = new ModelMapper();
     @Autowired
     private AgendaItemRepository agendaItemRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private EventInviteTokenRepository eventInviteTokenRepository;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Value("${app.frontend-base-url}") private String baseUrl;
+
 
     public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
@@ -422,6 +436,37 @@ public class EventService {
         statsDTO.setEventName(event.getName());
         return statsDTO;
     }
+
+    public void inviteGuest(Event event, String guestEmail) {
+        Account account = accountRepository.findByEmail(guestEmail);
+        String password = null;
+
+        if (account == null) {
+            password = UUID.randomUUID().toString().substring(0, 10);
+            account = new Account();
+            account.setEmail(guestEmail);
+            account.setPassword(passwordEncoder.encode(password));
+            account.setStatus(AccountStatus.ACTIVE);
+            account.setRole(Role.AUTHENTICATED_USER);
+            accountRepository.save(account);
+        }
+
+        EventInviteToken token = new EventInviteToken();
+        token.setEmail(guestEmail);
+        token.setEvent(event);
+        token.setToken(UUID.randomUUID().toString());
+        token.setExpiresAt(LocalDateTime.now().plusDays(2));
+        eventInviteTokenRepository.save(token);
+
+        String inviteLink = baseUrl + "/invite-event?token=" + token.getToken();
+        String message = "You’re invited to the event: " + event.getName() + "\nClick the link to join. ";
+        if (password != null) {
+            message += "\nGenerated password: " + password;
+        }
+
+        emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", inviteLink));
+    }
+
 
     // HELPER FUNCTIONS
 

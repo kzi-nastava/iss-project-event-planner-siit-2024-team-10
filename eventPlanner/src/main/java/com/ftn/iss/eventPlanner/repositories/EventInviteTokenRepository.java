@@ -10,4 +10,3 @@ public interface EventInviteTokenRepository extends JpaRepository<EventInviteTok
     EventInviteToken findByToken(String token);
     boolean existsByEmailAndEvent(String email, Event event);
 }
-
