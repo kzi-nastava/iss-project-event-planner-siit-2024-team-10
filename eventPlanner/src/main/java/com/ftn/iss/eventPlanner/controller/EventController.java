@@ -182,4 +182,22 @@ public class EventController {
         GetEventStatsDTO updatedEventStats = eventService.addParticipant(eventId);
         return ResponseEntity.ok(updatedEventStats);
     }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @PostMapping(value="/{eventId}/invite")
+    public ResponseEntity<?> sendInvitations(@RequestBody List<String> emails, @PathVariable int eventId) {
+        eventService.sendInvitations(eventId, emails);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/invitations/{token}")
+    public ResponseEntity<Void> acceptInvitation(@PathVariable String token) {
+        try {
+            eventService.processInvitation(token);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
 }

@@ -27,6 +27,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.io.InputStream;
@@ -437,7 +438,14 @@ public class EventService {
         return statsDTO;
     }
 
-    public void inviteGuest(Event event, String guestEmail) {
+    public void sendInvitations(int eventId, List<String> emails){
+        for (String email : emails) {
+            inviteGuest(eventId, email);
+        }
+    }
+
+    @Transactional
+    public void inviteGuest(int eventId, String guestEmail) {
         Account account = accountRepository.findByEmail(guestEmail);
         String password = null;
 
@@ -451,6 +459,9 @@ public class EventService {
             accountRepository.save(account);
         }
 
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found."));
+
         EventInviteToken token = new EventInviteToken();
         token.setEmail(guestEmail);
         token.setEvent(event);
@@ -459,14 +470,35 @@ public class EventService {
         eventInviteTokenRepository.save(token);
 
         String inviteLink = baseUrl + "/invite-event?token=" + token.getToken();
-        String message = "You’re invited to the event: " + event.getName() + "\nClick the link to join. ";
+        String message = "You’re invited to the event: " + event.getName() + "\nClick here to participate: " + inviteLink;
         if (password != null) {
             message += "\nGenerated password: " + password;
         }
 
-        emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", inviteLink));
+        emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
     }
 
+    public void processInvitation(String token) {
+        EventInviteToken invitation = eventInviteTokenRepository.findByToken(token);
+        if (invitation == null || invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Invitation is invalid or expired");
+        }
+
+        Account account = accountRepository.findByEmail(invitation.getEmail());
+        if (account == null) {
+            throw new IllegalArgumentException("Account does not exist for this invitation.");
+        }
+
+        Event event = eventRepository.findById(invitation.getEvent().getId())
+                .orElseThrow(() -> new NotFoundException("Event not found."));
+
+        if (!event.getGuestList().contains(account.getEmail())) {
+            event.getGuestList().add(account.getEmail());
+            eventRepository.save(event);
+        }
+
+        eventInviteTokenRepository.delete(invitation);
+    }
 
     // HELPER FUNCTIONS
 
