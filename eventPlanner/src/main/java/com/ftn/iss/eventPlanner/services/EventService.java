@@ -470,9 +470,16 @@ public class EventService {
         eventInviteTokenRepository.save(token);
 
         String inviteLink = baseUrl + "/invite-event?token=" + token.getToken();
-        String message = "You’re invited to the event: " + event.getName() + "\nClick here to participate: " + inviteLink;
+
+        String message = "You're invited to the event: " + event.getName() +
+                "\n\n📅 Date: " + event.getDate() +
+                "\n📍 Location: " + event.getLocation().getStreet() + " " + event.getLocation().getHouseNumber() + ", " +
+                event.getLocation().getCity() + ", " + event.getLocation().getCountry() +
+                "\n\n📝 Description: " + event.getDescription() +
+                "\n\n👉 Click here to participate: " + inviteLink;
+
         if (password != null) {
-            message += "\nGenerated password: " + password;
+            message += "\n\n🔑 Your generated password: " + password;
         }
 
         emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
