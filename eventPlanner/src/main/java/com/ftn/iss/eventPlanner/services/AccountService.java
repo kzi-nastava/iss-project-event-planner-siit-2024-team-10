@@ -2,9 +2,13 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
+import com.ftn.iss.eventPlanner.dto.comment.GetCommentDTO;
+import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
+import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
@@ -33,6 +37,8 @@ public class AccountService implements UserDetailsService {
     private AccountRepository accountRepository;
     @Autowired
     private OfferingRepository offeringRepository;
+    @Autowired
+    private OfferingService offeringService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -54,6 +60,7 @@ public class AccountService implements UserDetailsService {
                 .orElseThrow(() -> new NotFoundException("Account not found"));
         List<GetEventDTO> eventList = account.getFavouriteEvents().stream()
                 .map(event -> modelMapper.map(event, GetEventDTO.class))
+                .sorted(Comparator.comparing(GetEventDTO::getName))
                 .collect(Collectors.toList());
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         int start = (int) pageable.getOffset();
@@ -90,13 +97,25 @@ public class AccountService implements UserDetailsService {
         account.getFavouriteEvents().removeIf(e -> e.getId() == eventId);
         accountRepository.save(account);
     }
+
     @Transactional
-    public Collection<GetOfferingDTO> getFavouriteOfferings(int accountId) {
+    public PagedResponse<GetOfferingDTO> getFavouriteOfferings(int accountId, Pageable pageable) {
         Account account = accountRepository.findByIdWithFavouriteOfferings(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));
-        return account.getFavouriteOfferings().stream()
-                .map(offering -> modelMapper.map(offering, GetOfferingDTO.class))
+        List<GetOfferingDTO> offeringList = account.getFavouriteOfferings().stream()
+                .map(this::mapToGetOfferingDTO)
+                .sorted(Comparator.comparing(GetOfferingDTO::getName))
                 .collect(Collectors.toList());
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), offeringList.size());
+
+        List<GetOfferingDTO> pagedOfferings = start > offeringList.size() ?
+                Collections.emptyList() : offeringList.subList(start, end);
+
+        Page<GetOfferingDTO> offeringPage = new PageImpl<>(pagedOfferings, pageable, offeringList.size());
+
+        return new PagedResponse<>(pagedOfferings, offeringPage.getTotalPages(), offeringPage.getTotalElements());
     }
 
     public GetOfferingDTO getFavouriteOffering(int accountId, int offeringId) {
@@ -106,7 +125,7 @@ public class AccountService implements UserDetailsService {
                 .filter(o -> o.getId() == offeringId)
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Offering not found in favourites"));
-        return modelMapper.map(offering, GetOfferingDTO.class);
+        return mapToGetOfferingDTO(offering);
     }
 
     @Transactional
@@ -129,5 +148,75 @@ public class AccountService implements UserDetailsService {
             return account.getUser().getLocation();
         }
         return null;
+    }
+
+    private GetOfferingDTO mapToGetOfferingDTO(Offering offering) {
+        GetOfferingDTO dto = new GetOfferingDTO();
+
+        dto.setId(offering.getId());
+        dto.setProvider(setGetProviderDTO(offering));
+        dto.setCategory(modelMapper.map(offering.getCategory(), GetOfferingCategoryDTO.class));
+        dto.setAverageRating(calculateAverageRating(offering));
+        if (offering.getClass().equals(Product.class)) {
+            Product pr = (Product) offering;
+            dto.setName(pr.getCurrentDetails().getName());
+            dto.setDescription(pr.getCurrentDetails().getDescription());
+            dto.setPrice(pr.getCurrentDetails().getPrice());
+            dto.setDiscount(pr.getCurrentDetails().getDiscount());
+            dto.setLocation(modelMapper.map(pr.getProvider().getLocation(), GetLocationDTO.class));
+            dto.setPhotos(pr.getCurrentDetails().getPhotos());
+            dto.setProduct(true);
+        }
+        else{
+            com.ftn.iss.eventPlanner.model.Service service = (com.ftn.iss.eventPlanner.model.Service) offering;
+            dto.setName(service.getCurrentDetails().getName());
+            dto.setDescription(service.getCurrentDetails().getDescription());
+            dto.setPrice(service.getCurrentDetails().getPrice());
+            dto.setDiscount(service.getCurrentDetails().getDiscount());
+            dto.setLocation(modelMapper.map(service.getProvider().getLocation(), GetLocationDTO.class));
+            dto.setSpecification(service.getCurrentDetails().getSpecification());
+            dto.setPhotos(service.getCurrentDetails().getPhotos());
+            dto.setProduct(false);
+        }
+        return dto;
+    }
+    public double calculateAverageRating(Offering offering) {
+        List<GetCommentDTO> comments = offeringService.getComments(offering.getId());
+        if (comments == null || comments.isEmpty()) {
+            return 0.0;
+        }
+
+        OptionalDouble average = comments.stream()
+                .mapToInt(GetCommentDTO::getRating)
+                .average();
+
+        return average.orElse(0.0);
+    }
+
+    private GetProviderDTO setGetProviderDTO(Offering offering){
+        GetProviderDTO providerDTO = new GetProviderDTO();
+        providerDTO.setId(offering.getProvider().getId());
+        providerDTO.setEmail(offering.getProvider().getAccount().getEmail());
+        providerDTO.setFirstName(offering.getProvider().getFirstName());
+        providerDTO.setLastName(offering.getProvider().getLastName());
+        providerDTO.setPhoneNumber(offering.getProvider().getPhoneNumber());
+        providerDTO.setProfilePhoto(offering.getProvider().getProfilePhoto());
+        providerDTO.setLocation(modelMapper.map(offering.getProvider().getLocation(), GetLocationDTO.class));
+        providerDTO.setCompany(setGetCompanyDTO(offering));
+        providerDTO.setAccountId(offering.getProvider().getAccount().getId());
+        return providerDTO;
+    }
+
+    private GetCompanyDTO setGetCompanyDTO(Offering offering){
+        GetCompanyDTO companyDTO = new GetCompanyDTO();
+        companyDTO.setName(offering.getProvider().getCompany().getName());
+        companyDTO.setEmail(offering.getProvider().getAccount().getEmail());
+        companyDTO.setDescription(offering.getProvider().getCompany().getDescription());
+        companyDTO.setPhoneNumber(offering.getProvider().getCompany().getPhoneNumber());
+        companyDTO.setPhotos(offering.getProvider().getCompany().getPhotos());
+        companyDTO.setLocation(modelMapper.map(offering.getProvider().getCompany().getLocation(), GetLocationDTO.class));
+        companyDTO.setPhoneNumber(offering.getProvider().getCompany().getPhoneNumber());
+
+        return companyDTO;
     }
 }

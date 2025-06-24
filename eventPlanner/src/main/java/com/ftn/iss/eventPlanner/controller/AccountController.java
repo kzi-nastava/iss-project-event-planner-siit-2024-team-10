@@ -43,8 +43,8 @@ public class AccountController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     @GetMapping(value="/{accountId}/favourite-offerings", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingDTO>> getFavouriteOfferings(@PathVariable int accountId) {
-        Collection<GetOfferingDTO> favouriteEvents = accountService.getFavouriteOfferings(accountId);
+    public ResponseEntity<PagedResponse<GetOfferingDTO>> getFavouriteOfferings(Pageable pageable, @PathVariable int accountId) {
+        PagedResponse<GetOfferingDTO> favouriteEvents = accountService.getFavouriteOfferings(accountId, pageable);
         return ResponseEntity.ok(favouriteEvents);
     }
 
