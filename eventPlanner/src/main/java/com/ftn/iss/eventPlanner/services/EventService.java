@@ -469,7 +469,7 @@ public class EventService {
         token.setExpiresAt(LocalDateTime.now().plusDays(2));
         eventInviteTokenRepository.save(token);
 
-        String inviteLink = baseUrl + "/invite-event?token=" + token.getToken();
+        String inviteLink = baseUrl + "/accept-invite?invitation-token=" + token.getToken();
 
         String message = "You're invited to the event: " + event.getName() +
                 "\n\n📅 Date: " + event.getDate() +
@@ -485,15 +485,19 @@ public class EventService {
         emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
     }
 
-    public void processInvitation(String token) {
+    public void processInvitation(String token, String email) {
         EventInviteToken invitation = eventInviteTokenRepository.findByToken(token);
         if (invitation == null || invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Invitation is invalid or expired");
         }
 
+        if (!invitation.getEmail().equals(email)) {
+            throw new IllegalArgumentException("You are not the intended recipient of this invitation.");
+        }
+
         Account account = accountRepository.findByEmail(invitation.getEmail());
         if (account == null) {
-            throw new IllegalArgumentException("Account does not exist for this invitation.");
+            throw new NotFoundException("Account does not exist for this invitation.");
         }
 
         Event event = eventRepository.findById(invitation.getEvent().getId())
