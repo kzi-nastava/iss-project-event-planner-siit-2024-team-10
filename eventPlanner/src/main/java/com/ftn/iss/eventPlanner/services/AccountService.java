@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
@@ -10,6 +11,10 @@ import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,12 +49,22 @@ public class AccountService implements UserDetailsService {
         }
     }
     @Transactional
-    public Collection<GetEventDTO> getFavouriteEvents(int accountId) {
+    public PagedResponse<GetEventDTO> getFavouriteEvents(int accountId, Pageable pageable) {
         Account account = accountRepository.findByIdWithFavouriteEvents(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));
-        return account.getFavouriteEvents().stream()
+        List<GetEventDTO> eventList = account.getFavouriteEvents().stream()
                 .map(event -> modelMapper.map(event, GetEventDTO.class))
                 .collect(Collectors.toList());
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), eventList.size());
+
+        List<GetEventDTO> pagedEvents = start > eventList.size() ?
+                Collections.emptyList() : eventList.subList(start, end);
+
+        Page<GetEventDTO> eventPage = new PageImpl<>(pagedEvents, pageable, eventList.size());
+
+        return new PagedResponse<>(pagedEvents, eventPage.getTotalPages(), eventPage.getTotalElements());
     }
 
     public GetEventDTO getFavouriteEvent(int accountId, int eventId){
