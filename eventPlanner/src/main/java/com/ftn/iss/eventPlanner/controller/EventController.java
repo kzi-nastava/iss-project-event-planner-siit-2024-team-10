@@ -190,10 +190,10 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(value = "/invitations/{token}")
-    public ResponseEntity<Void> acceptInvitation(@PathVariable String token) {
+    @PostMapping(value = "/accept-invite/{token}")
+    public ResponseEntity<Void> acceptInvitation(@PathVariable String token, @RequestBody String email) {
         try {
-            eventService.processInvitation(token);
+            eventService.processInvitation(token, email);
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
