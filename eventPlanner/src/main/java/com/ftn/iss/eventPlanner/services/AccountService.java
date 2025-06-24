@@ -51,6 +51,16 @@ public class AccountService implements UserDetailsService {
                 .map(event -> modelMapper.map(event, GetEventDTO.class))
                 .collect(Collectors.toList());
     }
+
+    public GetEventDTO getFavouriteEvent(int accountId, int eventId){
+        Account account = accountRepository.findByIdWithFavouriteEvents(accountId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+        Event event = account.getFavouriteEvents().stream().filter(e -> e.getId() == eventId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Event not found in favourites"));
+        return modelMapper.map(event, GetEventDTO.class);
+    }
+
     @Transactional
     public void addEventToFavourites(int accountId, int eventId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
