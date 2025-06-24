@@ -83,6 +83,17 @@ public class AccountService implements UserDetailsService {
                 .map(offering -> modelMapper.map(offering, GetOfferingDTO.class))
                 .collect(Collectors.toList());
     }
+
+    public GetOfferingDTO getFavouriteOffering(int accountId, int offeringId) {
+        Account account = accountRepository.findByIdWithFavouriteOfferings(accountId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+        Offering offering = account.getFavouriteOfferings().stream()
+                .filter(o -> o.getId() == offeringId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Offering not found in favourites"));
+        return modelMapper.map(offering, GetOfferingDTO.class);
+    }
+
     @Transactional
     public void addOfferingToFavourites(int accountId, int offeringId) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
