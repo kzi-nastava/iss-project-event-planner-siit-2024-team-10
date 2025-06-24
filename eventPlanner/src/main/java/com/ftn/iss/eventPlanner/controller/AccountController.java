@@ -45,6 +45,13 @@ public class AccountController {
         Collection<GetOfferingDTO> favouriteEvents = accountService.getFavouriteOfferings(accountId);
         return ResponseEntity.ok(favouriteEvents);
     }
+
+    @GetMapping(value="/{accountId}/favourite-offerings/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetOfferingDTO> getFavouriteOffering(@PathVariable int accountId, @PathVariable int offeringId) {
+        GetOfferingDTO favouriteOffering = accountService.getFavouriteOffering(accountId, offeringId);
+        return ResponseEntity.ok(favouriteOffering);
+    }
+
     @PostMapping(value="/{accountId}/favourite-offerings/{offeringId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> addOfferingToFavourites(@PathVariable int accountId, @PathVariable int offeringId) {
         accountService.addOfferingToFavourites(accountId, offeringId);
