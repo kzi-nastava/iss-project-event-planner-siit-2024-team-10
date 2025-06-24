@@ -23,6 +23,13 @@ public class AccountController {
         Collection<GetEventDTO> favouriteEvents = accountService.getFavouriteEvents(accountId);
         return ResponseEntity.ok(favouriteEvents);
     }
+
+    @GetMapping(value="/{accountId}/favourite-events/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetEventDTO> getFavouriteEvent(@PathVariable int accountId, @PathVariable int eventId) {
+        GetEventDTO favouriteEvent = accountService.getFavouriteEvent(accountId,eventId);
+        return ResponseEntity.ok(favouriteEvent);
+    }
+
     @PostMapping(value="/{accountId}/favourite-events", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> addEventToFavourites(@PathVariable int accountId, @RequestBody AddFavouriteEventDTO addFavouriteEventDTO) {
         accountService.addEventToFavourites(accountId, addFavouriteEventDTO.getEventId());
