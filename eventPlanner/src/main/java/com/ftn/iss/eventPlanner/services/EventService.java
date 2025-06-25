@@ -483,8 +483,14 @@ public class EventService {
         }
 
         emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
+
+        if (!event.getGuestList().contains(account.getEmail())) {
+            event.getGuestList().add(account.getEmail());
+            eventRepository.save(event);
+        }
     }
 
+    @Transactional
     public void processInvitation(String token, String email) {
         EventInviteToken invitation = eventInviteTokenRepository.findByToken(token);
         if (invitation == null || invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -503,9 +509,9 @@ public class EventService {
         Event event = eventRepository.findById(invitation.getEvent().getId())
                 .orElseThrow(() -> new NotFoundException("Event not found."));
 
-        if (!event.getGuestList().contains(account.getEmail())) {
-            event.getGuestList().add(account.getEmail());
-            eventRepository.save(event);
+        if (!account.getAcceptedEvents().contains(event)){
+            account.getAcceptedEvents().add(event);
+            accountRepository.save(account);
         }
 
         eventInviteTokenRepository.delete(invitation);
