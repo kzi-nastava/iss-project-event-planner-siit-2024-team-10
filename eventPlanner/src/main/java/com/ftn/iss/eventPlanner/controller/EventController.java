@@ -189,17 +189,22 @@ public class EventController {
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value="/{eventId}/budget", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedBudgetItemDTO> createBudgetItem(@PathVariable int eventId, @Valid @RequestBody CreateBudgetItemDTO createBudgetItemDTO) {
-        CreatedBudgetItemDTO createdBudgetItemDTO = budgetItemService.create(eventId, createBudgetItemDTO);
+        CreatedBudgetItemDTO createdBudgetItemDTO = budgetItemService.create(eventId, createBudgetItemDTO,0);
         return ResponseEntity.ok(createdBudgetItemDTO);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value="/{eventId}/budget/{budgetItemId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedBudgetItemDTO> updateBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId, @RequestBody UpdateBudgetItemDTO updateBudgetItemDto) {
-        UpdatedBudgetItemDTO updatedBudgetItemDTO = budgetItemService.update(budgetItemId, updateBudgetItemDto);
+    public ResponseEntity<UpdatedBudgetItemDTO> updateBudgetItemAmount(@PathVariable int eventId, @PathVariable int budgetItemId, @RequestBody int amount) {
+        UpdatedBudgetItemDTO updatedBudgetItemDTO = budgetItemService.updateAmount(budgetItemId, amount);
         return ResponseEntity.ok(updatedBudgetItemDTO);
     }
-
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @PutMapping(value="/{eventId}/budget/buy/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> buy(@PathVariable int eventId, @PathVariable int offeringId) {
+        budgetItemService.buy(eventId, offeringId);
+        return ResponseEntity.noContent().build();
+    }
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @DeleteMapping(value="/{eventId}/budget/{budgetItemId}")
     public ResponseEntity<Boolean> deleteBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId) {
@@ -219,15 +224,9 @@ public class EventController {
         return new ResponseEntity<>(items, HttpStatus.OK);
     }
 
-/*
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GetBudgetItemDTO> getBudgetItemById(@PathVariable int id) {
-        try {
-            GetBudgetItemDTO budgetItem = budgetItemService.findById(id);
-            return new ResponseEntity<>(budgetItem, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @GetMapping("/{eventId}/budget/total")
+    public ResponseEntity<Double> getTotalBudget(@PathVariable int eventId) {
+        double total = budgetItemService.getTotalBudgetForEvent(eventId);
+        return ResponseEntity.ok(total);
     }
-     */
 }

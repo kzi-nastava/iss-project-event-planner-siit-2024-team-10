@@ -1,7 +1,8 @@
 package com.ftn.iss.eventPlanner.dto.budgetitem;
 
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.product.GetProductDTO;
+import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,8 +12,9 @@ import java.util.List;
 @Setter
 public class GetBudgetItemDTO {
     private int id;
-    private int amount;
-    private List<GetOfferingDTO> offerings;
+    private double amount;
+    private List<GetServiceDTO> services;
+    private List<GetProductDTO> products;
     private GetOfferingCategoryDTO Category;
     private boolean isDeleted;
 }

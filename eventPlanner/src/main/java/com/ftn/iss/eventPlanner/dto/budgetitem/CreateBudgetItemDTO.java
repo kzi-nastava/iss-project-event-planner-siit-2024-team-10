@@ -8,5 +8,4 @@ import lombok.Setter;
 public class CreateBudgetItemDTO {
     private int amount;
     private int categoryId;
-    private int eventId;
 }

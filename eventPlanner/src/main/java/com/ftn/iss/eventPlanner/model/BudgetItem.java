@@ -3,9 +3,8 @@ package com.ftn.iss.eventPlanner.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
-import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -27,8 +26,12 @@ public class BudgetItem {
     @ManyToOne
     private Event event;
 
+    // @OneToMany(fetch = FetchType.EAGER)
+    // private Set<Offering> offerings;
     @OneToMany(fetch = FetchType.EAGER)
-    private Set<Offering> offerings;
+    private Set<ServiceDetails> services = new HashSet<>();
+    @OneToMany(fetch = FetchType.EAGER)
+    private Set<ProductDetails> products = new HashSet<>();
 
     public BudgetItem() {
     }
