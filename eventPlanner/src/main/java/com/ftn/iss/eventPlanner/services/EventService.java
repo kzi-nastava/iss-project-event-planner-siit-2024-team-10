@@ -329,6 +329,14 @@ public class EventService {
         return statsDTO;
     }
 
+    public GetGuestsDTO getGuestList(int eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        GetGuestsDTO dto = new GetGuestsDTO();
+        dto.setGuests(event.getGuestList());
+        return dto;
+    }
+
     public byte[] generateOpenEventReport(int eventId) throws JRException {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
