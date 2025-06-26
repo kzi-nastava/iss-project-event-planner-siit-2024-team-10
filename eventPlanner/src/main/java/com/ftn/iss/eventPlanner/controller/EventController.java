@@ -201,10 +201,11 @@ public class EventController {
     }
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value="/{eventId}/budget/buy/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> buy(@PathVariable int eventId, @PathVariable int offeringId) {
-        budgetItemService.buy(eventId, offeringId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Boolean> buy(@PathVariable int eventId, @PathVariable int offeringId) {
+        boolean success = budgetItemService.buy(eventId, offeringId);
+        return ResponseEntity.ok(success);
     }
+
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @DeleteMapping(value="/{eventId}/budget/{budgetItemId}")
     public ResponseEntity<Boolean> deleteBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId) {
