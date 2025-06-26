@@ -27,6 +27,7 @@ import java.util.List;
 public class ServiceController {
     @Autowired
     private ServiceService serviceService;
+
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetServiceDTO>> getServices(
             @RequestParam(required = false) Integer categoryId,
@@ -35,11 +36,12 @@ public class ServiceController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Boolean isAvailable,
             @RequestParam(required = false) String name
-    ){
-        List<GetServiceDTO> services = serviceService.findAll(name,eventTypeId,categoryId,minPrice,maxPrice,isAvailable);
+    ) {
+        List<GetServiceDTO> services = serviceService.findAll(name, eventTypeId, categoryId, minPrice, maxPrice, isAvailable);
         return new ResponseEntity<>(services, HttpStatus.OK);
     }
-    @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResponse<GetServiceDTO>> getServices(
             Pageable pageable,
             @RequestParam(required = false) Integer categoryId,
@@ -52,6 +54,7 @@ public class ServiceController {
         PagedResponse<GetServiceDTO> response = serviceService.findAll(pageable, name, categoryId, eventTypeId, minPrice, maxPrice, isAvailable);
         return new ResponseEntity<PagedResponse<GetServiceDTO>>(response, HttpStatus.OK);
     }
+
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetServiceDTO> getService(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
         try {
@@ -65,11 +68,10 @@ public class ServiceController {
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedServiceDTO> createService(@RequestBody CreateServiceDTO service) throws Exception {
-        try{
+        try {
             CreatedServiceDTO createdServiceDTO = serviceService.create(service);
             return new ResponseEntity<>(createdServiceDTO, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -78,22 +80,28 @@ public class ServiceController {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
             throws Exception {
-        try{
-            UpdatedServiceDTO updatedServiceDTO = serviceService.update(id,service);
+        try {
+            UpdatedServiceDTO updatedServiceDTO = serviceService.update(id, service);
             return new ResponseEntity<>(updatedServiceDTO, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }}
+        }
+    }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") int id) {
         try {
-            serviceService.delete(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            boolean deleted = serviceService.delete(id);
+            if (deleted) {
+                return ResponseEntity.noContent().build(); // 204
+            } else {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Service cannot be deleted because it has reservations."); // 409
+            }
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Service not found.");
         }
     }
 }
