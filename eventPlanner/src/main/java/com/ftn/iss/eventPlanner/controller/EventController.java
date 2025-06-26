@@ -184,6 +184,13 @@ public class EventController {
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @GetMapping(value = "/{eventId}/guests")
+    public ResponseEntity<GetGuestsDTO> getGuests(@PathVariable int eventId){
+        GetGuestsDTO guests = eventService.getGuestList(eventId);
+        return ResponseEntity.ok(guests);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value="/{eventId}/invite")
     public ResponseEntity<?> sendInvitations(@RequestBody List<String> emails, @PathVariable int eventId) {
         eventService.sendInvitations(eventId, emails);
