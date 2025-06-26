@@ -447,8 +447,8 @@ public class EventService {
         return statsDTO;
     }
 
-    public void sendInvitations(int eventId, List<String> emails){
-        for (String email : emails) {
+    public void sendInvitations(int eventId, CreateGuestListDTO emails){
+        for (String email : emails.getGuests()) {
             inviteGuest(eventId, email);
         }
     }
@@ -500,13 +500,13 @@ public class EventService {
     }
 
     @Transactional
-    public void processInvitation(String token, String email) {
+    public void processInvitation(String token, GetGuestDTO guestDTO) {
         EventInviteToken invitation = eventInviteTokenRepository.findByToken(token);
         if (invitation == null || invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Invitation is invalid or expired");
         }
 
-        if (!invitation.getEmail().equals(email)) {
+        if (!invitation.getEmail().equals(guestDTO.getEmail())) {
             throw new IllegalArgumentException("You are not the intended recipient of this invitation.");
         }
 
