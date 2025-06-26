@@ -159,11 +159,11 @@ public class OfferingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
-    @PutMapping("/{oldId}/change/{newId}")
+    @PutMapping("/{offeringId}/category")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseEntity<?> changeOfferingCategory(@PathVariable int oldId, @PathVariable int newId) {
+    public ResponseEntity<?> changeOfferingCategory(@PathVariable int offeringId, @RequestBody int categoryId) {
         try {
-            offeringService.changeCategory(oldId, newId);
+            offeringService.changeCategory(offeringId, categoryId);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
@@ -173,7 +173,6 @@ public class OfferingController {
     public ResponseEntity<Collection<GetOfferingDTO>> getOfferings() {
         try {
             List<GetOfferingDTO> offerings = offeringService.findAll();
-
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());

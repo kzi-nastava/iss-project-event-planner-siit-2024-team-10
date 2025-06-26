@@ -369,19 +369,14 @@ public class OfferingService {
         }
     }
 
-    public void changeCategory(int oldCategoryId, int newCategoryId) {
-        List<Offering> offerings = offeringRepository.findAll();
-        for (Offering offering : offerings) {
-            if (offering.getCategory().getId() == oldCategoryId) {
-                // find new category
-                OfferingCategory newCategory = offeringCategoryRepository.findById(newCategoryId).get();
-                // notify old creator that his category is changed for another
-                notificationService.sendNotification(offering.getCategory().getCreatorId(), "Category change", "Your category " + offering.getCategory().getName() + " has been changed for " + newCategory.getName() + " - your offerings have now been approved and are visible on your page under new category.");
-                offering.setCategory(newCategory);
-                offering.setPending(false);
-                offeringRepository.save(offering);
-                break;
-            }
-        }
+    public void changeCategory(int offeringId, int newCategoryId) {
+        Offering offering = offeringRepository.findById(offeringId).get();
+        // find new category
+        OfferingCategory newCategory = offeringCategoryRepository.findById(newCategoryId).get();
+        // notify old creator that his category is changed for another
+        notificationService.sendNotification(offering.getCategory().getCreatorId(), "Category change", "Your category " + offering.getCategory().getName() + " has been changed for " + newCategory.getName() + " - your offerings have now been approved and are visible on your page under new category.");
+        offering.setCategory(newCategory);
+        offering.setPending(false);
+        offeringRepository.save(offering);
     }
 }

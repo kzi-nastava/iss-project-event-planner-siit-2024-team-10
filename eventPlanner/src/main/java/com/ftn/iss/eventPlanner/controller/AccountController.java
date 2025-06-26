@@ -29,7 +29,6 @@ public class AccountController {
     @PostMapping(value="/{accountId}/favourite-events", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> addEventToFavourites(@PathVariable int accountId, @RequestBody AddFavouriteEventDTO addFavouriteEventDTO) {
         accountService.addEventToFavourites(accountId, addFavouriteEventDTO.getEventId());
-        notificationService.sendNotification(2,"lajk","superlajk");
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     @DeleteMapping(value="/{accountId}/favourite-events/{eventId}")
