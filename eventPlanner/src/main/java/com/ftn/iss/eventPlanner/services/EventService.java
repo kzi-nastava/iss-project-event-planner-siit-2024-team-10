@@ -68,6 +68,9 @@ public class EventService {
 
     @Value("${app.frontend-base-url}") private String baseUrl;
 
+    private static final int TOKEN_EXPIRATION = 7;
+
+    private static final String CONFIRMATION_URL = "/accept-invite?invitation-token=";
 
     public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
@@ -164,8 +167,6 @@ public class EventService {
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
-
-
 
     public CreatedEventDTO create (CreateEventDTO createEventDTO){
         Event event = modelMapper.map(createEventDTO, Event.class);
@@ -474,10 +475,10 @@ public class EventService {
         token.setEmail(guestEmail);
         token.setEvent(event);
         token.setToken(UUID.randomUUID().toString());
-        token.setExpiresAt(LocalDateTime.now().plusDays(2));
+        token.setExpiresAt(LocalDateTime.now().plusDays(TOKEN_EXPIRATION));
         eventInviteTokenRepository.save(token);
 
-        String inviteLink = baseUrl + "/accept-invite?invitation-token=" + token.getToken();
+        String inviteLink = baseUrl + CONFIRMATION_URL + token.getToken();
 
         String message = "You're invited to the event: " + event.getName() +
                 "\n\n📅 Date: " + event.getDate() +
