@@ -6,10 +6,7 @@ import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.product.GetProductDTO;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.model.*;
-import com.ftn.iss.eventPlanner.repositories.BudgetItemRepository;
-import com.ftn.iss.eventPlanner.repositories.EventRepository;
-import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
-import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
+import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +24,8 @@ public class BudgetItemService {
     private EventRepository eventRepository;
     @Autowired
     private OfferingRepository offeringRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -154,6 +153,7 @@ public class BudgetItemService {
         create(eventId, createBudgetItemDTO,offeringId);
         return true;
     }
+
     public List<GetBudgetItemDTO> findByEventId(int eventId) {
         return budgetItemRepository.findByEventId(eventId)
                 .stream()
@@ -161,6 +161,7 @@ public class BudgetItemService {
                 .map(this::mapBudgetItemToDTO)
                 .collect(Collectors.toList());
     }
+
     private GetBudgetItemDTO mapBudgetItemToDTO(BudgetItem budgetItem) {
         GetBudgetItemDTO dto = new GetBudgetItemDTO();
         dto.setId(budgetItem.getId());
@@ -168,20 +169,33 @@ public class BudgetItemService {
         dto.setCategory(modelMapper.map(budgetItem.getCategory(), GetOfferingCategoryDTO.class));
         dto.setDeleted(budgetItem.isDeleted());
 
+        GetOfferingCategoryDTO categoryDTO = modelMapper.map(budgetItem.getCategory(), GetOfferingCategoryDTO.class);
+
         List<GetServiceDTO> services = budgetItem.getServices()
                 .stream()
-                .map(sd -> modelMapper.map(sd, GetServiceDTO.class))
+                .map(sd -> {
+                    GetServiceDTO serviceDTO = modelMapper.map(sd, GetServiceDTO.class);
+                    serviceDTO.setCategory(categoryDTO);
+                    return serviceDTO;
+                })
                 .collect(Collectors.toList());
         dto.setServices(services);
 
         List<GetProductDTO> products = budgetItem.getProducts()
                 .stream()
-                .map(pd -> modelMapper.map(pd, GetProductDTO.class))
+                .map(pd -> {
+                    GetProductDTO productDTO = modelMapper.map(pd, GetProductDTO.class);
+                    productDTO.setCategory(categoryDTO);
+                    return productDTO;
+                })
                 .collect(Collectors.toList());
         dto.setProducts(products);
 
         return dto;
     }
+
+
+
     public double getTotalBudgetForEvent(int eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));

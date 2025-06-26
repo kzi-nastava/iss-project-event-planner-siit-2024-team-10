@@ -15,6 +15,6 @@ public class GetBudgetItemDTO {
     private double amount;
     private List<GetServiceDTO> services;
     private List<GetProductDTO> products;
-    private GetOfferingCategoryDTO Category;
+    private GetOfferingCategoryDTO category;
     private boolean isDeleted;
 }
