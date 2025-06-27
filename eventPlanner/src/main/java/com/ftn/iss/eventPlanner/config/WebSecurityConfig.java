@@ -103,7 +103,8 @@ public class WebSecurityConfig {
                         "api/accounts/*/favourite-offerings",
                         "api/events/*/stats/participants",
                         "api/events/*/ratings",
-                        "api/messages/**")
+                        "api/messages/**",
+                        "api/events/accept-invite/**")
                 .requestMatchers(HttpMethod.DELETE,
                         "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
     }

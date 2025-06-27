@@ -37,7 +37,7 @@ public class Account implements UserDetails {
     private AccountStatus status;
     @ManyToMany(fetch = FetchType.LAZY)
     private Set<Event> favouriteEvents = new HashSet<>();
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private Set<Event> acceptedEvents = new HashSet<>();;
     @OneToOne
     private User user;
