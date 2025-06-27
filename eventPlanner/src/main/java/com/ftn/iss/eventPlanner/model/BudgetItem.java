@@ -28,9 +28,9 @@ public class BudgetItem {
 
     // @OneToMany(fetch = FetchType.EAGER)
     // private Set<Offering> offerings;
-    @OneToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<ServiceDetails> services = new HashSet<>();
-    @OneToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<ProductDetails> products = new HashSet<>();
 
     public BudgetItem() {

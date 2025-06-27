@@ -137,11 +137,23 @@ public class BudgetItemService {
                     budgetItem.getServices().add(service.getCurrentDetails());
                 } else if ("Product".equals(offeringType)) {
                     Product product = (Product) offering;
-                    if(!hasMoneyLeft(budgetItem,product.getCurrentDetails().getPrice(),product.getCurrentDetails().getDiscount()))
+
+                    if (!hasMoneyLeft(budgetItem, product.getCurrentDetails().getPrice(), product.getCurrentDetails().getDiscount())) {
                         return false;
+                    }
+
+                    int currentProductDetailsId = product.getCurrentDetails().getId();
+
+                    boolean alreadyAdded = budgetItem.getProducts().stream()
+                            .anyMatch(p -> p.getId() == currentProductDetailsId ||
+                                    product.getProductDetailsHistory().stream().anyMatch(h -> h.getId() == p.getId()));
+
+                    if (alreadyAdded) {
+                        return false;
+                    }
+
                     budgetItem.getProducts().add(product.getCurrentDetails());
                 }
-                budgetItemRepository.save(budgetItem);
                 return true;
             }
         }
