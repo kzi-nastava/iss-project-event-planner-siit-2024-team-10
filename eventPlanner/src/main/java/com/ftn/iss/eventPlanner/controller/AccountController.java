@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -66,6 +67,7 @@ public class AccountController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER', 'ADMIN', 'AUTHENTICATED_USER')")
     @GetMapping(value="/{accountId}/calendar", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetCalendarItemDTO>> getCalendar(@PathVariable int accountId) {
         Collection<GetCalendarItemDTO> calendar = accountService.getCalendar(accountId);
