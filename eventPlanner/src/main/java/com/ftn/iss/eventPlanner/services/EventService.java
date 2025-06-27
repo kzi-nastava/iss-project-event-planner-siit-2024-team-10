@@ -451,6 +451,16 @@ public class EventService {
         for (String email : emails.getGuests()) {
             inviteGuest(eventId, email);
         }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found."));
+
+        EventStats stats = event.getStats();
+        if(stats.getParticipantsCount()>=event.getMaxParticipants()){
+            throw new IllegalArgumentException("Event is full");
+        }
+        stats.setParticipantsCount(event.getGuestList().size());
+        eventStatsRepository.save(stats);
     }
 
     @Transactional
