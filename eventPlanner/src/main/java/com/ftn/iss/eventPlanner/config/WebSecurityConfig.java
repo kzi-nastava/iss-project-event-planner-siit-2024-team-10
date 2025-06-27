@@ -91,6 +91,7 @@ public class WebSecurityConfig {
                         "api/categories*","api/categories/*",
                         "api/offerings*","api/offerings/*",
                         "api/accounts/*/favourite-events","api/accounts/*/favourite-events/*",
+                        "api/accounts/*/calendar",
                         "api/accounts/*/favourite-offerings","api/accounts/*/favourite-offerings/*",
                         "/socket/**",
                         "api/messages/*/*",

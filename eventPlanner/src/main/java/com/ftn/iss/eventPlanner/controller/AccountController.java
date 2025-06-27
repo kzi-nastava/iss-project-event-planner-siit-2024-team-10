@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.calendaritem.GetCalendarItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.AddFavouriteEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
@@ -63,5 +64,11 @@ public class AccountController {
     public ResponseEntity<?> removeOfferingFromFavourites(@PathVariable int accountId, @PathVariable int offeringId) {
         accountService.removeOfferingFromFavourites(accountId, offeringId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping(value="/{accountId}/calendar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetCalendarItemDTO>> getCalendar(@PathVariable int accountId) {
+        Collection<GetCalendarItemDTO> calendar = accountService.getCalendar(accountId);
+        return ResponseEntity.ok(calendar);
     }
 }
