@@ -2,12 +2,14 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
+import com.ftn.iss.eventPlanner.dto.calendaritem.GetCalendarItemDTO;
 import com.ftn.iss.eventPlanner.dto.comment.GetCommentDTO;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
@@ -39,6 +41,8 @@ public class AccountService implements UserDetailsService {
     private OfferingRepository offeringRepository;
     @Autowired
     private OfferingService offeringService;
+    @Autowired
+    private ReservationService reservationService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -148,6 +152,49 @@ public class AccountService implements UserDetailsService {
             return account.getUser().getLocation();
         }
         return null;
+    }
+
+    @Transactional
+    public Collection<GetCalendarItemDTO> getCalendar(int accountId){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+        ArrayList<GetCalendarItemDTO> calendarItems = new ArrayList<>();
+        for(Event event: account.getAcceptedEvents()){
+            GetCalendarItemDTO calendarItem = new GetCalendarItemDTO(event.getName(), event.getId(),
+                    event.getDate().atStartOfDay(), null, CalendarItemType.ACCEPTED_EVENT);
+            calendarItems.add(calendarItem);
+        }
+
+        if(account.getRole()==Role.EVENT_ORGANIZER){
+            User user = account.getUser();
+            if(user==null)
+                throw new NotFoundException("User not found for the account");
+
+            for(Event event: eventRepository.findByOrganizerId(user.getId())){
+                GetCalendarItemDTO calendarItem = new GetCalendarItemDTO(event.getName(), event.getId(),
+                        event.getDate().atStartOfDay(), null, CalendarItemType.CREATED_EVENT);
+                calendarItems.add(calendarItem);
+            }
+        }
+
+        if(account.getRole() == Role.PROVIDER) {
+            User user = account.getUser();
+            if(user==null)
+                throw new NotFoundException("User not found for the account");
+
+            for(GetReservationDTO reservation : reservationService.findByProviderId(user.getId())) {
+                GetCalendarItemDTO calendarItem = new GetCalendarItemDTO(
+                        reservation.getService().getName() + " for "+reservation.getEvent().getName(),
+                        reservation.getEvent().getId(),
+                        reservation.getEvent().getDate().atTime(reservation.getStartTime()),
+                        reservation.getEvent().getDate().atTime(reservation.getEndTime()),
+                        CalendarItemType.RESERVATION
+                );
+                calendarItems.add(calendarItem);
+            }
+        }
+
+        return calendarItems;
     }
 
     private GetOfferingDTO mapToGetOfferingDTO(Offering offering) {

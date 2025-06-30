@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
+import com.ftn.iss.eventPlanner.dto.calendaritem.GetCalendarItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.AddFavouriteEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -63,5 +65,12 @@ public class AccountController {
     public ResponseEntity<?> removeOfferingFromFavourites(@PathVariable int accountId, @PathVariable int offeringId) {
         accountService.removeOfferingFromFavourites(accountId, offeringId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER', 'ADMIN', 'AUTHENTICATED_USER')")
+    @GetMapping(value="/{accountId}/calendar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetCalendarItemDTO>> getCalendar(@PathVariable int accountId) {
+        Collection<GetCalendarItemDTO> calendar = accountService.getCalendar(accountId);
+        return ResponseEntity.ok(calendar);
     }
 }
