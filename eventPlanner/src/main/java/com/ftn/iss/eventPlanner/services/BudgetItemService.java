@@ -30,6 +30,7 @@ public class BudgetItemService {
     private ModelMapper modelMapper = new ModelMapper();
 
     public CreatedBudgetItemDTO create(int eventId, CreateBudgetItemDTO budgetItemDTO, int offeringId) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
         BudgetItem budgetItem = new BudgetItem();
         budgetItem.setAmount(budgetItemDTO.getAmount());
         budgetItem.setDeleted(false);
@@ -37,7 +38,7 @@ public class BudgetItemService {
         budgetItem.setCategory(offeringCategoryRepository.findById(budgetItemDTO.getCategoryId()).get());
         if(offeringId!=0){
             // the case when new category is added to the budget
-            Offering offering = offeringRepository.findById(offeringId).get();
+            Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new IllegalArgumentException("Offering with ID " + eventId + " not found"));
             String offeringType = offering.getClass().getSimpleName();
 
             if ("Service".equals(offeringType)) {
@@ -48,7 +49,6 @@ public class BudgetItemService {
             }
         }
         budgetItem = budgetItemRepository.save(budgetItem);
-        Event event = eventRepository.findById(eventId).get();
         event.getBudget().add(budgetItem);
         eventRepository.save(event);
         return modelMapper.map(budgetItem, CreatedBudgetItemDTO.class);
@@ -158,7 +158,6 @@ public class BudgetItemService {
             }
         }
 
-        // ako je dosao dovde nije nasao postojecu kategoriju i treba napraviti novi budget item, max amount 0
         CreateBudgetItemDTO createBudgetItemDTO = new CreateBudgetItemDTO();
         createBudgetItemDTO.setAmount(0);
         createBudgetItemDTO.setCategoryId(offering.getCategory().getId());

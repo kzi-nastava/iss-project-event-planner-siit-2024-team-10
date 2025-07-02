@@ -213,11 +213,6 @@ public class EventController {
         return new ResponseEntity<>(deleted, HttpStatus.OK);
     }
 
-    @GetMapping(value="/budget",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<GetBudgetItemDTO>> getAllBudgetItems() {
-        List<GetBudgetItemDTO> budgetItems = budgetItemService.findAll();
-        return new ResponseEntity<>(budgetItems, HttpStatus.OK);
-    }
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @GetMapping(value = "/budget/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<GetBudgetItemDTO>> getBudgetItemsByEvent(@PathVariable int eventId) {

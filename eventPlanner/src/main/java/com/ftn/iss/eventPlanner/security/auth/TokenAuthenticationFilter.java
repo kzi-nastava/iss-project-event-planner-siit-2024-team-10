@@ -31,7 +31,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        System.out.println(">>> TokenAuthenticationFilter triggered for: " + request.getRequestURI());
 
         String username;
         String authToken = tokenUtils.getToken(request);

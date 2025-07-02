@@ -26,8 +26,6 @@ public class BudgetItem {
     @ManyToOne
     private Event event;
 
-    // @OneToMany(fetch = FetchType.EAGER)
-    // private Set<Offering> offerings;
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<ServiceDetails> services = new HashSet<>();
     @ManyToMany(fetch = FetchType.EAGER)
