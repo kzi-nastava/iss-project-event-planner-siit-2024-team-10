@@ -10,10 +10,7 @@ import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
-import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
-import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
-import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
-import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
+import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +30,8 @@ public class ServiceService {
 
     @Autowired
     private ServiceRepository serviceRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
@@ -60,6 +59,7 @@ public class ServiceService {
             category.setName(serviceDTO.getCategoryProposalName());
             category.setDescription(serviceDTO.getCategoryProposalDescription());
             category.setPending(true);
+            category.setCreatorId(accountRepository.findByUserId(serviceDTO.getProvider()).get().getId());
             category=offeringCategoryRepository.save(category);
             service.setCategory(category);
             service.setPending(true);

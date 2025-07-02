@@ -23,6 +23,8 @@ public class OfferingCategory {
 
     @Column(nullable=false)
     private boolean pending;
+    @Column(nullable = false)
+    private int creatorId;
 
     public OfferingCategory() {
     }

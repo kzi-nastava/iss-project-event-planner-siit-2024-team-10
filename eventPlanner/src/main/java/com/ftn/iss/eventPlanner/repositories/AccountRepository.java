@@ -15,4 +15,8 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     @Query("SELECT a FROM Account a LEFT JOIN FETCH a.favouriteOfferings WHERE a.id = :id")
     Optional<Account> findByIdWithFavouriteOfferings(@Param("id") int id);
+
+    @Query("SELECT a FROM Account a WHERE a.user.id = :userId")
+    Optional<Account> findByUserId(@Param("userId") int userId);
+
 }

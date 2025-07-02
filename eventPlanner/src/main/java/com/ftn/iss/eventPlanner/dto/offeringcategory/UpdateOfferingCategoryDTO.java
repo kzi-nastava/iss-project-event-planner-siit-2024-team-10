@@ -9,5 +9,6 @@ import lombok.Setter;
 public class UpdateOfferingCategoryDTO {
     private String name;
     private String description;
+    private int creatorId;
     public UpdateOfferingCategoryDTO(){}
 }

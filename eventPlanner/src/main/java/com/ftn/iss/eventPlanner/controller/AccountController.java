@@ -6,6 +6,7 @@ import com.ftn.iss.eventPlanner.dto.event.AddFavouriteEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.services.AccountService;
+import com.ftn.iss.eventPlanner.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,8 @@ import java.util.Collection;
 public class AccountController {
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private NotificationService notificationService;
     @GetMapping(value="/{accountId}/favourite-events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResponse<GetEventDTO>> getFavouriteEvents(Pageable pageable, @PathVariable int accountId) {
         PagedResponse<GetEventDTO> favouriteEvents = accountService.getFavouriteEvents(accountId, pageable);

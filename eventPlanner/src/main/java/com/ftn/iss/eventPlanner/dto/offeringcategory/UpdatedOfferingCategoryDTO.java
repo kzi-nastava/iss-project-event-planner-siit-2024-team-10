@@ -10,5 +10,6 @@ public class UpdatedOfferingCategoryDTO {
     private int id;
     private String name;
     private String description;
+    private int creatorId;
     public UpdatedOfferingCategoryDTO(){}
 }
