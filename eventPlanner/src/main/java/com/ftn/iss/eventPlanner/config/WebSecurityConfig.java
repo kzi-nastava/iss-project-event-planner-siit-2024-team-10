@@ -82,32 +82,39 @@ public class WebSecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-            .requestMatchers(HttpMethod.GET,
-                    "/", "/webjars/*", "/*.html", "favicon.ico",
-                    "/*/*.html", "/*/*.css", "/*/*.js", "/socket/**",
+                .requestMatchers(HttpMethod.GET,
+                        "/", "/webjars/*", "/*.html", "favicon.ico",
+                        "/*/*.html", "/*/*.css", "/*/*.js",
+                        "/socket/**",
 
-                    "/api/events*", "/api/events/*", "/api/events/*/agenda", "/api/events/*/reports/info",
-                    "/api/event-types*", "/api/event-types/*",
-                    "/api/services**",
-                    "/api/products**",
-                    "/api/categories**",
-                    "/api/offerings/**",
-                    "/api/accounts/*/favourite-events",
-                    "/api/accounts/*/favourite-offerings",
-                    "/api/messages/*/*",
-                    "/api/comments*",
-                    "/api/images/**",
-                    "/api/reservations/*",
-                    "/api/users/*"
-            ).requestMatchers(HttpMethod.POST,
-                        "api/accounts/*/favourite-events",
-                        "api/accounts/*/favourite-offerings",
-                        "api/events/*/stats/participants",
-                        "api/offerings/*/change/*",
-                        "api/events/*/ratings",
-                        "api/messages/**")
+                        "/api/events*", "/api/events/*", "/api/events/*/agenda", "/api/events/*/reports/info",
+                        "/api/event-types*", "/api/event-types/*",
+                        "/api/services*", "/api/services/*",
+                        "/api/products*", "/api/products/*",
+                        "/api/categories*", "/api/categories/*",
+                        "/api/offerings*", "/api/offerings/*", "/api/offerings/*/comments",
+                        "/api/accounts/*/favourite-events", "/api/accounts/*/favourite-events/*",
+                        "/api/accounts/*/favourite-offerings", "/api/accounts/*/favourite-offerings/*",
+                        "/api/messages/*/*",
+                        "/api/comments*",
+                        "/api/images", "/api/images/*",
+                        "/api/reservations/*",
+                        "/api/offerings/provider/*",
+                        "/api/users/*"
+                )
+                .requestMatchers(HttpMethod.POST,
+                        "/api/accounts/*/favourite-events",
+                        "/api/accounts/*/favourite-offerings",
+                        "/api/events/*/stats/participants",
+                        "/api/events/*/ratings",
+                        "/api/messages/**",
+                        "/api/offerings/*/change/*",
+                        "/api/events/accept-invite/**"
+                )
                 .requestMatchers(HttpMethod.DELETE,
-                        "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
+                        "/api/accounts/*/favourite-events/*",
+                        "/api/accounts/*/favourite-offerings/*"
+                );
     }
 
     @Bean
@@ -121,4 +128,3 @@ public class WebSecurityConfig {
         return source;
     }
 }
-
