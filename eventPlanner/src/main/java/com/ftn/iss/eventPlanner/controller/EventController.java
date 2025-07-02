@@ -225,4 +225,29 @@ public class EventController {
         double total = budgetItemService.getTotalBudgetForEvent(eventId);
         return ResponseEntity.ok(total);
     }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @GetMapping(value = "/{eventId}/guests")
+    public ResponseEntity<GetGuestsDTO> getGuests(@PathVariable int eventId){
+        GetGuestsDTO guests = eventService.getGuestList(eventId);
+        return ResponseEntity.ok(guests);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @PostMapping(value="/{eventId}/invite")
+    public ResponseEntity<?> sendInvitations(@PathVariable int eventId, @Valid @RequestBody CreateGuestListDTO guests) {
+        eventService.sendInvitations(eventId, guests);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/accept-invite/{token}")
+    public ResponseEntity<Void> acceptInvitation(@PathVariable String token, @Valid @RequestBody GetGuestDTO guest) {
+        try {
+            eventService.processInvitation(token, guest);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
 }

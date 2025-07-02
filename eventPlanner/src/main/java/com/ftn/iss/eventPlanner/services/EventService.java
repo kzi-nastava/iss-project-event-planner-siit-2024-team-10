@@ -19,12 +19,15 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.io.InputStream;
@@ -32,6 +35,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.Comparator;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 public class EventService {
@@ -53,6 +57,20 @@ public class EventService {
     private ModelMapper modelMapper = new ModelMapper();
     @Autowired
     private AgendaItemRepository agendaItemRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private EventInviteTokenRepository eventInviteTokenRepository;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Value("${app.frontend-base-url}") private String baseUrl;
+
+    private static final int TOKEN_EXPIRATION = 7;
+
+    private static final String CONFIRMATION_URL = "/accept-invite?invitation-token=";
 
     public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
@@ -149,8 +167,6 @@ public class EventService {
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
-
-
 
     public CreatedEventDTO create (CreateEventDTO createEventDTO){
         Event event = modelMapper.map(createEventDTO, Event.class);
@@ -315,6 +331,14 @@ public class EventService {
         return statsDTO;
     }
 
+    public GetGuestsDTO getGuestList(int eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        GetGuestsDTO dto = new GetGuestsDTO();
+        dto.setGuests(event.getGuestList());
+        return dto;
+    }
+
     public byte[] generateOpenEventReport(int eventId) throws JRException {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
@@ -422,6 +446,95 @@ public class EventService {
         GetEventStatsDTO statsDTO = modelMapper.map(stats, GetEventStatsDTO.class);
         statsDTO.setEventName(event.getName());
         return statsDTO;
+    }
+
+    public void sendInvitations(int eventId, CreateGuestListDTO emails){
+        for (String email : emails.getGuests()) {
+            inviteGuest(eventId, email);
+        }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found."));
+
+        EventStats stats = event.getStats();
+        if(stats.getParticipantsCount()>=event.getMaxParticipants()){
+            throw new IllegalArgumentException("Event is full");
+        }
+        stats.setParticipantsCount(event.getGuestList().size());
+        eventStatsRepository.save(stats);
+    }
+
+    @Transactional
+    public void inviteGuest(int eventId, String guestEmail) {
+        Account account = accountRepository.findByEmail(guestEmail);
+        String password = null;
+
+        if (account == null) {
+            password = UUID.randomUUID().toString().substring(0, 10);
+            account = new Account();
+            account.setEmail(guestEmail);
+            account.setPassword(passwordEncoder.encode(password));
+            account.setStatus(AccountStatus.ACTIVE);
+            account.setRole(Role.AUTHENTICATED_USER);
+            accountRepository.save(account);
+        }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event not found."));
+
+        EventInviteToken token = new EventInviteToken();
+        token.setEmail(guestEmail);
+        token.setEvent(event);
+        token.setToken(UUID.randomUUID().toString());
+        token.setExpiresAt(LocalDateTime.now().plusDays(TOKEN_EXPIRATION));
+        eventInviteTokenRepository.save(token);
+
+        String inviteLink = baseUrl + CONFIRMATION_URL + token.getToken();
+
+        String message = "You're invited to the event: " + event.getName() +
+                "\n\n📅 Date: " + event.getDate() +
+                "\n📍 Location: " + event.getLocation().getStreet() + " " + event.getLocation().getHouseNumber() + ", " +
+                event.getLocation().getCity() + ", " + event.getLocation().getCountry() +
+                "\n\n📝 Description: " + event.getDescription() +
+                "\n\n👉 Click here to participate: " + inviteLink;
+
+        if (password != null) {
+            message += "\n\n🔑 Your generated password: " + password;
+        }
+
+        emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
+
+        if (!event.getGuestList().contains(account.getEmail())) {
+            event.getGuestList().add(account.getEmail());
+            eventRepository.save(event);
+        }
+    }
+
+    @Transactional
+    public void processInvitation(String token, GetGuestDTO guestDTO) {
+        EventInviteToken invitation = eventInviteTokenRepository.findByToken(token);
+        if (invitation == null || invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Invitation is invalid or expired");
+        }
+
+        if (!invitation.getEmail().equals(guestDTO.getEmail())) {
+            throw new IllegalArgumentException("You are not the intended recipient of this invitation.");
+        }
+
+        Account account = accountRepository.findByEmail(invitation.getEmail());
+        if (account == null) {
+            throw new NotFoundException("Account does not exist for this invitation.");
+        }
+
+        Event event = eventRepository.findById(invitation.getEvent().getId())
+                .orElseThrow(() -> new NotFoundException("Event not found."));
+
+        if (!account.getAcceptedEvents().contains(event)){
+            account.getAcceptedEvents().add(event);
+            accountRepository.save(account);
+        }
+
+        eventInviteTokenRepository.delete(invitation);
     }
 
     // HELPER FUNCTIONS
