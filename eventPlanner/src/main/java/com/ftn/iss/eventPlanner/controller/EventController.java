@@ -9,9 +9,9 @@ import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.services.EventService;
 import jakarta.validation.Valid;
 import net.sf.jasperreports.engine.JRException;
-import org.apache.commons.collections4.Get;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +19,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Pageable;
+
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -197,8 +199,22 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(value = "/accept-invite/{token}")
-    public ResponseEntity<Void> acceptInvitation(@PathVariable String token, @Valid @RequestBody GetGuestDTO guest) {
+    @GetMapping("/accept-invite/{token}")
+    public ResponseEntity<Void> redirectToClient(@PathVariable String token, @RequestHeader("User-Agent") String userAgent) {
+        String redirectUrl;
+        if (userAgent.toLowerCase().contains("android")) {
+            redirectUrl = "m3.eventplanner://accept-invite?invitation-token=" + token;
+        } else {
+            redirectUrl = "http://localhost:4200/accept-invite?invitation-token=" + token;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create(redirectUrl));
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+
+    @PostMapping("/process-invitation")
+    public ResponseEntity<Void> processInvitation(@RequestParam("invitation-token") String token, @Valid @RequestBody GetGuestDTO guest) {
         try {
             eventService.processInvitation(token, guest);
             return ResponseEntity.ok().build();
