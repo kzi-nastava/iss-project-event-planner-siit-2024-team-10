@@ -97,14 +97,17 @@ public class WebSecurityConfig {
                         "api/comments*","api/images","api/images/*","api/offerings/*/comments",
                         "api/reservations/*",
                         "api/offerings/provider/*",
-                        "api/users/*")
+                        "api/events/accept-invite/**",
+                        "api/users/*",
+                        "api/events/process-invitation/**")
                 .requestMatchers(HttpMethod.POST,
                         "api/accounts/*/favourite-events",
                         "api/accounts/*/favourite-offerings",
                         "api/events/*/stats/participants",
                         "api/events/*/ratings",
                         "api/messages/**",
-                        "api/events/accept-invite/**")
+                        "api/events/accept-invite/**",
+                        "api/events/process-invitation/**")
                 .requestMatchers(HttpMethod.DELETE,
                         "api/accounts/*/favourite-events/*","api/accounts/*/favourite-offerings/*");
     }
