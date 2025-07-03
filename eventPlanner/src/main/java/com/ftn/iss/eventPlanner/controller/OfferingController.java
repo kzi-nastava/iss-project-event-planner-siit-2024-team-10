@@ -2,12 +2,7 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
-import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.CreateRatingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.CreatedRatingDTO;
-import com.ftn.iss.eventPlanner.dto.rating.GetRatingDTO;
-import com.ftn.iss.eventPlanner.model.Status;
 import com.ftn.iss.eventPlanner.services.CommentService;
 import com.ftn.iss.eventPlanner.services.OfferingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @RestController
 @CrossOrigin
@@ -167,5 +159,23 @@ public class OfferingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
-
+    @PutMapping("/{offeringId}/category")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public ResponseEntity<?> changeOfferingCategory(@PathVariable int offeringId, @RequestBody int categoryId) {
+        try {
+            offeringService.changeCategory(offeringId, categoryId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+        }
+    }
+    @GetMapping(value="/all-non-paged", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetOfferingDTO>> getOfferings() {
+        try {
+            List<GetOfferingDTO> offerings = offeringService.findAll();
+            return ResponseEntity.ok(offerings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
+    }
 }

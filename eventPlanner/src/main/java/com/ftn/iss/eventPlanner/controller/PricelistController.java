@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class PricelistController {
     private ServiceService serviceService;
     @Autowired
     private ProductService productService;
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetPricelistItemDTO>> getPricelist() {
         List<GetOfferingDTO> offerings = offeringService.findAll();
@@ -53,7 +55,7 @@ public class PricelistController {
         }
         return ResponseEntity.ok(pricelist);
     }
-
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PutMapping("/{id}")
     public ResponseEntity<UpdatedPricelistItemDTO> updatePricing(@PathVariable int id, @RequestBody UpdatePricelistItemDTO updatePricingDTO) {
         try {

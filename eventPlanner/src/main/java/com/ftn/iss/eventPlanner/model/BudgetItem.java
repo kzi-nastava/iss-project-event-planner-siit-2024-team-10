@@ -3,9 +3,9 @@ package com.ftn.iss.eventPlanner.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
-import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,17 +18,18 @@ public class BudgetItem {
     @Column(nullable = false)
     private double amount;
 
-    @Column
-    private LocalDateTime purchaseDate;
-
     @Column(nullable = false)
     private boolean isDeleted;
 
     @ManyToOne
     private OfferingCategory category;
-
     @ManyToOne
-    private Offering offering;
+    private Event event;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<ServiceDetails> services = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<ProductDetails> products = new HashSet<>();
 
     public BudgetItem() {
     }

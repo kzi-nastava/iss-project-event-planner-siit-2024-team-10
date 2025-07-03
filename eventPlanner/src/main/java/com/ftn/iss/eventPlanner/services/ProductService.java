@@ -15,6 +15,7 @@ import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
+import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
@@ -35,6 +36,8 @@ import java.util.stream.Collectors;
 public class ProductService {
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private AccountRepository accountRepository;
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
     @Autowired
@@ -167,6 +170,7 @@ public class ProductService {
             category.setName(productDTO.getCategoryProposalName());
             category.setDescription(productDTO.getCategoryProposalDescription());
             category.setPending(true);
+            category.setCreatorId(accountRepository.findByUserId(productDTO.getProviderID()).get().getId());
             category=offeringCategoryRepository.save(category);
             product.setCategory(category);
             product.setPending(true);

@@ -187,6 +187,7 @@ public class EventService {
                     .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + createEventDTO.getEventTypeId() + " not found"));
         }
         event.setEventType(eventType);
+        event.setBudget(new HashSet<>());
         event.setStats(eventStatsRepository.save(new EventStats()));
         event.setOrganizer(organizerRepository.findById(createEventDTO.getOrganizerId())
                 .orElseThrow(() -> new IllegalArgumentException("Organizer with ID " + createEventDTO.getOrganizerId() + " not found")));
