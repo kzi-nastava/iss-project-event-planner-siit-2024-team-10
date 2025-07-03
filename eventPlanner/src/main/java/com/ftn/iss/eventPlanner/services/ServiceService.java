@@ -36,6 +36,8 @@ public class ServiceService {
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
     @Autowired
+    private BudgetItemRepository budgetItemRepository;
+    @Autowired
     private ProviderRepository providerRepository;
     @Autowired
     private ModelMapper modelMapper;
@@ -191,12 +193,26 @@ public class ServiceService {
         return modelMapper.map(savedService, UpdatedServiceDTO.class);
     }
 
-    public void delete(int id) {
+    public boolean delete(int id) {
         Service service = (Service) serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+
+        for (BudgetItem budgetItem : budgetItemRepository.findAll()) {
+            for (ServiceDetails serviceDetails : budgetItem.getServices()) {
+                if (
+                        service.getCurrentDetails().getId() == serviceDetails.getId() ||
+                                service.getServiceDetailsHistory().stream().anyMatch(sd -> sd.getId() == serviceDetails.getId())
+                ) {
+                    return false;
+                }
+            }
+        }
+
         service.setDeleted(true);
         serviceRepository.save(service);
+        return true;
     }
+
     private GetServiceDTO mapToGetServiceDTO(Service service) {
         GetServiceDTO dto = new GetServiceDTO();
 
