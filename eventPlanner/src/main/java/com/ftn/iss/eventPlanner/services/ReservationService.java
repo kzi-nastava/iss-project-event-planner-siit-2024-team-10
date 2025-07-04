@@ -44,6 +44,8 @@ public class ReservationService {
     private EmailService emailService;
     @Autowired
     private ScheduledNotificationService scheduledNotificationService;
+    @Autowired
+    private NotificationService notificationService;
 
 
     public List<GetReservationDTO> findAll(){
@@ -359,7 +361,7 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findAll();
 
         return reservations.stream()
-                .filter(reservation -> reservation.getService().getProvider().getId() == providerId)
+                .filter(reservation -> reservation.getService().getProvider().getAccount().getId() == providerId)
                 .filter(reservation -> reservation.getStatus() == Status.PENDING)
                 .map(this::mapToGetReservationDTO)
                 .toList();
@@ -380,6 +382,8 @@ public class ReservationService {
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
         reservation.setStatus(Status.ACCEPTED);
         reservationRepository.save(reservation);
+        notificationService.sendNotification(reservation.getEvent().getOrganizer().getAccount().getId(),"Reservation Accepted",
+                "Your reservation for " + reservation.getEvent().getName() + " has been accepted.");
     }
 
     public void rejectReservation(int reservationId) {
@@ -387,5 +391,7 @@ public class ReservationService {
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
         reservation.setStatus(Status.DENIED);
         reservationRepository.save(reservation);
+        notificationService.sendNotification(reservation.getEvent().getOrganizer().getAccount().getId(),"Reservation Denied",
+                "Your reservation for " + reservation.getEvent().getName() + " has been denied.");
     }
 }
