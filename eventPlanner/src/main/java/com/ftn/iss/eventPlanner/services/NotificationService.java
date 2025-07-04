@@ -137,5 +137,15 @@ public class NotificationService {
         account.setNotificationsSilenced(!account.isNotificationsSilenced());
         accountRepository.save(account);
     }
+
+    public Boolean hasUnreadMessages(Integer accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account not found with ID: " + accountId));
+        Set<Notification> notifications = account.getNotifications();
+
+        return notifications.stream()
+                .anyMatch(notification -> !notification.isRead());
+    }
+
 }
 
