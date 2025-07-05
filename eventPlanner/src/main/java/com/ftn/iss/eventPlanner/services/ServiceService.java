@@ -10,10 +10,7 @@ import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
-import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
-import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
-import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
-import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
+import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +30,13 @@ public class ServiceService {
 
     @Autowired
     private ServiceRepository serviceRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
+    @Autowired
+    private BudgetItemRepository budgetItemRepository;
     @Autowired
     private ProviderRepository providerRepository;
     @Autowired
@@ -60,6 +61,7 @@ public class ServiceService {
             category.setName(serviceDTO.getCategoryProposalName());
             category.setDescription(serviceDTO.getCategoryProposalDescription());
             category.setPending(true);
+            category.setCreatorId(accountRepository.findByUserId(serviceDTO.getProvider()).get().getId());
             category=offeringCategoryRepository.save(category);
             service.setCategory(category);
             service.setPending(true);
@@ -191,12 +193,26 @@ public class ServiceService {
         return modelMapper.map(savedService, UpdatedServiceDTO.class);
     }
 
-    public void delete(int id) {
+    public boolean delete(int id) {
         Service service = (Service) serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+
+        for (BudgetItem budgetItem : budgetItemRepository.findAll()) {
+            for (ServiceDetails serviceDetails : budgetItem.getServices()) {
+                if (
+                        service.getCurrentDetails().getId() == serviceDetails.getId() ||
+                                service.getServiceDetailsHistory().stream().anyMatch(sd -> sd.getId() == serviceDetails.getId())
+                ) {
+                    return false;
+                }
+            }
+        }
+
         service.setDeleted(true);
         serviceRepository.save(service);
+        return true;
     }
+
     private GetServiceDTO mapToGetServiceDTO(Service service) {
         GetServiceDTO dto = new GetServiceDTO();
 

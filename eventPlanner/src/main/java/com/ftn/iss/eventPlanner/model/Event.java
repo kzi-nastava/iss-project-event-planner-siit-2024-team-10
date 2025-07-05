@@ -52,7 +52,7 @@ public class Event {
     @OneToMany(fetch = FetchType.EAGER)
     private Set<AgendaItem> agenda = new HashSet<>();
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private Set<BudgetItem> budget;
 
     @OneToOne

@@ -5,9 +5,9 @@ INSERT INTO location ( city, country, street, house_number) VALUES
 
 INSERT INTO account (email, password, role, last_password_reset_date,notifications_silenced, status, user_id) VALUES
                                                                                                                      ( 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', TRUE, 0, null),
-                                                                                                                     ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', TRUE, 0, null),
-                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', TRUE, 0, null);
+                                                                                                                     ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                     ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', FALSE, 0, null);
 
 
 INSERT INTO company ( email, name, phone_number, description, location_id) VALUES
@@ -20,9 +20,10 @@ INSERT INTO users ( dtype, first_name, last_name, phone_number, profile_photo, l
 UPDATE account SET user_id = 2 WHERE id = 2;
 UPDATE account SET user_id = 1 WHERE id = 3;
 
-INSERT INTO offering_category (name, description, is_deleted, pending) VALUES
-                                                                               ('Electronics', 'Category for electronic items.', FALSE, FALSE),
-                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE);
+INSERT INTO offering_category (name, description, is_deleted, pending, creator_id) VALUES
+                                                                               ('Electronics', 'Category for electronic items.', FALSE, FALSE, 2),
+                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE, 2),
+                                                                                ( 'Nova kategorija', 'Category for home-related services.', FALSE, TRUE, 3);
 
 INSERT INTO event_type ( name, description, is_active) VALUES
                                                               ( 'Workshop', 'Hands-on learning sessions.', TRUE),
@@ -45,10 +46,6 @@ INSERT INTO event (organizer_id, event_type_id, name, description, max_participa
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
                                                                                                 ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
-
-INSERT INTO budget_item (amount, purchase_date, is_deleted, category_id, offering_id) VALUES
-                                                                                              ( 500.00, '2023-11-01 14:00:00', FALSE, 1, NULL),
-                                                                                              ( 200.00, '2023-11-02 15:00:00', FALSE, 2, NULL);
 
 INSERT INTO comment (content, status, commenter_id, rating) VALUES
                                                                 ('Great event!', 1, 1, 5),
@@ -109,7 +106,7 @@ INSERT INTO product_details (name, description, price, discount, is_visible, is_
 
 
 INSERT INTO service_details (name, description, specification, price, discount, fixed_time, max_duration, min_duration, cancellation_period, reservation_period, is_visible, is_available, auto_confirm, timestamp) VALUES
-                                                                                                                                                                                                                            ( 'Wedding Photography', 'Professional photography for weddings.', 'Includes pre-event shoot, event coverage, and photo album.', 1200.00, 10.0, TRUE, 6, 6, 48, 72, TRUE, TRUE, TRUE, '2023-10-30 09:00:00'),
+                                                                                                                                                                                                                            ( 'Wedding Photography', 'Professional photography for weddings.', 'Includes pre-event shoot, event coverage, and photo album.', 1200.00, 10.0, TRUE, 6, 6, 48, 72, FALSE, TRUE, TRUE, '2023-10-30 09:00:00'),
                                                                                                                                                                                                                             ( 'Event Catering', 'Complete catering service for events.', 'Includes setup, serving, and cleanup for up to 200 guests.', 5000.00, 50.0, TRUE, 10, 4, 72, 96, TRUE, TRUE, FALSE, '2023-11-03 11:30:00'),
                                                                                                                                                                                                                             ( 'DJ Service', 'Professional DJ for weddings and parties.', 'Includes sound system and personalized playlist.', 700.00, 50.0, TRUE, 6, 3, 24, 48, TRUE, TRUE, TRUE, '2023-11-06 19:00:00'),
                                                                                                                                                                                                                             ( 'Conference Setup', 'Venue setup for business conferences.', 'Includes table arrangements, projector setup, and refreshments.', 1500.00, 15.0, TRUE, 5, 3, 48, 72, TRUE, TRUE, FALSE, '2023-11-10 08:00:00'),
@@ -142,7 +139,7 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                        ( 'Service',1 ,1,  7, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  8, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  9, FALSE, FALSE),
-                                                                                       ( 'Service',2 ,1,  10, FALSE, FALSE);
+                                                                                       ( 'Service',3 ,1,  10, FALSE, TRUE);
 
 INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
                                                                                      ( '2025-01-15 09:00:00', '2025-01-15 17:00:00', 1, 1, 13,'2025-12-12 08:00:00'),
@@ -182,3 +179,6 @@ INSERT INTO account_notifications (account_id, notifications_id) VALUES
                                                                      (2, 1),
                                                                      (2, 2),
                                                                      (2,3);
+
+INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
+                                                                                         (1,2);

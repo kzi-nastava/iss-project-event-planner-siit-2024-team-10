@@ -8,6 +8,8 @@ import lombok.Setter;
 public class CreateOfferingCategoryDTO {
     private String name;
     private String description;
+    private int creatorId;
+
     public CreateOfferingCategoryDTO(){
 
     }
