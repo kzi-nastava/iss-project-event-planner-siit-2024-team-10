@@ -89,14 +89,14 @@ public class ReservationController {
     }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-    @PutMapping(value="/{reservationId}/accept", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value="/{reservationId}/accept", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> acceptReservation(@PathVariable("reservationId") int reservationId) throws Exception {
         reservationService.acceptReservation(reservationId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-    @PutMapping(value="/{reservationId}/reject", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value="/{reservationId}/reject", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> rejectReservation(@PathVariable("reservationId") int reservationId) throws Exception {
         reservationService.rejectReservation(reservationId);
         return ResponseEntity.noContent().build();
