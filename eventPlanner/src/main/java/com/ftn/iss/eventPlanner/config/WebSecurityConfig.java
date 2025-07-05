@@ -86,7 +86,6 @@ public class WebSecurityConfig {
                         "/", "/webjars/*", "/*.html", "favicon.ico",
                         "/*/*.html", "/*/*.css", "/*/*.js",
                         "/socket/**",
-
                         "/api/events*", "/api/events/*", "/api/events/*/agenda", "/api/events/*/reports/info",
                         "/api/event-types*", "/api/event-types/*",
                         "/api/services*", "/api/services/*",
@@ -100,7 +99,9 @@ public class WebSecurityConfig {
                         "/api/images", "/api/images/*",
                         "/api/reservations/*",
                         "/api/offerings/provider/*",
-                        "/api/users/*"
+                        "/api/users/*",
+                        "api/events/process-invitation/**",
+                        "/api/events/accept-invite/**"
                 )
                 .requestMatchers(HttpMethod.POST,
                         "/api/accounts/*/favourite-events",
@@ -109,7 +110,8 @@ public class WebSecurityConfig {
                         "/api/events/*/ratings",
                         "/api/messages/**",
                         "/api/offerings/*/change/*",
-                        "/api/events/accept-invite/**"
+                        "/api/events/accept-invite/**",
+                        "api/events/process-invitation/**"
                 )
                 .requestMatchers(HttpMethod.DELETE,
                         "/api/accounts/*/favourite-events/*",

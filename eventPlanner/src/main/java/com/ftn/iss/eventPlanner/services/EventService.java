@@ -15,6 +15,7 @@ import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.EventSpecification;
 import com.ftn.iss.eventPlanner.repositories.*;
+import com.ftn.iss.eventPlanner.util.NetworkUtils;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.modelmapper.ModelMapper;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.io.InputStream;
+import java.net.SocketException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.Comparator;
@@ -66,11 +68,15 @@ public class EventService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    @Value("${app.frontend-base-url}") private String baseUrl;
+    @Value("${app.base-url}") private String baseUrl;
 
     private static final int TOKEN_EXPIRATION = 7;
+    private final String IP_BASE_URL = "http://" + NetworkUtils.getLocalIpAddress() + ":8080/api";
 
-    private static final String CONFIRMATION_URL = "/accept-invite?invitation-token=";
+    private static final String CONFIRMATION_URL = "/events/accept-invite/";
+
+    public EventService() throws SocketException {
+    }
 
     public List<GetEventDTO> findAll() {
         List<Event> events = eventRepository.findAll();
@@ -123,8 +129,7 @@ public class EventService {
                 .and(EventSpecification.maxParticipants(maxParticipants))
                 .and(EventSpecification.betweenDates(startDate, endDate))
                 .and(EventSpecification.minAverageRating(minRating))
-                .and(EventSpecification.hasName(name))
-                .and(EventSpecification.isOpen());
+                .and(EventSpecification.hasName(name));
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
@@ -489,7 +494,7 @@ public class EventService {
         token.setExpiresAt(LocalDateTime.now().plusDays(TOKEN_EXPIRATION));
         eventInviteTokenRepository.save(token);
 
-        String inviteLink = baseUrl + CONFIRMATION_URL + token.getToken();
+        String inviteLink = IP_BASE_URL + CONFIRMATION_URL + token.getToken();
 
         String message = "You're invited to the event: " + event.getName() +
                 "\n\n📅 Date: " + event.getDate() +
