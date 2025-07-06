@@ -83,4 +83,10 @@ public class ProductSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("currentDetails").get("isVisible"), true);
     }
 
+    public static Specification<Product> hasProviderId(Integer providerId) {
+        return (root, query, criteriaBuilder) ->
+                providerId != null
+                        ? criteriaBuilder.equal(root.get("provider").get("id"), providerId)
+                        : criteriaBuilder.conjunction();
+    }
 }
