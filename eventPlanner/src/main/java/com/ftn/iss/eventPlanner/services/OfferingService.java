@@ -109,7 +109,8 @@ public class OfferingService {
             Double minRating,
             Boolean searchByAvailability,
             String sortBy,
-            String sortDirection
+            String sortDirection,
+            Integer providerId
     ) {
         if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
             String sortField = switch (sortBy.toLowerCase()) {
@@ -140,7 +141,8 @@ public class OfferingService {
                     .and(ServiceSpecification.minRating(minRating))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability))
-                    .and(ServiceSpecification.isVisible());
+                    .and(ServiceSpecification.isVisible())
+                    .and(ServiceSpecification.hasProviderId(providerId));
 
             pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
 
@@ -152,14 +154,15 @@ public class OfferingService {
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
                     .and(ProductSpecification.isAvailable(searchByAvailability))
-                    .and(ProductSpecification.isVisible());
+                    .and(ProductSpecification.isVisible())
+                    .and(ProductSpecification.hasProviderId(providerId));
 
             pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
         } else {
-            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.isVisible());
+            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.isVisible().and(ServiceSpecification.hasProviderId(providerId)));
 
-            Specification<Product> productSpecification = Specification.where(ProductSpecification.isVisible());
+            Specification<Product> productSpecification = Specification.where(ProductSpecification.isVisible().and(ProductSpecification.hasProviderId(providerId)));
 
             List<Service> services = serviceRepository.findAll(serviceSpecification);
             List<Product> products = productRepository.findAll(productSpecification);
