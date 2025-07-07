@@ -57,4 +57,12 @@ public class NotificationController {
         notificationService.toggleNotifications(accountId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','AUTHENTICATED_USER','ADMIN')")
+    @GetMapping("{accountId}/has-unread")
+    public ResponseEntity<Boolean> hasUnreadMessages(
+            @PathVariable Integer accountId) {
+        Boolean response = notificationService.hasUnreadMessages(accountId);
+        return ResponseEntity.ok(response);
+    }
 }
