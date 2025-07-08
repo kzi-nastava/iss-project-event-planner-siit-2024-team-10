@@ -1,21 +1,30 @@
+/*
+ Here we use an in-memory database.
+ Dependencies and configurations have already been set up.
+
+ We need to test all repository methods **except** those directly inherited from JPA repository
+ (such as save, findById, delete), since those are provided and tested by the framework.
+
+ The focus is on testing **custom query methods** defined in the repository interface.
+ */
+
 package com.ftn.iss.eventPlanner.repository;
 
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.BudgetItemRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.HashSet;
 import java.sql.Timestamp;
 
@@ -23,7 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY) // add this because of jdk 21, h2 base cant activate
 public class BudgetItemRepositoryTest {
 
     @Autowired
@@ -151,79 +159,32 @@ public class BudgetItemRepositoryTest {
     }
 
     @Test
-    @DisplayName("Should save budget item successfully")
-    public void shouldSaveBudgetItem() {
-        // When
-        BudgetItem savedBudgetItem = budgetItemRepository.save(testBudgetItem1);
+    @DisplayName("Should find budget items by existing event ID")
+    public void shouldFindBudgetItemsByEventId() {
+        int eventId = 1;
 
-        // Then
-        assertThat(savedBudgetItem).isNotNull();
-        assertThat(savedBudgetItem.getId()).isNotNull();
-        assertThat(savedBudgetItem.getAmount()).isEqualTo(1500.0);
-        assertThat(savedBudgetItem.isDeleted()).isFalse();
-        assertThat(savedBudgetItem.getCategory()).isEqualTo(testCategory1);
-        assertThat(savedBudgetItem.getEvent()).isEqualTo(testEvent1);
+        List<BudgetItem> items = budgetItemRepository.findByEventId(eventId);
+
+        assertThat(items).isNotEmpty();
+        assertThat(items).allMatch(item -> item.getEvent().getId() == eventId);
     }
 
     @Test
-    @DisplayName("Should find budget item by ID")
-    public void shouldFindBudgetItemById() {
-        // Given
-        BudgetItem savedBudgetItem = budgetItemRepository.save(testBudgetItem1);
+    @DisplayName("Should return empty list when no budget items found for event ID")
+    public void shouldReturnEmptyListWhenNoItemsForEventId() {
+        int eventWithNoBudgetItems = 2;
 
-        // When
-        Optional<BudgetItem> foundBudgetItem = budgetItemRepository.findById(savedBudgetItem.getId());
+        List<BudgetItem> items = budgetItemRepository.findByEventId(eventWithNoBudgetItems);
 
-        // Then
-        assertThat(foundBudgetItem).isPresent();
-        assertThat(foundBudgetItem.get().getAmount()).isEqualTo(1500.0);
-        assertThat(foundBudgetItem.get().getCategory().getName()).isEqualTo("Catering");
+        assertThat(items).isEmpty();
     }
-
     @Test
-    @DisplayName("Should find all budget items")
-    public void shouldFindAllBudgetItems() {
-        // Given
-        budgetItemRepository.save(testBudgetItem1);
-        budgetItemRepository.save(testBudgetItem2);
-        budgetItemRepository.save(testBudgetItem3);
+    @DisplayName("Should return empty list when given event does not exist")
+    public void shouldReturnEmptyListWhenGivenEventDoesNotExist() {
+        int nonExistingEventId = 0;
 
-        // When
-        List<BudgetItem> allBudgetItems = budgetItemRepository.findAll();
+        List<BudgetItem> items = budgetItemRepository.findByEventId(nonExistingEventId);
 
-        // Then
-        assertThat(allBudgetItems).hasSize(3);
-        assertThat(allBudgetItems).extracting(BudgetItem::getAmount)
-                .containsExactlyInAnyOrder(1500.0, 800.0, 2000.0);
-    }
-
-    @Test
-    @DisplayName("Should delete budget item")
-    public void shouldDeleteBudgetItem() {
-        // Given
-        BudgetItem savedBudgetItem = budgetItemRepository.save(testBudgetItem1);
-
-        // When
-        budgetItemRepository.delete(savedBudgetItem);
-
-        // Then
-        Optional<BudgetItem> deletedBudgetItem = budgetItemRepository.findById(savedBudgetItem.getId());
-        assertThat(deletedBudgetItem).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Should update budget item amount")
-    public void shouldUpdateBudgetItemAmount() {
-        // Given
-        BudgetItem savedBudgetItem = budgetItemRepository.save(testBudgetItem1);
-        Double newAmount = 2500.0;
-
-        // When
-        savedBudgetItem.setAmount(newAmount);
-        BudgetItem updatedBudgetItem = budgetItemRepository.save(savedBudgetItem);
-
-        // Then
-        assertThat(updatedBudgetItem.getAmount()).isEqualTo(newAmount);
-        assertThat(updatedBudgetItem.getId()).isEqualTo(savedBudgetItem.getId());
+        assertThat(items).isEmpty();
     }
 }
