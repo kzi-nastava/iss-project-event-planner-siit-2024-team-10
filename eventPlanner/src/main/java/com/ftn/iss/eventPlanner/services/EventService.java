@@ -146,6 +146,7 @@ public class EventService {
         List<GetEventDTO> eventDTOs = new ArrayList<>();
         if (accountId != null) {
             eventDTOs = events.stream()
+                    .filter(event->!event.isDeleted())
                     .filter(event -> event.getOrganizer().getAccount().getId() == accountId)
                     .map(this::mapToGetEventDTO)
                     .collect(Collectors.toList());
