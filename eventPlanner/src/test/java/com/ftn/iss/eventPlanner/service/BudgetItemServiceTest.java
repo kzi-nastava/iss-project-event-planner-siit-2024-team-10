@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
@@ -42,7 +44,7 @@ class BudgetItemServiceTest {
 
     @Mock
     private ModelMapper modelMapper;
-
+    @Spy
     @InjectMocks
     private BudgetItemService budgetItemService;
 
@@ -62,6 +64,7 @@ class BudgetItemServiceTest {
     private Product product;
     private ServiceDetails serviceDetails;
     private ProductDetails productDetails;
+    private ProductDetails historicalProductDetails;
 
     @BeforeEach
     void setUp() {
@@ -81,12 +84,15 @@ class BudgetItemServiceTest {
 
         // Setup BudgetItem
         budgetItem = new BudgetItem();
-        budgetItem.setAmount(100);
+        budgetItem.setAmount(1000);
         budgetItem.setDeleted(false);
         budgetItem.setEvent(event);
         budgetItem.setCategory(category);
         budgetItem.setServices(new HashSet<>());
         budgetItem.setProducts(new HashSet<>());
+
+        // Add budget item to event
+        event.getBudget().add(budgetItem);
 
         // Setup CreatedBudgetItemDTO
         createdBudgetItemDTO = new CreatedBudgetItemDTO();
@@ -94,15 +100,32 @@ class BudgetItemServiceTest {
 
         // Setup Service and ServiceDetails
         serviceDetails = new ServiceDetails();
+        serviceDetails.setPrice(500.0);
+        serviceDetails.setDiscount(0.0);
         service = new Service();
+        service.setCategory(category);
         service.setId(VALID_OFFERING_ID);
         service.setCurrentDetails(serviceDetails);
 
-        // Setup Product and ProductDetails
+        // Setup ProductDetails
         productDetails = new ProductDetails();
+        productDetails.setId(1);
+        productDetails.setPrice(300.0);
+        productDetails.setDiscount(0.0);
+
+        // Setup historical ProductDetails
+        historicalProductDetails = new ProductDetails();
+        historicalProductDetails.setId(2);
+        historicalProductDetails.setPrice(250.0);
+        historicalProductDetails.setDiscount(0.0);
+
+        // Setup Product
         product = new Product();
         product.setId(VALID_OFFERING_ID);
+        product.setCategory(category);
         product.setCurrentDetails(productDetails);
+        product.setProductDetailsHistory(new HashSet<>());
+        product.getProductDetailsHistory().add(historicalProductDetails);
     }
 
     @Test
@@ -282,50 +305,237 @@ class BudgetItemServiceTest {
         ));
     }
 
-}
-/*
     @Test
-    public void create_WhenAllInputsAreValid_ReturnsCreatedBudgetItemDTO() {
+    void buy_WhenEventNotFound_ThrowsIllegalArgumentException() {
         // Arrange
-        Event event = new Event();
-        event.setId(VALID_EVENT_ID);
-        event.setBudget(new HashSet<>());
+        when(eventRepository.findById(INVALID_EVENT_ID)).thenReturn(Optional.empty());
 
-        OfferingCategory category = new OfferingCategory();
-        category.setId(VALID_CATEGORY_ID);
+        // Act & Assert
+        assertThatThrownBy(() -> budgetItemService.buy(INVALID_EVENT_ID, VALID_OFFERING_ID))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Event with ID " + INVALID_EVENT_ID + " not found");
 
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(100);
-        dto.setCategoryId(VALID_CATEGORY_ID);
+        // Verify
+        verify(eventRepository).findById(INVALID_EVENT_ID);
+        verifyNoInteractions(offeringRepository);
+    }
 
-        BudgetItem budgetItem = new BudgetItem();
-        budgetItem.setId(1);
-        budgetItem.setAmount(100);
-        budgetItem.setCategory(category);
-        budgetItem.setEvent(event);
-
+    @Test
+    void buy_WhenOfferingNotFound_ThrowsIllegalArgumentException() {
+        // Arrange
         when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
-        when(offeringCategoryRepository.findById(VALID_CATEGORY_ID)).thenReturn(Optional.of(category));
-        when(budgetItemRepository.save(any(BudgetItem.class))).thenReturn(budgetItem);
-        when(eventRepository.save(any(Event.class))).thenReturn(event);
+        when(offeringRepository.findById(INVALID_OFFERING_ID)).thenReturn(Optional.empty());
 
-        // Act
-        CreatedBudgetItemDTO result = budgetItemService.create(VALID_EVENT_ID, dto, VALID_OFFERING_ID);
-
-        // Assert
-        assertThat(result).isNotNull();
-        assertThat(result.getAmount()).isEqualTo(100);
-        assertThat(result.getCategoryId()).isEqualTo(VALID_CATEGORY_ID);
+        // Act & Assert
+        assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, INVALID_OFFERING_ID))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Offering with ID " + INVALID_OFFERING_ID + " not found");
 
         // Verify
         verify(eventRepository).findById(VALID_EVENT_ID);
-        verify(offeringCategoryRepository).findById(VALID_CATEGORY_ID);
-        verify(offeringRepository).findById(VALID_OFFERING_ID);
-        verify(budgetItemRepository).save(any(BudgetItem.class));
-        verify(eventRepository).save(any(Event.class));
-        verifyNoMoreInteractions(eventRepository, offeringCategoryRepository, offeringRepository, budgetItemRepository);
-        verifyNoInteractions(userRepository);
+        verify(offeringRepository).findById(INVALID_OFFERING_ID);
     }
+
+    @Test
+    void buy_WhenServiceCanBeAfforded_ReturnsTrue() {
+        // Arrange
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(service));
+
+        doReturn(true)
+                .when(budgetItemService)
+                .hasMoneyLeft(any(BudgetItem.class), eq(500.0), eq(0.0));
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isTrue();
+        assertThat(budgetItem.getServices()).contains(serviceDetails);
+    }
+
+    @Test
+    void buy_WhenServiceCannotBeAfforded_ReturnsFalse() {
+        // Arrange
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(service));
+
+        when(budgetItemService.hasMoneyLeft(budgetItem, 500.0, 0.0)).thenReturn(false);
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isFalse();
+        assertThat(budgetItem.getServices()).doesNotContain(serviceDetails);
+    }
+
+    @Test
+    void buy_WhenProductCanBeAfforded_ReturnsTrue() {
+        // Arrange
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(product));
+
+        when(budgetItemService.hasMoneyLeft(budgetItem, 300.0, 0.0)).thenReturn(true);
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isTrue();
+        assertThat(budgetItem.getProducts()).contains(productDetails);
+    }
+
+    @Test
+    void buy_WhenProductCannotBeAfforded_ReturnsFalse() {
+        // Arrange
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(product));
+
+        when(budgetItemService.hasMoneyLeft(budgetItem, 300.0, 0.0)).thenReturn(false);
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isFalse();
+        assertThat(budgetItem.getProducts()).doesNotContain(productDetails);
+    }
+
+    @Test
+    void buy_WhenProductAlreadyAdded_ReturnsFalse() {
+        // Arrange
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(product));
+
+        // Add product to budget item first
+        budgetItem.getProducts().add(productDetails);
+
+        when(budgetItemService.hasMoneyLeft(budgetItem, 300.0, 0.0)).thenReturn(true);
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isFalse();
+        // Verify product was not added again
+        assertThat(budgetItem.getProducts()).hasSize(1);
+    }
+
+    @Test
+    void buy_WhenHistoricalProductAlreadyAdded_ReturnsFalse() {
+        // Arrange
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(product));
+
+        // Add historical product to budget item first
+        budgetItem.getProducts().add(historicalProductDetails);
+
+        when(budgetItemService.hasMoneyLeft(budgetItem, 300.0, 0.0)).thenReturn(true);
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isFalse();
+        // Verify only historical product is present
+        assertThat(budgetItem.getProducts()).hasSize(1);
+        assertThat(budgetItem.getProducts()).contains(historicalProductDetails);
+    }
+
+    @Test
+    void buy_WhenNoBudgetItemForCategory_CreatesNewBudgetItem() {
+        // Arrange
+        // Create event with empty budget
+        Event emptyEvent = new Event();
+        emptyEvent.setId(VALID_EVENT_ID);
+        emptyEvent.setBudget(new HashSet<>());
+
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(emptyEvent));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(service));
+
+        CreatedBudgetItemDTO mockCreatedDTO = new CreatedBudgetItemDTO();
+        doReturn(mockCreatedDTO)
+                .when(budgetItemService)
+                .create(eq(VALID_EVENT_ID), any(CreateBudgetItemDTO.class), eq(VALID_OFFERING_ID));
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isTrue();
+        verify(budgetItemService).create(eq(VALID_EVENT_ID), argThat(dto ->
+                dto.getAmount() == 0 && dto.getCategoryId() == VALID_CATEGORY_ID), eq(VALID_OFFERING_ID));
+    }
+
+    @Test
+    void buy_WhenDifferentCategoryExists_CreatesNewBudgetItem() {
+        // Arrange
+        // Create a different category
+        OfferingCategory differentCategory = new OfferingCategory();
+        differentCategory.setId(2);
+
+        // Update the offering to use different category
+        service.setCategory(differentCategory);
+
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(service));
+
+        CreatedBudgetItemDTO mockCreatedDTO = new CreatedBudgetItemDTO();
+        doReturn(mockCreatedDTO)
+                .when(budgetItemService)
+                .create(eq(VALID_EVENT_ID), any(CreateBudgetItemDTO.class), eq(VALID_OFFERING_ID));
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isTrue();
+        verify(budgetItemService).create(eq(VALID_EVENT_ID), argThat(dto ->
+                dto.getAmount() == 0 && dto.getCategoryId() == 2), eq(VALID_OFFERING_ID));
+    }
+
+    @Test
+    void buy_WhenMultipleServicesAddedToSameCategory_AddsAllServices() {
+        // Arrange
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(service));
+
+        // Add a service first
+        ServiceDetails existingService = new ServiceDetails();
+        existingService.setId(2);
+        budgetItem.getServices().add(existingService);
+
+        when(budgetItemService.hasMoneyLeft(budgetItem, 500.0, 0.0)).thenReturn(true);
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isTrue();
+        assertThat(budgetItem.getServices()).hasSize(2);
+        assertThat(budgetItem.getServices()).contains(existingService, serviceDetails);
+    }
+
+    @Test
+    void buy_HandlesDiscountedPrice() {
+        // Arrange
+        serviceDetails.setDiscount(0.2); // 20% discount
+
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(service));
+
+        when(budgetItemService.hasMoneyLeft(budgetItem, 500.0, 0.2)).thenReturn(true);
+
+        // Act
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+
+        // Assert
+        assertThat(result).isTrue();
+        verify(budgetItemService).hasMoneyLeft(budgetItem, 500.0, 0.2);
+    }
+}
+/*
 
     @Test
     public void findById_WhenBudgetItemExists_ReturnsGetBudgetItemDTO() {

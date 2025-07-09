@@ -34,12 +34,12 @@ public class BudgetItemService {
         BudgetItem budgetItem = new BudgetItem();
         budgetItem.setAmount(budgetItemDTO.getAmount());
         budgetItem.setDeleted(false);
-        budgetItem.setEvent(eventRepository.findById(eventId).get());
+        budgetItem.setEvent(event);
         OfferingCategory category = offeringCategoryRepository.findById((budgetItemDTO.getCategoryId())).orElseThrow(() -> new IllegalArgumentException("Offering cateogry with ID " + budgetItemDTO.getCategoryId() + " not found"));
         budgetItem.setCategory(category);
         if(offeringId!=0){
             // the case when new category is added to the budget
-            Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new IllegalArgumentException("Offering with ID " + eventId + " not found"));
+            Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
             String offeringType = offering.getClass().getSimpleName();
 
             if ("Service".equals(offeringType)) {
