@@ -55,6 +55,8 @@ public class EventService {
     private ReservationRepository reservationRepository;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private NotificationService notificationService;
 
     private ModelMapper modelMapper = new ModelMapper();
     @Autowired
@@ -225,6 +227,32 @@ public class EventService {
         event = eventRepository.save(event);
         eventRepository.flush();
         return modelMapper.map(event, UpdatedEventDTO.class);
+    }
+
+    public void delete(int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+
+        if(event.getDate().isAfter(LocalDate.now())) {
+            reservationRepository.findByEventId(event.getId()).stream()
+                    .filter(r -> r.getStatus() == Status.ACCEPTED || r.getStatus() == Status.PENDING)
+                    .findAny()
+                    .ifPresent(r -> { throw new IllegalArgumentException("Event can't be deleted when it has reservations"); });
+            notifyGuests("Event Cancelled", "The event " + event.getName() + " has been cancelled.", eventId);
+        }
+        event.setDeleted(true);
+        eventRepository.save(event);
+        eventRepository.flush();
+    }
+
+    private void notifyGuests(String title, String content, int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+
+        List<Account> guests = accountRepository.findAccountsByAcceptedEventId(eventId);
+        for (Account guest : guests) {
+            notificationService.sendNotification(guest.getId(),title,content);
+        }
     }
 
     private void checkDateUpdate(Event event, LocalDate date){

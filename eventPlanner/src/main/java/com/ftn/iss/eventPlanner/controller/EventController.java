@@ -104,6 +104,13 @@ public class EventController {
         return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @DeleteMapping(value = "/{eventId}")
+    public ResponseEntity<?> deleteEvent(@PathVariable int eventId) throws Exception {
+        eventService.delete(eventId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @PutMapping(value = "/{eventId}/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int eventId, @PathVariable int commentId)
             throws Exception {
