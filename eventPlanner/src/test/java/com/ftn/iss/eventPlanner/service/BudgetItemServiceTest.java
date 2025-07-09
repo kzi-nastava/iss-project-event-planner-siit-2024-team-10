@@ -2,6 +2,7 @@ package com.ftn.iss.eventPlanner.service;
 
 import com.ftn.iss.eventPlanner.dto.budgetitem.CreateBudgetItemDTO;
 import com.ftn.iss.eventPlanner.dto.budgetitem.CreatedBudgetItemDTO;
+import com.ftn.iss.eventPlanner.dto.budgetitem.GetBudgetItemDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.BudgetItemRepository;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
@@ -19,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,9 +53,11 @@ class BudgetItemServiceTest {
     private static final int VALID_EVENT_ID = 1;
     private static final int VALID_CATEGORY_ID = 1;
     private static final int VALID_OFFERING_ID = 1;
+    private static final int VALID_BUDGET_ITEM_ID = 1;
     private static final int INVALID_EVENT_ID = 999;
     private static final int INVALID_CATEGORY_ID = 999;
     private static final int INVALID_OFFERING_ID = 999;
+    private static final int INVALID_BUDGET_ITEM_ID = 999;
 
     private Event event;
     private OfferingCategory category;
@@ -84,6 +88,7 @@ class BudgetItemServiceTest {
 
         // Setup BudgetItem
         budgetItem = new BudgetItem();
+        budgetItem.setId(VALID_BUDGET_ITEM_ID);
         budgetItem.setAmount(1000);
         budgetItem.setDeleted(false);
         budgetItem.setEvent(event);
@@ -534,28 +539,65 @@ class BudgetItemServiceTest {
         assertThat(result).isTrue();
         verify(budgetItemService).hasMoneyLeft(budgetItem, 500.0, 0.2);
     }
-}
-/*
+    @Test
+    void findAll_WhenCalled_ReturnsListOfGetBudgetItemDTO() {
+        // Arrange
+        BudgetItem item1 = new BudgetItem();
+        item1.setId(1);
+        BudgetItem item2 = new BudgetItem();
+        item2.setId(2);
 
+        GetBudgetItemDTO dto1 = new GetBudgetItemDTO();
+        dto1.setId(1);
+        GetBudgetItemDTO dto2 = new GetBudgetItemDTO();
+        dto2.setId(2);
+
+        when(budgetItemRepository.findAll()).thenReturn(List.of(item1, item2));
+        when(modelMapper.map(item1, GetBudgetItemDTO.class)).thenReturn(dto1);
+        when(modelMapper.map(item2, GetBudgetItemDTO.class)).thenReturn(dto2);
+
+        // Act
+        List<GetBudgetItemDTO> result = budgetItemService.findAll();
+
+        // Assert
+        assertThat(result).hasSize(2);
+        assertThat(result).containsExactly(dto1, dto2);
+
+        verify(budgetItemRepository).findAll();
+        verify(modelMapper).map(item1, GetBudgetItemDTO.class);
+        verify(modelMapper).map(item2, GetBudgetItemDTO.class);
+    }
+
+    @Test
+    void findById_WhenBudgetItemDoesNotExist_ThrowsIllegalArgumentException() {
+        // Arrange
+        when(budgetItemRepository.findById(INVALID_BUDGET_ITEM_ID)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatThrownBy(() -> budgetItemService.findById(INVALID_BUDGET_ITEM_ID))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Budget item with ID " + INVALID_BUDGET_ITEM_ID + " not found");
+
+        verify(budgetItemRepository).findById(INVALID_BUDGET_ITEM_ID);
+        verifyNoMoreInteractions(budgetItemRepository, modelMapper);
+    }
     @Test
     public void findById_WhenBudgetItemExists_ReturnsGetBudgetItemDTO() {
         // Arrange
-        BudgetItem item = new BudgetItem();
-        item.setId(1);
-        item.setAmount(50);
-
-        when(budgetItemRepository.findById(1)).thenReturn(Optional.of(item));
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
 
         // Act
-        GetBudgetItemDTO result = budgetItemService.findById(1);
+        GetBudgetItemDTO result = budgetItemService.findById(VALID_BUDGET_ITEM_ID);
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1);
+        assertThat(result.getId()).isEqualTo(VALID_BUDGET_ITEM_ID);
 
-        verify(budgetItemRepository).findById(1);
+        verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
         verifyNoMoreInteractions(budgetItemRepository);
     }
+}
+/*
 
     @Test
     public void findById_WhenBudgetItemDoesNotExist_ThrowsIllegalArgumentException() {

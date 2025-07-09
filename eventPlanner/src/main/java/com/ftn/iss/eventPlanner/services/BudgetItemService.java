@@ -66,9 +66,9 @@ public class BudgetItemService {
     }
 
     public GetBudgetItemDTO findById(int id) {
-        BudgetItem budgetItems = budgetItemRepository.findById(id)
+        BudgetItem budgetItem = budgetItemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + id + " not found"));
-        return modelMapper.map(budgetItems, GetBudgetItemDTO.class);
+        return mapBudgetItemToDTO(budgetItem);
     }
 
     public UpdatedBudgetItemDTO updateAmount(int budgetItemId, int newAmount) {
@@ -205,8 +205,6 @@ public class BudgetItemService {
 
         return dto;
     }
-
-
 
     public double getTotalBudgetForEvent(int eventId) {
         Event event = eventRepository.findById(eventId)
