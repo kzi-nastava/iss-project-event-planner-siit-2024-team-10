@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+              http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="guestlist_report" pageWidth="595" pageHeight="842" columnWidth="555"
+              leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20"
+              uuid="b395bc9c-fc5a-4ab1-bb2f-49b457b2f6c1">
+
+    <parameter name="GuestSubreport" class="net.sf.jasperreports.engine.JasperReport"/>
+    <parameter name="GuestListDataSource" class="net.sf.jasperreports.engine.JRDataSource"/>
+
+    <field name="eventName" class="java.lang.String"/>
+
+    <title>
+        <band height="50">
+            <textField>
+                <reportElement x="0" y="10" width="555" height="30"/>
+                <textElement textAlignment="Center">
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Event: " + $F{eventName}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <summary>
+        <band height="300">
+            <subreport>
+                <reportElement x="0" y="10" width="555" height="280"/>
+                <subreportParameter name="REPORT_DATA_SOURCE">
+                    <subreportParameterExpression><![CDATA[$P{GuestListDataSource}]]></subreportParameterExpression>
+                </subreportParameter>
+                <subreportExpression><![CDATA[$P{GuestSubreport}]]></subreportExpression>
+            </subreport>
+        </band>
+    </summary>
+
+</jasperReport>
