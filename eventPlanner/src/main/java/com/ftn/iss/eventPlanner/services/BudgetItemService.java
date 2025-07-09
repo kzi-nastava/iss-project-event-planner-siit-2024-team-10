@@ -35,7 +35,7 @@ public class BudgetItemService {
         budgetItem.setAmount(budgetItemDTO.getAmount());
         budgetItem.setDeleted(false);
         budgetItem.setEvent(event);
-        OfferingCategory category = offeringCategoryRepository.findById((budgetItemDTO.getCategoryId())).orElseThrow(() -> new IllegalArgumentException("Offering cateogry with ID " + budgetItemDTO.getCategoryId() + " not found"));
+        OfferingCategory category = offeringCategoryRepository.findById((budgetItemDTO.getCategoryId())).orElseThrow(() -> new IllegalArgumentException("Offering category with ID " + budgetItemDTO.getCategoryId() + " not found"));
         budgetItem.setCategory(category);
         if(offeringId!=0){
             // the case when new category is added to the budget

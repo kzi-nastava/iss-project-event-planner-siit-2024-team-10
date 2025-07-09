@@ -3,6 +3,7 @@ package com.ftn.iss.eventPlanner.service;
 import com.ftn.iss.eventPlanner.dto.budgetitem.CreateBudgetItemDTO;
 import com.ftn.iss.eventPlanner.dto.budgetitem.CreatedBudgetItemDTO;
 import com.ftn.iss.eventPlanner.dto.budgetitem.GetBudgetItemDTO;
+import com.ftn.iss.eventPlanner.dto.budgetitem.UpdatedBudgetItemDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.BudgetItemRepository;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
@@ -14,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
@@ -64,6 +64,7 @@ class BudgetItemServiceTest {
     private CreateBudgetItemDTO createBudgetItemDTO;
     private BudgetItem budgetItem;
     private CreatedBudgetItemDTO createdBudgetItemDTO;
+    private UpdatedBudgetItemDTO updatedBudgetItemDTO;
     private Service service;
     private Product product;
     private ServiceDetails serviceDetails;
@@ -102,6 +103,10 @@ class BudgetItemServiceTest {
         // Setup CreatedBudgetItemDTO
         createdBudgetItemDTO = new CreatedBudgetItemDTO();
         createdBudgetItemDTO.setAmount(100);
+
+        // Setup UpdatedBudgetItemDTO
+        updatedBudgetItemDTO = new UpdatedBudgetItemDTO();
+        updatedBudgetItemDTO.setAmount(1500);
 
         // Setup Service and ServiceDetails
         serviceDetails = new ServiceDetails();
@@ -159,7 +164,7 @@ class BudgetItemServiceTest {
         // Act & Assert
         assertThatThrownBy(() -> budgetItemService.create(VALID_EVENT_ID, createBudgetItemDTO, 0))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Offering cateogry with ID " + INVALID_CATEGORY_ID + " not found");
+                .hasMessage("Offering category with ID " + INVALID_CATEGORY_ID + " not found");
 
         // Verify
         verify(eventRepository).findById(VALID_EVENT_ID);
@@ -596,163 +601,363 @@ class BudgetItemServiceTest {
         verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
         verifyNoMoreInteractions(budgetItemRepository);
     }
-}
-/*
 
     @Test
-    public void findById_WhenBudgetItemDoesNotExist_ThrowsIllegalArgumentException() {
-        // Arrange
-        when(budgetItemRepository.findById(999)).thenReturn(Optional.empty());
+    void updateAmount_ValidAmount_Success() {
+        // Given
+        int newAmount = 1500;
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
+        when(budgetItemRepository.save(budgetItem)).thenReturn(budgetItem);
+        when(modelMapper.map(budgetItem, UpdatedBudgetItemDTO.class)).thenReturn(updatedBudgetItemDTO);
 
-        // Act & Assert
-        assertThatThrownBy(() -> budgetItemService.findById(999))
+        // When
+        UpdatedBudgetItemDTO result = budgetItemService.updateAmount(VALID_BUDGET_ITEM_ID, newAmount);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(budgetItem.getAmount()).isEqualTo(newAmount);
+        verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
+        verify(budgetItemRepository).save(budgetItem);
+        verify(modelMapper).map(budgetItem, UpdatedBudgetItemDTO.class);
+    }
+
+    @Test
+    void updateAmount_BudgetItemNotFound_ThrowsException() {
+        // Given
+        when(budgetItemRepository.findById(INVALID_BUDGET_ITEM_ID)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> budgetItemService.updateAmount(INVALID_BUDGET_ITEM_ID,1500))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Budget item with ID 999 not found");
+                .hasMessageContaining("Budget item with ID " + INVALID_BUDGET_ITEM_ID + " not found");
 
-        verify(budgetItemRepository).findById(999);
-        verifyNoMoreInteractions(budgetItemRepository);
+        verify(budgetItemRepository).findById(INVALID_BUDGET_ITEM_ID);
+        verify(budgetItemRepository, never()).save(any());
     }
 
     @Test
-    public void findAll_WhenCalled_ReturnsListOfGetBudgetItemDTO() {
-        // Arrange
-        BudgetItem item = new BudgetItem();
-        item.setId(1);
+    void updateAmount_NewAmountLessThanUsed_ThrowsException() {
+        // Given
+        ServiceDetails expensiveService = new ServiceDetails();
+        expensiveService.setPrice(800.0);
+        expensiveService.setDiscount(10.0); // 10% discount
+        budgetItem.getServices().add(expensiveService);
 
-        when(budgetItemRepository.findAll()).thenReturn(List.of(item));
+        ProductDetails expensiveProduct = new ProductDetails();
+        expensiveProduct.setPrice(400.0);
+        expensiveProduct.setDiscount(5.0); // 5% discount
+        budgetItem.getProducts().add(expensiveProduct);
 
-        // Act
-        List<GetBudgetItemDTO> result = budgetItemService.findAll();
+        // Used amount = 800 * 0.9 + 400 * 0.95 = 720 + 380 = 1100
+        int newAmount = 1000; // Less than used amount
 
-        // Assert
-        assertThat(result).hasSize(1);
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
 
-        verify(budgetItemRepository).findAll();
-        verifyNoMoreInteractions(budgetItemRepository);
+        assertThatThrownBy(() -> budgetItemService.updateAmount(VALID_BUDGET_ITEM_ID, newAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("New amount cannot be less than the amount already used");
+
+        verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
+        verify(budgetItemRepository, never()).save(any());
     }
 
     @Test
-    public void updateAmount_WhenNewAmountIsValid_UpdatesAndReturnsUpdatedBudgetItemDTO() {
-        // Arrange
-        BudgetItem item = new BudgetItem();
-        item.setId(1);
-        item.setAmount(100);
-        item.setServices(new HashSet<>());
-        item.setProducts(new HashSet<>());
-
-        when(budgetItemRepository.findById(1)).thenReturn(Optional.of(item));
-        when(budgetItemRepository.save(any())).thenReturn(item);
-
-        // Act
-        UpdatedBudgetItemDTO result = budgetItemService.updateAmount(1, 200);
-
-        // Assert
-        assertThat(result.getAmount()).isEqualTo(200);
-
-        verify(budgetItemRepository).findById(1);
-        verify(budgetItemRepository).save(item);
-        verifyNoMoreInteractions(budgetItemRepository);
-    }
-
-    @Test
-    public void updateAmount_WhenNewAmountIsTooSmall_ThrowsIllegalArgumentException() {
+    void updateAmount_NewAmountEqualsUsed_Success() {
+        // Given
         ServiceDetails service = new ServiceDetails();
-        service.setPrice(100);
-        service.setDiscount(0);
+        service.setPrice(500.0);
+        service.setDiscount(20.0); // 20% discount
+        budgetItem.getServices().add(service);
 
-        BudgetItem item = new BudgetItem();
-        item.setServices(Set.of(service));
-        item.setProducts(new HashSet<>());
+        // Used amount = 500 * 0.8 = 400
+        int newAmount = 400;
 
-        when(budgetItemRepository.findById(1)).thenReturn(Optional.of(item));
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
+        when(budgetItemRepository.save(budgetItem)).thenReturn(budgetItem);
+        when(modelMapper.map(budgetItem, UpdatedBudgetItemDTO.class)).thenReturn(updatedBudgetItemDTO);
 
-        assertThatThrownBy(() -> budgetItemService.updateAmount(1, 50))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("New amount cannot be less than");
+        // When
+        UpdatedBudgetItemDTO result = budgetItemService.updateAmount(VALID_BUDGET_ITEM_ID, newAmount);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(budgetItem.getAmount()).isEqualTo(newAmount);
+        verify(budgetItemRepository).save(budgetItem);
     }
 
+    // ==================== delete() Tests ====================
 
     @Test
-    public void delete_WhenBudgetItemIsEmpty_ReturnsTrue() {
-        // Arrange
-        BudgetItem item = new BudgetItem();
-        item.setServices(new HashSet<>());
-        item.setProducts(new HashSet<>());
+    void delete_NoServicesOrProducts_Success() {
+        // Given
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+        when(eventRepository.save(event)).thenReturn(event);
+        when(budgetItemRepository.save(budgetItem)).thenReturn(budgetItem);
 
-        Event event = new Event();
-        event.setBudget(new HashSet<>(List.of(item)));
+        // When
+        boolean result = budgetItemService.delete(VALID_EVENT_ID, VALID_BUDGET_ITEM_ID);
 
-        when(budgetItemRepository.findById(1)).thenReturn(Optional.of(item));
-        when(eventRepository.findById(1)).thenReturn(Optional.of(event));
-
-        // Act
-        boolean result = budgetItemService.delete(1, 1);
-
-        // Assert
+        // Then
         assertThat(result).isTrue();
-
-        verify(budgetItemRepository).findById(1);
-        verify(eventRepository).findById(1);
-        verifyNoMoreInteractions(budgetItemRepository, eventRepository);
+        assertThat(budgetItem.isDeleted()).isTrue();
+        assertThat(event.getBudget()).doesNotContain(budgetItem);
+        verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
+        verify(eventRepository).findById(VALID_EVENT_ID);
+        verify(eventRepository).save(event);
+        verify(budgetItemRepository).save(budgetItem);
     }
 
     @Test
-    public void delete_WhenBudgetItemContainsOfferings_ReturnsFalse() {
-        // Arrange
-        ProductDetails product = new ProductDetails();
+    void delete_HasServices_ReturnsFalse() {
+        // Given
+        budgetItem.getServices().add(serviceDetails);
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
 
-        BudgetItem item = new BudgetItem();
-        item.setProducts(Set.of(product));
+        // When
+        boolean result = budgetItemService.delete(VALID_EVENT_ID, VALID_BUDGET_ITEM_ID);
 
-        when(budgetItemRepository.findById(1)).thenReturn(Optional.of(item));
-
-        // Act
-        boolean result = budgetItemService.delete(1, 1);
-
-        // Assert
+        // Then
         assertThat(result).isFalse();
-
-        verify(budgetItemRepository).findById(1);
-        verifyNoMoreInteractions(budgetItemRepository);
+        verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
+        verify(eventRepository, never()).findById(any());
+        verify(budgetItemRepository, never()).save(any());
     }
 
     @Test
-    public void hasMoneyLeft_WhenEnoughMoney_ReturnsTrue() {
-        // Arrange
-        BudgetItem item = new BudgetItem();
-        item.setAmount(100);
-        item.setProducts(new HashSet<>());
-        item.setServices(new HashSet<>());
+    void delete_HasProducts_ReturnsFalse() {
+        // Given
+        budgetItem.getProducts().add(productDetails);
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
 
-        // Act
-        boolean result = budgetItemService.hasMoneyLeft(item, 50, 0);
+        // When
+        boolean result = budgetItemService.delete(VALID_EVENT_ID, VALID_BUDGET_ITEM_ID);
 
-        // Assert
+        // Then
+        assertThat(result).isFalse();
+        verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
+        verify(eventRepository, never()).findById(any());
+        verify(budgetItemRepository, never()).save(any());
+    }
+
+    @Test
+    void delete_HasServicesAndProducts_ReturnsFalse() {
+        // Given
+        budgetItem.getServices().add(serviceDetails);
+        budgetItem.getProducts().add(productDetails);
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
+
+        // When
+        boolean result = budgetItemService.delete(VALID_EVENT_ID, VALID_BUDGET_ITEM_ID);
+
+        // Then
+        assertThat(result).isFalse();
+        verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
+        verify(eventRepository, never()).findById(any());
+        verify(budgetItemRepository, never()).save(any());
+    }
+
+    @Test
+    void delete_BudgetItemNotFound_ThrowsException() {
+        // Given
+        when(budgetItemRepository.findById(INVALID_BUDGET_ITEM_ID)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> budgetItemService.delete(VALID_BUDGET_ITEM_ID, INVALID_BUDGET_ITEM_ID))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Budget item with ID " + INVALID_BUDGET_ITEM_ID + " not found");
+
+        verify(budgetItemRepository).findById(INVALID_BUDGET_ITEM_ID);
+        verify(eventRepository, never()).findById(any());
+    }
+
+    @Test
+    void delete_EventNotFound_ThrowsException() {
+        // Given
+        when(budgetItemRepository.findById(VALID_BUDGET_ITEM_ID)).thenReturn(Optional.of(budgetItem));
+        when(eventRepository.findById(INVALID_EVENT_ID)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> budgetItemService.delete(INVALID_BUDGET_ITEM_ID, VALID_BUDGET_ITEM_ID))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Event with ID " + INVALID_BUDGET_ITEM_ID + " not found");
+
+        verify(budgetItemRepository).findById(VALID_BUDGET_ITEM_ID);
+        verify(eventRepository).findById(INVALID_EVENT_ID);
+        verify(budgetItemRepository, never()).save(any());
+    }
+
+    // ==================== hasMoneyLeft() Tests ====================
+
+    @Test
+    void hasMoneyLeft_EnoughMoney_ReturnsTrue() {
+        // Given
+        budgetItem.setAmount(1000);
+        double price = 200.0;
+        double discount = 10.0; // 10% discount
+
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
+
+        // Then
         assertThat(result).isTrue();
     }
 
     @Test
-    public void getTotalBudgetForEvent_WhenCalled_ReturnsSumExcludingDeletedItems() {
-        // Arrange
-        BudgetItem item1 = new BudgetItem();
-        item1.setAmount(100);
-        BudgetItem item2 = new BudgetItem();
-        item2.setAmount(200);
-        item2.setDeleted(true);
+    void hasMoneyLeft_NotEnoughMoney_ReturnsFalse() {
+        // Given
+        budgetItem.setAmount(100);
+        double price = 200.0;
+        double discount = 0.0; // No discount
 
-        Event event = new Event();
-        event.setBudget(Set.of(item1, item2));
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
 
-        when(eventRepository.findById(1)).thenReturn(Optional.of(event));
+        // Then
+        assertThat(result).isFalse();
+    }
 
-        // Act
-        double sum = budgetItemService.getTotalBudgetForEvent(1);
+    @Test
+    void hasMoneyLeft_ExactAmount_ReturnsTrue() {
+        // Given
+        budgetItem.setAmount(200);
+        double price = 200.0;
+        double discount = 0.0; // No discount
 
-        // Assert
-        assertThat(sum).isEqualTo(100);
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
 
-        verify(eventRepository).findById(1);
-        verifyNoMoreInteractions(eventRepository);
+        // Then
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void hasMoneyLeft_WithExistingServices_CalculatesCorrectly() {
+        // Given
+        budgetItem.setAmount(1000);
+
+        ServiceDetails service1 = new ServiceDetails();
+        service1.setPrice(300.0);
+        service1.setDiscount(10.0); // 10% discount, cost = 270
+
+        ServiceDetails service2 = new ServiceDetails();
+        service2.setPrice(200.0);
+        service2.setDiscount(0.0); // No discount, cost = 200
+
+        budgetItem.getServices().add(service1);
+        budgetItem.getServices().add(service2);
+
+        // Remaining = 1000 - 270 - 200 = 530
+        double price = 400.0;
+        double discount = 20.0; // 20% discount, cost = 320
+
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
+
+        // Then
+        assertThat(result).isTrue(); // 530 - 320 = 210 > 0
+    }
+
+    @Test
+    void hasMoneyLeft_WithExistingProducts_CalculatesCorrectly() {
+        // Given
+        budgetItem.setAmount(1000);
+
+        ProductDetails product1 = new ProductDetails();
+        product1.setPrice(250.0);
+        product1.setDiscount(20.0); // 20% discount, cost = 200
+
+        ProductDetails product2 = new ProductDetails();
+        product2.setPrice(150.0);
+        product2.setDiscount(0.0); // No discount, cost = 150
+
+        budgetItem.getProducts().add(product1);
+        budgetItem.getProducts().add(product2);
+
+        // Remaining = 1000 - 200 - 150 = 650
+        double price = 700.0;
+        double discount = 10.0; // 10% discount, cost = 630
+
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
+
+        // Then
+        assertThat(result).isTrue(); // 650 - 630 = 20 > 0
+    }
+
+    @Test
+    void hasMoneyLeft_WithServicesAndProducts_CalculatesCorrectly() {
+        // Given
+        budgetItem.setAmount(1000);
+
+        ServiceDetails service = new ServiceDetails();
+        service.setPrice(300.0);
+        service.setDiscount(0.0); // No discount, cost = 300
+
+        ProductDetails product = new ProductDetails();
+        product.setPrice(200.0);
+        product.setDiscount(25.0); // 25% discount, cost = 150
+
+        budgetItem.getServices().add(service);
+        budgetItem.getProducts().add(product);
+
+        // Remaining = 1000 - 300 - 150 = 550
+        double price = 600.0;
+        double discount = 15.0; // 15% discount, cost = 510
+
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
+
+        // Then
+        assertThat(result).isTrue(); // 550 - 510 = 40 > 0
+    }
+
+    @Test
+    void hasMoneyLeft_ZeroDiscount_CalculatesCorrectly() {
+        // Given
+        budgetItem.setAmount(500);
+        double price = 300.0;
+        double discount = 0.0; // No discount
+
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
+
+        // Then
+        assertThat(result).isTrue(); // 500 - 300 = 200 > 0
+    }
+
+    @Test
+    void hasMoneyLeft_FullDiscount_CalculatesCorrectly() {
+        // Given
+        budgetItem.setAmount(100);
+        double price = 1000.0;
+        double discount = 100.0; // 100% discount, cost = 0
+
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
+
+        // Then
+        assertThat(result).isTrue(); // 100 - 0 = 100 > 0
+    }
+
+    @Test
+    void hasMoneyLeft_NegativeRemaining_ReturnsFalse() {
+        // Given
+        budgetItem.setAmount(100);
+
+        ServiceDetails service = new ServiceDetails();
+        service.setPrice(80.0);
+        service.setDiscount(0.0); // No discount, cost = 80
+        budgetItem.getServices().add(service);
+
+        // Remaining = 100 - 80 = 20
+        double price = 50.0;
+        double discount = 0.0; // No discount, cost = 50
+
+        // When
+        boolean result = budgetItemService.hasMoneyLeft(budgetItem, price, discount);
+
+        // Then
+        assertThat(result).isFalse(); // 20 - 50 = -30 < 0
     }
 }
-*/
