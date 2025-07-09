@@ -265,12 +265,8 @@ public class EventController {
 
     @PostMapping("/process-invitation")
     public ResponseEntity<Void> processInvitation(@RequestParam("invitation-token") String token, @Valid @RequestBody GetGuestDTO guest) {
-        try {
-            eventService.processInvitation(token, guest);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        eventService.processInvitation(token, guest);
+        return ResponseEntity.ok().build();
     }
 
 }

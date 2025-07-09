@@ -201,13 +201,12 @@ public class EventService {
         return modelMapper.map(event, CreatedEventDTO.class);
     }
 
+    @Transactional
     public UpdatedEventDTO update (int eventId, UpdateEventDTO updateEventDTO){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         event.setName(updateEventDTO.getName());
         event.setDescription(updateEventDTO.getDescription());
-        event.setOpen(updateEventDTO.isOpen());
-        //TODO: check invitations if publicity is changed
         if(updateEventDTO.getMaxParticipants() < event.getStats().getParticipantsCount()) {
             throw new IllegalArgumentException("Max participants cannot be less than current participants count");
         }
@@ -225,9 +224,32 @@ public class EventService {
                     .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + updateEventDTO.getEventTypeId() + " not found"));
         }
         event.setEventType(eventType);
+        event= updateEventPublicity(event, updateEventDTO);
         event = eventRepository.save(event);
+        notifyGuests("Event updated","The event " + event.getName() + " has been updated.", event.getId());
         eventRepository.flush();
         return modelMapper.map(event, UpdatedEventDTO.class);
+    }
+
+    public Event updateEventPublicity(Event event, UpdateEventDTO updateEventDTO){
+        if(event.isOpen() == updateEventDTO.isOpen())
+            return event;
+        notifyGuests("Event updated","The event " + event.getName() + " has been updated.", event.getId());
+        if(updateEventDTO.isOpen()) {
+            List<Account> guests = accountRepository.findAccountsByAcceptedEventId(event.getId());
+            for(Account guest : guests){
+                guest.getAcceptedEvents().remove(event);
+                accountRepository.save(guest);
+            }
+            event.getGuestList().clear();
+            eventInviteTokenRepository.deleteAll(eventInviteTokenRepository.findAllByEventId(event.getId()));
+        }
+
+        EventStats stats= event.getStats();
+        stats.setParticipantsCount(0);
+        eventStatsRepository.save(stats);
+        event.setOpen(updateEventDTO.isOpen());
+        return event;
     }
 
     public void delete(int eventId){
