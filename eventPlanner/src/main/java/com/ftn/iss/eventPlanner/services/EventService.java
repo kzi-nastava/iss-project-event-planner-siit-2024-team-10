@@ -439,6 +439,47 @@ public class EventService {
         return JasperExportManager.exportReportToPdf(jasperPrint);
     }
 
+    public byte[] generateGuestlistReport(int eventId) throws JRException {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+
+        String reportPath = "template/guestlist_report.jrxml";
+        String guestSubreportPath = "template/guestlist_subreport.jrxml";
+
+        InputStream reportStream = getClass().getClassLoader().getResourceAsStream(reportPath);
+        InputStream guestSubreportStream = getClass().getClassLoader().getResourceAsStream(guestSubreportPath);
+
+        if (reportStream == null || guestSubreportStream == null) {
+            throw new JRException("Could not find report templates");
+        }
+
+        JasperReport mainReport = JasperCompileManager.compileReport(reportStream);
+        JasperReport guestSubreport = JasperCompileManager.compileReport(guestSubreportStream);
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("eventName", event.getName());
+
+        List<HashMap<String, Object>> guestItems = new ArrayList<>();
+        for (String guestName : event.getGuestList()) {
+            HashMap<String, Object> guest = new HashMap<>();
+            guest.put("guestName", guestName);
+            guestItems.add(guest);
+        }
+        data.put("guestList", guestItems);
+
+        List<HashMap<String, Object>> reportData = List.of(data);
+        JRDataSource mainDataSource = new JRBeanCollectionDataSource(reportData);
+        JRDataSource guestDataSource = new JRBeanCollectionDataSource(guestItems);
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("GuestSubreport", guestSubreport);
+        parameters.put("GuestListDataSource", guestDataSource);
+
+        JasperPrint jasperPrint = JasperFillManager.fillReport(mainReport, parameters, mainDataSource);
+
+        return JasperExportManager.exportReportToPdf(jasperPrint);
+    }
+
     public GetEventStatsDTO addParticipant(int eventId){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
