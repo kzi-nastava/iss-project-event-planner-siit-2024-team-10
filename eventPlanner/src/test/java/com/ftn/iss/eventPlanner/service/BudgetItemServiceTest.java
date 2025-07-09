@@ -960,4 +960,276 @@ class BudgetItemServiceTest {
         // Then
         assertThat(result).isFalse(); // 20 - 50 = -30 < 0
     }
+    // ==================== getTotalBudgetForEvent() Tests ====================
+
+    @Test
+    void getTotalBudgetForEvent_WhenEventNotFound_ThrowsIllegalArgumentException() {
+        // Arrange
+        when(eventRepository.findById(INVALID_EVENT_ID)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatThrownBy(() -> budgetItemService.getTotalBudgetForEvent(INVALID_EVENT_ID))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Event with ID " + INVALID_EVENT_ID + " not found");
+
+        // Verify
+        verify(eventRepository).findById(INVALID_EVENT_ID);
+    }
+
+    @Test
+    void getTotalBudgetForEvent_WhenEventHasNoBudgetItems_ReturnsZero() {
+        // Arrange
+        Event eventWithEmptyBudget = new Event();
+        eventWithEmptyBudget.setId(VALID_EVENT_ID);
+        eventWithEmptyBudget.setBudget(new HashSet<>());
+
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(eventWithEmptyBudget));
+
+        // Act
+        double result = budgetItemService.getTotalBudgetForEvent(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).isEqualTo(0.0);
+        verify(eventRepository).findById(VALID_EVENT_ID);
+    }
+
+    @Test
+    void getTotalBudgetForEvent_WhenEventHasSingleBudgetItem_ReturnsCorrectAmount() {
+        // Arrange
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+
+        // Act
+        double result = budgetItemService.getTotalBudgetForEvent(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).isEqualTo(1000.0); // budgetItem has amount 1000
+        verify(eventRepository).findById(VALID_EVENT_ID);
+    }
+
+    @Test
+    void getTotalBudgetForEvent_WhenEventHasMultipleBudgetItems_ReturnsSumOfAmounts() {
+        // Arrange
+        BudgetItem budgetItem2 = new BudgetItem();
+        budgetItem2.setId(2);
+        budgetItem2.setAmount(500);
+        budgetItem2.setDeleted(false);
+
+        BudgetItem budgetItem3 = new BudgetItem();
+        budgetItem3.setId(3);
+        budgetItem3.setAmount(300);
+        budgetItem3.setDeleted(false);
+
+        event.getBudget().add(budgetItem2);
+        event.getBudget().add(budgetItem3);
+
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+
+        // Act
+        double result = budgetItemService.getTotalBudgetForEvent(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).isEqualTo(1800.0); // 1000 + 500 + 300
+        verify(eventRepository).findById(VALID_EVENT_ID);
+    }
+
+    @Test
+    void getTotalBudgetForEvent_WhenEventHasDeletedBudgetItems_ExcludesDeletedItems() {
+        // Arrange
+        BudgetItem deletedBudgetItem = new BudgetItem();
+        deletedBudgetItem.setId(2);
+        deletedBudgetItem.setAmount(500);
+        deletedBudgetItem.setDeleted(true); // This item is deleted
+
+        BudgetItem activeBudgetItem = new BudgetItem();
+        activeBudgetItem.setId(3);
+        activeBudgetItem.setAmount(300);
+        activeBudgetItem.setDeleted(false);
+
+        event.getBudget().add(deletedBudgetItem);
+        event.getBudget().add(activeBudgetItem);
+
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+
+        // Act
+        double result = budgetItemService.getTotalBudgetForEvent(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).isEqualTo(1300.0); // 1000 + 300 (excluded deleted item with 500)
+        verify(eventRepository).findById(VALID_EVENT_ID);
+    }
+
+    @Test
+    void getTotalBudgetForEvent_WhenAllBudgetItemsAreDeleted_ReturnsZero() {
+        // Arrange
+        budgetItem.setDeleted(true);
+
+        BudgetItem deletedBudgetItem2 = new BudgetItem();
+        deletedBudgetItem2.setId(2);
+        deletedBudgetItem2.setAmount(500);
+        deletedBudgetItem2.setDeleted(true);
+
+        event.getBudget().add(deletedBudgetItem2);
+
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+
+        // Act
+        double result = budgetItemService.getTotalBudgetForEvent(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).isEqualTo(0.0);
+        verify(eventRepository).findById(VALID_EVENT_ID);
+    }
+
+    @Test
+    void getTotalBudgetForEvent_WhenEventHasZeroAmountBudgetItems_ReturnsZero() {
+        // Arrange
+        budgetItem.setAmount(0);
+
+        BudgetItem zeroBudgetItem = new BudgetItem();
+        zeroBudgetItem.setId(2);
+        zeroBudgetItem.setAmount(0);
+        zeroBudgetItem.setDeleted(false);
+
+        event.getBudget().add(zeroBudgetItem);
+
+        when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
+
+        // Act
+        double result = budgetItemService.getTotalBudgetForEvent(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).isEqualTo(0.0);
+        verify(eventRepository).findById(VALID_EVENT_ID);
+    }
+
+// ==================== findByEventId() Tests ====================
+
+    @Test
+    void findByEventId_WhenNoBudgetItemsExist_ReturnsEmptyList() {
+        // Arrange
+        when(budgetItemRepository.findByEventId(VALID_EVENT_ID)).thenReturn(List.of());
+
+        // Act
+        List<GetBudgetItemDTO> result = budgetItemService.findByEventId(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).isEmpty();
+        verify(budgetItemRepository).findByEventId(VALID_EVENT_ID);
+        verifyNoInteractions(modelMapper);
+    }
+
+    @Test
+    void findByEventId_WhenSingleBudgetItemExists_ReturnsListWithOneDTO() {
+        // Arrange
+        GetBudgetItemDTO budgetItemDTO = new GetBudgetItemDTO();
+        budgetItemDTO.setId(VALID_BUDGET_ITEM_ID);
+
+        when(budgetItemRepository.findByEventId(VALID_EVENT_ID)).thenReturn(List.of(budgetItem));
+        doReturn(budgetItemDTO).when(budgetItemService).mapBudgetItemToDTO(budgetItem);
+
+        // Act
+        List<GetBudgetItemDTO> result = budgetItemService.findByEventId(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(VALID_BUDGET_ITEM_ID);
+        verify(budgetItemRepository).findByEventId(VALID_EVENT_ID);
+        verify(budgetItemService).mapBudgetItemToDTO(budgetItem);
+    }
+
+    @Test
+    void findByEventId_WhenMultipleBudgetItemsExist_ReturnsListWithMultipleDTOs() {
+        // Arrange
+        BudgetItem budgetItem2 = new BudgetItem();
+        budgetItem2.setId(2);
+        budgetItem2.setDeleted(false);
+
+        BudgetItem budgetItem3 = new BudgetItem();
+        budgetItem3.setId(3);
+        budgetItem3.setDeleted(false);
+
+        GetBudgetItemDTO budgetItemDTO1 = new GetBudgetItemDTO();
+        budgetItemDTO1.setId(VALID_BUDGET_ITEM_ID);
+
+        GetBudgetItemDTO budgetItemDTO2 = new GetBudgetItemDTO();
+        budgetItemDTO2.setId(2);
+
+        GetBudgetItemDTO budgetItemDTO3 = new GetBudgetItemDTO();
+        budgetItemDTO3.setId(3);
+
+        when(budgetItemRepository.findByEventId(VALID_EVENT_ID))
+                .thenReturn(List.of(budgetItem, budgetItem2, budgetItem3));
+        doReturn(budgetItemDTO1).when(budgetItemService).mapBudgetItemToDTO(budgetItem);
+        doReturn(budgetItemDTO2).when(budgetItemService).mapBudgetItemToDTO(budgetItem2);
+        doReturn(budgetItemDTO3).when(budgetItemService).mapBudgetItemToDTO(budgetItem3);
+
+        // Act
+        List<GetBudgetItemDTO> result = budgetItemService.findByEventId(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0).getId()).isEqualTo(VALID_BUDGET_ITEM_ID);
+        assertThat(result.get(1).getId()).isEqualTo(2);
+        assertThat(result.get(2).getId()).isEqualTo(3);
+        verify(budgetItemRepository).findByEventId(VALID_EVENT_ID);
+        verify(budgetItemService).mapBudgetItemToDTO(budgetItem);
+        verify(budgetItemService).mapBudgetItemToDTO(budgetItem2);
+        verify(budgetItemService).mapBudgetItemToDTO(budgetItem3);
+    }
+
+    @Test
+    void findByEventId_WhenBudgetItemsContainDeletedItems_ExcludesDeletedItems() {
+        // Arrange
+        BudgetItem deletedBudgetItem = new BudgetItem();
+        deletedBudgetItem.setId(2);
+        deletedBudgetItem.setDeleted(true);
+
+        BudgetItem activeBudgetItem = new BudgetItem();
+        activeBudgetItem.setId(3);
+        activeBudgetItem.setDeleted(false);
+
+        GetBudgetItemDTO budgetItemDTO1 = new GetBudgetItemDTO();
+        budgetItemDTO1.setId(VALID_BUDGET_ITEM_ID);
+
+        GetBudgetItemDTO budgetItemDTO3 = new GetBudgetItemDTO();
+        budgetItemDTO3.setId(3);
+
+        when(budgetItemRepository.findByEventId(VALID_EVENT_ID))
+                .thenReturn(List.of(budgetItem, deletedBudgetItem, activeBudgetItem));
+        doReturn(budgetItemDTO1).when(budgetItemService).mapBudgetItemToDTO(budgetItem);
+        doReturn(budgetItemDTO3).when(budgetItemService).mapBudgetItemToDTO(activeBudgetItem);
+
+        // Act
+        List<GetBudgetItemDTO> result = budgetItemService.findByEventId(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getId()).isEqualTo(VALID_BUDGET_ITEM_ID);
+        assertThat(result.get(1).getId()).isEqualTo(3);
+        verify(budgetItemRepository).findByEventId(VALID_EVENT_ID);
+        verify(budgetItemService).mapBudgetItemToDTO(budgetItem);
+        verify(budgetItemService).mapBudgetItemToDTO(activeBudgetItem);
+        verify(budgetItemService, never()).mapBudgetItemToDTO(deletedBudgetItem);
+    }
+
+    @Test
+    void findByEventId_WhenAllBudgetItemsAreDeleted_ReturnsEmptyList() {
+        // Arrange
+        budgetItem.setDeleted(true);
+
+        BudgetItem deletedBudgetItem2 = new BudgetItem();
+        deletedBudgetItem2.setId(2);
+        deletedBudgetItem2.setDeleted(true);
+
+        when(budgetItemRepository.findByEventId(VALID_EVENT_ID))
+                .thenReturn(List.of(budgetItem, deletedBudgetItem2));
+
+        // Act
+        List<GetBudgetItemDTO> result = budgetItemService.findByEventId(VALID_EVENT_ID);
+
+        // Assert
+        assertThat(result).isEmpty();
+        verify(budgetItemRepository).findByEventId(VALID_EVENT_ID);
+        verify(budgetItemService, never()).mapBudgetItemToDTO(any(BudgetItem.class));
+    }
 }

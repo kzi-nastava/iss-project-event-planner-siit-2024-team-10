@@ -174,7 +174,7 @@ public class BudgetItemService {
                 .collect(Collectors.toList());
     }
 
-    private GetBudgetItemDTO mapBudgetItemToDTO(BudgetItem budgetItem) {
+    public GetBudgetItemDTO mapBudgetItemToDTO(BudgetItem budgetItem) {
         GetBudgetItemDTO dto = new GetBudgetItemDTO();
         dto.setId(budgetItem.getId());
         dto.setAmount(budgetItem.getAmount());
