@@ -86,9 +86,6 @@ public class NotificationService {
     }
 
     public void sendNotification(Integer recipientId, String title, String content) {
-        if (isNotificationsSilenced(recipientId)){
-            return;
-        }
         Account recipientAccount = accountRepository.findById(recipientId)
                 .orElseThrow(() -> new NotFoundException("Recipient account not found with ID: " + recipientId));
 
