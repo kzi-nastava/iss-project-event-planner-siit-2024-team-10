@@ -26,10 +26,10 @@ public class ServiceSpecification {
                         : criteriaBuilder.conjunction();
     }
 
-    public static Specification<Service> hasLocation(String location) {
+    public static Specification<Service> hasLocation(String location, Integer providerId) {
         return (root, query, criteriaBuilder) ->
-                location != null && !location.isEmpty()
-                        ? criteriaBuilder.like(criteriaBuilder.lower(root.get("provider").get("location").get("city")), "%" + location.toLowerCase() + "%")
+                providerId == null && location != null && !location.isEmpty()
+                        ? criteriaBuilder.like(criteriaBuilder.lower(root.get("provider").get("company").get("location").get("city")), "%" + location.toLowerCase() + "%")
                         : criteriaBuilder.conjunction();
     }
 
@@ -101,6 +101,14 @@ public class ServiceSpecification {
 
     public static Specification<Service> isVisible() {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("currentDetails").get("isVisible"), true);
+    }
+
+    public static Specification<Service> isNotDeleted() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isDeleted"), false);
+    }
+
+    public static Specification<Service> isNotPending() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("pending"), false);
     }
 
     public static Specification<Service> hasProviderId(Integer providerId) {
