@@ -129,7 +129,9 @@ public class EventService {
                 .and(EventSpecification.maxParticipants(maxParticipants))
                 .and(EventSpecification.betweenDates(startDate, endDate))
                 .and(EventSpecification.minAverageRating(minRating))
-                .and(EventSpecification.hasName(name));
+                .and(EventSpecification.hasName(name))
+                .and(EventSpecification.isOpen())
+                .and(EventSpecification.isNotDeleted());
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
@@ -144,7 +146,7 @@ public class EventService {
         List<GetEventDTO> eventDTOs = new ArrayList<>();
         if (accountId != null) {
             eventDTOs = events.stream()
-                    .filter(event -> event.getOrganizer().getAccount().getId() == accountId)
+                    .filter(event -> event.getOrganizer().getAccount().getId() == accountId && !event.isDeleted())
                     .map(this::mapToGetEventDTO)
                     .collect(Collectors.toList());
         }
@@ -160,7 +162,8 @@ public class EventService {
             if (userLocation != null) {
                 events = events.stream()
                         .filter(event -> event.getLocation() != null &&
-                                event.getLocation().getCity().equalsIgnoreCase(userLocation.getCity()))
+                                event.getLocation().getCity().equalsIgnoreCase(userLocation.getCity()) &&
+                                !event.isDeleted())
                         .collect(Collectors.toList());
             }
         }
