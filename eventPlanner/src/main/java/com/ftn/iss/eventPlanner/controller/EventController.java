@@ -176,6 +176,15 @@ public class EventController {
                 .body(pdfReport);
     }
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @GetMapping(value="/{eventId}/reports/guestlist", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getGuestlistReport(@PathVariable int eventId) throws JRException {
+        byte[] pdfReport= eventService.generateGuestlistReport(eventId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=event_report.pdf")
+                .body(pdfReport);
+    }
+
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','ADMIN')")
     @GetMapping(value="/{eventId}/stats", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetEventStatsDTO> getEventStats(@PathVariable int eventId) {
