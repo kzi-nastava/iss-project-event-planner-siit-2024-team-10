@@ -235,7 +235,7 @@ public class OfferingService {
 
         if (offering.isPresent()) {
             return offering.get().getComments().stream()
-                    .filter(comment -> comment.getStatus() != Status.PENDING)
+                    .filter(comment -> comment.getStatus() == Status.ACCEPTED)
                     .map(this::mapToGetCommentDTO)
                     .collect(Collectors.toList());
         } else {
