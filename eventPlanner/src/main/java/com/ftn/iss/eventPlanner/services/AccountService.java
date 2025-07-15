@@ -63,6 +63,7 @@ public class AccountService implements UserDetailsService {
         Account account = accountRepository.findByIdWithFavouriteEvents(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));
         List<GetEventDTO> eventList = account.getFavouriteEvents().stream()
+                .filter(event -> !event.isDeleted())
                 .map(event -> modelMapper.map(event, GetEventDTO.class))
                 .sorted(Comparator.comparing(GetEventDTO::getName))
                 .collect(Collectors.toList());
@@ -160,6 +161,8 @@ public class AccountService implements UserDetailsService {
                 .orElseThrow(() -> new NotFoundException("Account not found"));
         ArrayList<GetCalendarItemDTO> calendarItems = new ArrayList<>();
         for(Event event: account.getAcceptedEvents()){
+            if(event.isDeleted())
+                continue;
             GetCalendarItemDTO calendarItem = new GetCalendarItemDTO(event.getName(), event.getId(),
                     event.getDate().atStartOfDay(), null, CalendarItemType.ACCEPTED_EVENT);
             calendarItems.add(calendarItem);
@@ -171,6 +174,8 @@ public class AccountService implements UserDetailsService {
                 throw new NotFoundException("User not found for the account");
 
             for(Event event: eventRepository.findByOrganizerId(user.getId())){
+                if(event.isDeleted())
+                    continue;
                 GetCalendarItemDTO calendarItem = new GetCalendarItemDTO(event.getName(), event.getId(),
                         event.getDate().atStartOfDay(), null, CalendarItemType.CREATED_EVENT);
                 calendarItems.add(calendarItem);
@@ -183,6 +188,8 @@ public class AccountService implements UserDetailsService {
                 throw new NotFoundException("User not found for the account");
 
             for(GetReservationDTO reservation : reservationService.findByProviderId(user.getId())) {
+                if(reservation.getStatus()!= Status.ACCEPTED)
+                    continue;
                 GetCalendarItemDTO calendarItem = new GetCalendarItemDTO(
                         reservation.getService().getName() + " for "+reservation.getEvent().getName(),
                         reservation.getEvent().getId(),
