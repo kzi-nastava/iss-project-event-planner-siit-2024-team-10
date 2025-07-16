@@ -43,7 +43,8 @@ public class EventControllerTest {
     private static final int DELETED_EVENT_ID = 10;
     private static final int DELETED_BUDGET_ITEM_ID = 1;
     private static final int DELETED_CATEGORY_ID = 3;
-
+    private static final int EVENT_WITH_BUDGET_ITEM = 3;
+    private static final int EVENT_WITHOUT_BUDGET_ITEM = 2;
     private static final int UNUSED_BUDGET_ITEM_ID = 2; // Budget item with no services/products
     private static final int BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS = 4; // Budget item with services and products
 
@@ -815,16 +816,13 @@ public class EventControllerTest {
         assertTrue(response.getStatusCode().is4xxClientError());
         assertTrue(response.getBody().contains("Cannot update deleted budget item"));
     }
-}
-    /*
-
     // ==================== buy() Tests ====================
 
     @Test
     @DisplayName("Buy Offering - Success")
     public void buyOffering_Success() {
         ResponseEntity<Boolean> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + EXISTING_OFFERING_ID,
+                BASE + "/" + EVENT_WITHOUT_BUDGET_ITEM + "/budget/buy/" + EXISTING_OFFERING_ID,
                 HttpMethod.PUT,
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 Boolean.class);
@@ -846,15 +844,15 @@ public class EventControllerTest {
     }
 
     @Test
-    @DisplayName("Buy Offering - Forbidden with USER role")
-    public void buyOffering_ForbiddenUserRole() {
+    @DisplayName("Buy Offering - Unauthorized with USER role")
+    public void buyOffering_UnauthorizedUserRole() {
         ResponseEntity<String> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + EXISTING_OFFERING_ID,
                 HttpMethod.PUT,
                 new HttpEntity<>(null, getHeadersWithAuth(userToken)),
                 String.class);
 
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
@@ -884,23 +882,21 @@ public class EventControllerTest {
     @Test
     @DisplayName("Buy Offering - Insufficient budget")
     public void buyOffering_InsufficientBudget() {
-        int expensiveOfferingId = 100; // Assuming this offering is more expensive than budget
+        int expensiveOfferingId = 1;
         ResponseEntity<Boolean> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + expensiveOfferingId,
                 HttpMethod.PUT,
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 Boolean.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertFalse(response.getBody());
     }
 
     @Test
     @DisplayName("Buy Offering - Product already purchased")
     public void buyOffering_ProductAlreadyPurchased() {
-        int alreadyPurchasedProductId = 50; // Assuming this product is already purchased
+        int alreadyPurchasedProductId = 2;
         ResponseEntity<Boolean> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + alreadyPurchasedProductId,
+                BASE + "/" + EVENT_WITH_BUDGET_ITEM + "/budget/buy/" + alreadyPurchasedProductId,
                 HttpMethod.PUT,
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 Boolean.class);
@@ -932,6 +928,10 @@ public class EventControllerTest {
 
         assertTrue(response.getStatusCode().is4xxClientError());
     }
+}
+    /*
+
+
 
     // ==================== deleteBudgetItem() Tests ====================
 

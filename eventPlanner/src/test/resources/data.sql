@@ -93,7 +93,7 @@ INSERT INTO notification (read, content, title, date) VALUES
 
 
 INSERT INTO product_details (name, description, price, discount, is_visible, is_available, timestamp) VALUES
-                                                                                                          ( 'Wedding Decoration Set', 'Complete set of decorations for weddings, including table centerpieces and backdrops.', 200.00, 10.0, TRUE, FALSE, '2023-10-20 15:00:00'),
+                                                                                                          ( 'Wedding Decoration Set', 'Complete set of decorations for weddings, including table centerpieces and backdrops.', 20000000.00, 10.0, TRUE, FALSE, '2023-10-20 15:00:00'),
                                                                                                           ( 'Conference Projector', 'High-resolution projector for conferences and business meetings.', 1200.00, 10.0, TRUE, TRUE, '2023-10-25 10:30:00'),
                                                                                                           ( 'Sound System', 'Professional sound system for parties and celebrations.', 850.00, 50.0, TRUE, TRUE, '2023-10-28 11:45:00'),
                                                                                                           ( 'Banquet Chairs', 'Comfortable and elegant chairs for formal events.', 25.00, 20.0, TRUE, FALSE, '2023-11-01 09:15:00'),
@@ -120,7 +120,7 @@ INSERT INTO service_details (name, description, specification, price, discount, 
 
 INSERT INTO offerings (dtype, category_id, provider_id, current_product_details_id, is_deleted, pending) VALUES
                                                                                                              ('Product',1 ,1, 1, FALSE, FALSE),
-                                                                                                             ('Product',2 ,1,  2, FALSE, FALSE),
+                                                                                                             ('Product',3 ,1,  2, FALSE, FALSE),
                                                                                                              ('Product',1 ,1,  3, FALSE, FALSE),
                                                                                                              ('Product',1 ,1,  4, FALSE, FALSE),
                                                                                                              ('Product',1 ,1,  5, FALSE, FALSE),
