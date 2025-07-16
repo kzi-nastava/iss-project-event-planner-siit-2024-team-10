@@ -137,6 +137,8 @@ public class BudgetItemService {
     public boolean delete(int eventId, int budgetItemId) {
         BudgetItem budgetItem = budgetItemRepository.findById(budgetItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemId + " not found"));
+        if(budgetItem.isDeleted())
+            return false;
         if(budgetItem.getServices().size() + budgetItem.getProducts().size() != 0)
             return false;
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
