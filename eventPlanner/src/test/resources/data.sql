@@ -182,8 +182,8 @@ INSERT INTO account_notifications (account_id, notifications_id) VALUES
 INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
                                                                                               (1,2);
 INSERT INTO budget_item (amount, is_deleted, category_id, event_id) VALUES
-                                                                        (1500.0, TRUE, 1, 1),
-                                                                        (2000.0, FALSE, 2, 1),
+                                                                        (1500.0, FALSE, 1, 1),
+                                                                        (2000.0, TRUE, 2, 1),
                                                                         (500.0, FALSE, 1, 1),
                                                                         (2000.0, FALSE, 3, 3);
 INSERT INTO budget_item_services (budget_item_id, services_id) VALUES
