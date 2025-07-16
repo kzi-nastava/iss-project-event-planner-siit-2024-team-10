@@ -191,7 +191,7 @@ public class EventController {
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value="/{eventId}/budget", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedBudgetItemDTO> createBudgetItem(@PathVariable int eventId, @Valid @RequestBody CreateBudgetItemDTO createBudgetItemDTO) {
-        CreatedBudgetItemDTO createdBudgetItemDTO = budgetItemService.create(eventId, createBudgetItemDTO,0);
+        CreatedBudgetItemDTO createdBudgetItemDTO = budgetItemService.create(eventId, createBudgetItemDTO, 0);
         return ResponseEntity.ok(createdBudgetItemDTO);
     }
 

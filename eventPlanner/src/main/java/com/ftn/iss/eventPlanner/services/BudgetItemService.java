@@ -30,16 +30,47 @@ public class BudgetItemService {
     private ModelMapper modelMapper = new ModelMapper();
 
     public CreatedBudgetItemDTO create(int eventId, CreateBudgetItemDTO budgetItemDTO, int offeringId) {
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
+        // Find event and check if it exists
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
+
+        // Check if event is deleted
+        if (event.isDeleted()) {
+            throw new IllegalArgumentException("Event with ID " + eventId + " is deleted and cannot be modified");
+        }
+
+        // Find category and check if it exists
+        OfferingCategory category = offeringCategoryRepository.findById(budgetItemDTO.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Offering category with ID " + budgetItemDTO.getCategoryId() + " not found"));
+
+        // Check if category is deleted
+        if (category.isDeleted()) {
+            throw new IllegalArgumentException("Offering category with ID " + budgetItemDTO.getCategoryId() + " is deleted and cannot be used");
+        }
+
+        // Check if amount is negative
+        if (budgetItemDTO.getAmount()<0) {
+            throw new IllegalArgumentException("Amount cannot be negative");
+        }
+
+        // Create budget item
         BudgetItem budgetItem = new BudgetItem();
         budgetItem.setAmount(budgetItemDTO.getAmount());
         budgetItem.setDeleted(false);
         budgetItem.setEvent(event);
-        OfferingCategory category = offeringCategoryRepository.findById((budgetItemDTO.getCategoryId())).orElseThrow(() -> new IllegalArgumentException("Offering category with ID " + budgetItemDTO.getCategoryId() + " not found"));
         budgetItem.setCategory(category);
-        if(offeringId!=0){
-            // the case when new category is added to the budget
-            Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
+
+        // Handle offering if provided
+        if (offeringId != 0) {
+            // Find offering and check if it exists
+            Offering offering = offeringRepository.findById(offeringId)
+                    .orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
+
+            // Check if offering is deleted
+            if (offering.isDeleted()) {
+                throw new IllegalArgumentException("Offering with ID " + offeringId + " is deleted and cannot be used");
+            }
+
             String offeringType = offering.getClass().getSimpleName();
 
             if ("Service".equals(offeringType)) {
@@ -49,9 +80,14 @@ public class BudgetItemService {
                 budgetItem.getProducts().add(((com.ftn.iss.eventPlanner.model.Product)offering).getCurrentDetails());
             }
         }
+
+        // Save budget item
         budgetItem = budgetItemRepository.save(budgetItem);
+
+        // Add to event's budget and save event
         event.getBudget().add(budgetItem);
         eventRepository.save(event);
+
         return modelMapper.map(budgetItem, CreatedBudgetItemDTO.class);
     }
 
@@ -74,7 +110,9 @@ public class BudgetItemService {
     public UpdatedBudgetItemDTO updateAmount(int budgetItemId, int newAmount) {
         BudgetItem budgetItem = budgetItemRepository.findById(budgetItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemId + " not found"));
-
+        if (budgetItem.isDeleted()) {
+            throw new IllegalArgumentException("Cannot update deleted budget item");
+        }
         double usedAmount = 0;
 
         for (ServiceDetails service : budgetItem.getServices()) {

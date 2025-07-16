@@ -24,6 +24,7 @@ public class BudgetItem {
     @ManyToOne
     private OfferingCategory category;
     @ManyToOne
+    @JoinColumn(name = "event_id")
     private Event event;
 
     @ManyToMany(fetch = FetchType.EAGER)
