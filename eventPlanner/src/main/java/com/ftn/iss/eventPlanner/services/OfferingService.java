@@ -112,9 +112,11 @@ public class OfferingService {
     ) {
         if (accountId != null && (location == null || location.isEmpty())) {
             Account account = accountRepository.findById(accountId).orElse(null);
-            Location userLocation = account.getUser().getLocation();
-            if (userLocation != null) {
-                location = userLocation.getCity();
+            if (account != null && account.getUser() != null){
+                Location userLocation = account.getUser().getLocation();
+                if (userLocation != null) {
+                    location = userLocation.getCity();
+                }
             }
         }
 
