@@ -88,12 +88,13 @@ public class OfferingController {
             @RequestParam(required = false) Boolean isAvailable,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection,
+            @RequestParam(required = false) Integer accountId,
             @RequestParam(required = false) Integer providerId
     ){
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     pageable, isServiceFilter, name, categoryId, location, startPrice,
-                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection, providerId);
+                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection, accountId, providerId);
 
 
             return ResponseEntity.ok(offerings);

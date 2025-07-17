@@ -58,4 +58,8 @@ public class EventSpecification {
     public static Specification<Event> isOpen() {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isOpen"), true);
     }
+
+    public static Specification<Event> isNotDeleted() {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isDeleted"), false);
+    }
 }

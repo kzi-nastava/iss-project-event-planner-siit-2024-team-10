@@ -10,10 +10,7 @@ import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
-import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
-import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
-import com.ftn.iss.eventPlanner.repositories.ProductRepository;
-import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
+import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -29,8 +26,6 @@ public class OfferingService {
     @Autowired
     private OfferingRepository offeringRepository;
     @Autowired
-    private OfferingCategoryService offeringCategoryService;
-    @Autowired
     private  NotificationService notificationService;
     @Autowired
     private ServiceRepository serviceRepository;
@@ -38,6 +33,8 @@ public class OfferingService {
     private ProductRepository productRepository;
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -66,7 +63,7 @@ public class OfferingService {
         if (isServiceFilter == Boolean.TRUE) {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
                     .and(ServiceSpecification.hasCategoryId(categoryId))
-                    .and(ServiceSpecification.hasLocation(location))
+                    .and(ServiceSpecification.hasLocation(location, null))
                     .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
@@ -79,7 +76,7 @@ public class OfferingService {
         } else if (isServiceFilter == Boolean.FALSE) {
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
                     .and(ProductSpecification.hasCategoryId(categoryId))
-                    .and(ProductSpecification.hasLocation(location))
+                    .and(ProductSpecification.hasLocation(location, null))
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
@@ -110,14 +107,25 @@ public class OfferingService {
             Boolean searchByAvailability,
             String sortBy,
             String sortDirection,
+            Integer accountId,
             Integer providerId
     ) {
+        if (accountId != null && (location == null || location.isEmpty())) {
+            Account account = accountRepository.findById(accountId).orElse(null);
+            if (account != null && account.getUser() != null){
+                Location userLocation = account.getUser().getLocation();
+                if (userLocation != null) {
+                    location = userLocation.getCity();
+                }
+            }
+        }
+
         if (sortBy != null && !"none".equalsIgnoreCase(sortBy)) {
             String sortField = switch (sortBy.toLowerCase()) {
                 case "price" -> "currentDetails.price";
                 case "averageRating" -> null; // Dynamically sorted
                 case "name" -> "currentDetails.name";
-                case "location.city" -> "provider.location.city";
+                case "location.city" -> "provider.company.location.city";
                 default -> null;
             };
 
@@ -135,34 +143,56 @@ public class OfferingService {
         if (isServiceFilter == Boolean.TRUE) {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasName(name))
                     .and(ServiceSpecification.hasCategoryId(categoryId))
-                    .and(ServiceSpecification.hasLocation(location))
+                    .and(ServiceSpecification.hasLocation(location, providerId))
                     .and(ServiceSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ServiceSpecification.minDiscount(minDiscount))
                     .and(ServiceSpecification.minRating(minRating))
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability))
-                    .and(ServiceSpecification.isVisible())
-                    .and(ServiceSpecification.hasProviderId(providerId));
+                    .and(ServiceSpecification.hasProviderId(providerId))
+                    .and(ServiceSpecification.isNotDeleted());
+
+            if(providerId == null){
+                serviceSpecification = serviceSpecification.and(ServiceSpecification.isVisible())
+                        .and(ServiceSpecification.isNotPending());
+            }
 
             pagedOfferings = serviceRepository.findAll(serviceSpecification, pageable);
 
         } else if (isServiceFilter == Boolean.FALSE) {
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
                     .and(ProductSpecification.hasCategoryId(categoryId))
-                    .and(ProductSpecification.hasLocation(location))
+                    .and(ProductSpecification.hasLocation(location, providerId))
                     .and(ProductSpecification.betweenPrices(minPrice, maxPrice))
                     .and(ProductSpecification.minDiscount(minDiscount))
                     .and(ProductSpecification.minRating(minRating))
                     .and(ProductSpecification.isAvailable(searchByAvailability))
-                    .and(ProductSpecification.isVisible())
-                    .and(ProductSpecification.hasProviderId(providerId));
+                    .and(ProductSpecification.hasProviderId(providerId))
+                    .and(ProductSpecification.isNotDeleted());
+
+            if(providerId == null){
+                productSpecification = productSpecification.and(ProductSpecification.isVisible())
+                        .and(ProductSpecification.isNotPending());
+            }
 
             pagedOfferings = productRepository.findAll(productSpecification, pageable);
 
         } else {
-            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.isVisible().and(ServiceSpecification.hasProviderId(providerId)));
+            Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasProviderId(providerId))
+                    .and(ServiceSpecification.isNotDeleted())
+                    .and(ServiceSpecification.hasLocation(location, providerId));
 
-            Specification<Product> productSpecification = Specification.where(ProductSpecification.isVisible().and(ProductSpecification.hasProviderId(providerId)));
+            Specification<Product> productSpecification = Specification.where(ProductSpecification.hasProviderId(providerId))
+                    .and(ProductSpecification.isNotDeleted())
+                    .and(ProductSpecification.hasLocation(location, providerId));
+
+            if(providerId == null){
+                serviceSpecification = serviceSpecification.and(ServiceSpecification.isVisible())
+                        .and(ServiceSpecification.isNotPending());
+
+                productSpecification = productSpecification.and(ProductSpecification.isVisible())
+                        .and(ProductSpecification.isNotPending());
+            }
 
             List<Service> services = serviceRepository.findAll(serviceSpecification);
             List<Product> products = productRepository.findAll(productSpecification);
@@ -204,9 +234,11 @@ public class OfferingService {
         return offerings.stream()
                 .filter(offering -> {
                     if (offering instanceof Product p) {
-                        return p.getCurrentDetails().isVisible();
+                        return p.getCurrentDetails().isVisible()
+                                && !p.isDeleted() && !p.isPending();
                     } else if (offering instanceof Service s) {
-                        return s.getCurrentDetails().isVisible();
+                        return s.getCurrentDetails().isVisible()
+                                && !s.isDeleted() && !s.isPending();
                     }
                     return false;
                 })
@@ -215,7 +247,6 @@ public class OfferingService {
                 .limit(5)
                 .map(this::mapToGetOfferingDTO)
                 .collect(Collectors.toList());
-
     }
 
     @Transactional(readOnly = true)
