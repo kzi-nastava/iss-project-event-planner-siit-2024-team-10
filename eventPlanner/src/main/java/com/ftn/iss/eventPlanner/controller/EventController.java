@@ -104,6 +104,13 @@ public class EventController {
         return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @DeleteMapping(value = "/{eventId}")
+    public ResponseEntity<?> deleteEvent(@PathVariable int eventId) throws Exception {
+        eventService.delete(eventId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @PutMapping(value = "/{eventId}/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int eventId, @PathVariable int commentId)
             throws Exception {
@@ -171,6 +178,15 @@ public class EventController {
     @GetMapping(value="/{eventId}/reports/info", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> getEventReport(@PathVariable int eventId) throws JRException {
         byte[] pdfReport= eventService.generateEventInfoReport(eventId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=event_report.pdf")
+                .body(pdfReport);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
+    @GetMapping(value="/{eventId}/reports/guestlist", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getGuestlistReport(@PathVariable int eventId) throws JRException {
+        byte[] pdfReport= eventService.generateGuestlistReport(eventId);
         return ResponseEntity.ok()
                 .header("Content-Disposition", "inline; filename=event_report.pdf")
                 .body(pdfReport);
@@ -258,12 +274,8 @@ public class EventController {
 
     @PostMapping("/process-invitation")
     public ResponseEntity<Void> processInvitation(@RequestParam("invitation-token") String token, @Valid @RequestBody GetGuestDTO guest) {
-        try {
-            eventService.processInvitation(token, guest);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        eventService.processInvitation(token, guest);
+        return ResponseEntity.ok().build();
     }
 
 }

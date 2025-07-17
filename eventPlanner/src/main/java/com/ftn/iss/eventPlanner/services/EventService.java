@@ -55,6 +55,8 @@ public class EventService {
     private ReservationRepository reservationRepository;
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private NotificationService notificationService;
 
     private ModelMapper modelMapper = new ModelMapper();
     @Autowired
@@ -146,7 +148,8 @@ public class EventService {
         List<GetEventDTO> eventDTOs = new ArrayList<>();
         if (accountId != null) {
             eventDTOs = events.stream()
-                    .filter(event -> event.getOrganizer().getAccount().getId() == accountId && !event.isDeleted())
+                    .filter(event->!event.isDeleted())
+                    .filter(event -> event.getOrganizer().getAccount().getId() == accountId)
                     .map(this::mapToGetEventDTO)
                     .collect(Collectors.toList());
         }
@@ -201,13 +204,12 @@ public class EventService {
         return modelMapper.map(event, CreatedEventDTO.class);
     }
 
+    @Transactional
     public UpdatedEventDTO update (int eventId, UpdateEventDTO updateEventDTO){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         event.setName(updateEventDTO.getName());
         event.setDescription(updateEventDTO.getDescription());
-        event.setOpen(updateEventDTO.isOpen());
-        //TODO: check invitations if publicity is changed
         if(updateEventDTO.getMaxParticipants() < event.getStats().getParticipantsCount()) {
             throw new IllegalArgumentException("Max participants cannot be less than current participants count");
         }
@@ -225,9 +227,58 @@ public class EventService {
                     .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + updateEventDTO.getEventTypeId() + " not found"));
         }
         event.setEventType(eventType);
+        event= updateEventPublicity(event, updateEventDTO);
         event = eventRepository.save(event);
+        notifyGuests("Event updated","The event " + event.getName() + " has been updated.", event.getId());
         eventRepository.flush();
         return modelMapper.map(event, UpdatedEventDTO.class);
+    }
+
+    public Event updateEventPublicity(Event event, UpdateEventDTO updateEventDTO){
+        if(event.isOpen() == updateEventDTO.isOpen())
+            return event;
+        notifyGuests("Event updated","The event " + event.getName() + " has been updated.", event.getId());
+        if(updateEventDTO.isOpen()) {
+            List<Account> guests = accountRepository.findAccountsByAcceptedEventId(event.getId());
+            for(Account guest : guests){
+                guest.getAcceptedEvents().remove(event);
+                accountRepository.save(guest);
+            }
+            event.getGuestList().clear();
+            eventInviteTokenRepository.deleteAll(eventInviteTokenRepository.findAllByEventId(event.getId()));
+        }
+
+        EventStats stats= event.getStats();
+        stats.setParticipantsCount(0);
+        eventStatsRepository.save(stats);
+        event.setOpen(updateEventDTO.isOpen());
+        return event;
+    }
+
+    public void delete(int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+
+        if(event.getDate().isAfter(LocalDate.now())) {
+            reservationRepository.findByEventId(event.getId()).stream()
+                    .filter(r -> r.getStatus() == Status.ACCEPTED || r.getStatus() == Status.PENDING)
+                    .findAny()
+                    .ifPresent(r -> { throw new IllegalArgumentException("Event can't be deleted when it has reservations"); });
+            notifyGuests("Event Cancelled", "The event " + event.getName() + " has been cancelled.", eventId);
+        }
+        event.setDeleted(true);
+        eventRepository.save(event);
+        eventRepository.flush();
+    }
+
+    private void notifyGuests(String title, String content, int eventId){
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+
+        List<Account> guests = accountRepository.findAccountsByAcceptedEventId(eventId);
+        for (Account guest : guests) {
+            notificationService.sendNotification(guest.getId(),title,content);
+        }
     }
 
     private void checkDateUpdate(Event event, LocalDate date){
@@ -438,6 +489,47 @@ public class EventService {
         parameters.put("AgendaSubreport", agendaSubreport);
 
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, jrDataSource);
+
+        return JasperExportManager.exportReportToPdf(jasperPrint);
+    }
+
+    public byte[] generateGuestlistReport(int eventId) throws JRException {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+
+        String reportPath = "template/guestlist_report.jrxml";
+        String guestSubreportPath = "template/guestlist_subreport.jrxml";
+
+        InputStream reportStream = getClass().getClassLoader().getResourceAsStream(reportPath);
+        InputStream guestSubreportStream = getClass().getClassLoader().getResourceAsStream(guestSubreportPath);
+
+        if (reportStream == null || guestSubreportStream == null) {
+            throw new JRException("Could not find report templates");
+        }
+
+        JasperReport mainReport = JasperCompileManager.compileReport(reportStream);
+        JasperReport guestSubreport = JasperCompileManager.compileReport(guestSubreportStream);
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("eventName", event.getName());
+
+        List<HashMap<String, Object>> guestItems = new ArrayList<>();
+        for (String guestName : event.getGuestList()) {
+            HashMap<String, Object> guest = new HashMap<>();
+            guest.put("guestName", guestName);
+            guestItems.add(guest);
+        }
+        data.put("guestList", guestItems);
+
+        List<HashMap<String, Object>> reportData = List.of(data);
+        JRDataSource mainDataSource = new JRBeanCollectionDataSource(reportData);
+        JRDataSource guestDataSource = new JRBeanCollectionDataSource(guestItems);
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("GuestSubreport", guestSubreport);
+        parameters.put("GuestListDataSource", guestDataSource);
+
+        JasperPrint jasperPrint = JasperFillManager.fillReport(mainReport, parameters, mainDataSource);
 
         return JasperExportManager.exportReportToPdf(jasperPrint);
     }
