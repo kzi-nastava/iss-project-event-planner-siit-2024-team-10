@@ -164,8 +164,10 @@ public class BudgetItemService {
     }
 
     public boolean buy(int eventId, int offeringId){
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
-        Offering offering = offeringRepository.findById(offeringId).orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
+        Offering offering = offeringRepository.findById(offeringId)
+                .orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
 
         for(BudgetItem budgetItem : event.getBudget()){
             if(budgetItem.getCategory().getId() == offering.getCategory().getId()){
@@ -173,15 +175,12 @@ public class BudgetItemService {
 
                 if ("Service".equals(offeringType)) {
                     com.ftn.iss.eventPlanner.model.Service service = (com.ftn.iss.eventPlanner.model.Service) offering;
-                    if(!hasMoneyLeft(budgetItem,service.getCurrentDetails().getPrice(),service.getCurrentDetails().getDiscount()))
-                        return false;
+                    if(!hasMoneyLeft(budgetItem, service.getCurrentDetails().getPrice(), service.getCurrentDetails().getDiscount())) {
+                        throw new IllegalArgumentException("Insufficient budget for this purchase");
+                    }
                     budgetItem.getServices().add(service.getCurrentDetails());
                 } else if ("Product".equals(offeringType)) {
                     Product product = (Product) offering;
-
-                    if (!hasMoneyLeft(budgetItem, product.getCurrentDetails().getPrice(), product.getCurrentDetails().getDiscount())) {
-                        return false;
-                    }
 
                     int currentProductDetailsId = product.getCurrentDetails().getId();
 
@@ -190,11 +189,14 @@ public class BudgetItemService {
                                     product.getProductDetailsHistory().stream().anyMatch(h -> h.getId() == p.getId()));
 
                     if (alreadyAdded) {
-                        return false;
+                        throw new IllegalArgumentException("Product already purchased");
                     }
-
+                    if (!hasMoneyLeft(budgetItem, product.getCurrentDetails().getPrice(), product.getCurrentDetails().getDiscount())) {
+                        throw new IllegalArgumentException("Insufficient budget for this purchase");
+                    }
                     budgetItem.getProducts().add(product.getCurrentDetails());
                 }
+                budgetItemRepository.save(budgetItem);
                 return true;
             }
         }
