@@ -321,7 +321,7 @@ class BudgetItemServiceTest {
         when(eventRepository.findById(INVALID_EVENT_ID)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> budgetItemService.buy(INVALID_EVENT_ID, VALID_OFFERING_ID))
+        assertThatThrownBy(() -> budgetItemService.buy(INVALID_EVENT_ID, VALID_OFFERING_ID,false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event with ID " + INVALID_EVENT_ID + " not found");
 
@@ -337,7 +337,7 @@ class BudgetItemServiceTest {
         when(offeringRepository.findById(INVALID_OFFERING_ID)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, INVALID_OFFERING_ID))
+        assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, INVALID_OFFERING_ID,false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Offering with ID " + INVALID_OFFERING_ID + " not found");
 
@@ -357,7 +357,7 @@ class BudgetItemServiceTest {
                 .hasMoneyLeft(any(BudgetItem.class), eq(500.0), eq(0.0));
 
         // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID,false);
 
         // Assert
         assertThat(result).isTrue();
@@ -365,18 +365,17 @@ class BudgetItemServiceTest {
     }
 
     @Test
-    void buy_WhenServiceCannotBeAfforded_ReturnsFalse() {
+    void buy_WhenServiceCannotBeAfforded_ThrowsException() {
         // Arrange
         when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
         when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(service));
-
         when(budgetItemService.hasMoneyLeft(budgetItem, 500.0, 0.0)).thenReturn(false);
 
-        // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+        // Act & Assert
+        assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Insufficient budget for this purchase");
 
-        // Assert
-        assertThat(result).isFalse();
         assertThat(budgetItem.getServices()).doesNotContain(serviceDetails);
     }
 
@@ -389,7 +388,7 @@ class BudgetItemServiceTest {
         when(budgetItemService.hasMoneyLeft(budgetItem, 300.0, 0.0)).thenReturn(true);
 
         // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID,false);
 
         // Assert
         assertThat(result).isTrue();
@@ -397,23 +396,22 @@ class BudgetItemServiceTest {
     }
 
     @Test
-    void buy_WhenProductCannotBeAfforded_ReturnsFalse() {
+    void buy_WhenProductCannotBeAfforded_ThrowsException() {
         // Arrange
         when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
         when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(product));
-
         when(budgetItemService.hasMoneyLeft(budgetItem, 300.0, 0.0)).thenReturn(false);
 
-        // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+        // Act & Assert
+        assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Insufficient budget for this purchase");
 
-        // Assert
-        assertThat(result).isFalse();
         assertThat(budgetItem.getProducts()).doesNotContain(productDetails);
     }
 
     @Test
-    void buy_WhenProductAlreadyAdded_ReturnsFalse() {
+    void buy_WhenProductAlreadyAdded_ThrowsIllegalArgumentException() {
         // Arrange
         when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
         when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(product));
@@ -421,19 +419,15 @@ class BudgetItemServiceTest {
         // Add product to budget item first
         budgetItem.getProducts().add(productDetails);
 
-        when(budgetItemService.hasMoneyLeft(budgetItem, 300.0, 0.0)).thenReturn(true);
-
         // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
-
         // Assert
-        assertThat(result).isFalse();
-        // Verify product was not added again
-        assertThat(budgetItem.getProducts()).hasSize(1);
+        assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Product already purchased");
     }
 
     @Test
-    void buy_WhenHistoricalProductAlreadyAdded_ReturnsFalse() {
+    void buy_WhenHistoricalProductAlreadyAdded_ThrowsException() {
         // Arrange
         when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
         when(offeringRepository.findById(VALID_OFFERING_ID)).thenReturn(Optional.of(product));
@@ -441,16 +435,12 @@ class BudgetItemServiceTest {
         // Add historical product to budget item first
         budgetItem.getProducts().add(historicalProductDetails);
 
-        when(budgetItemService.hasMoneyLeft(budgetItem, 300.0, 0.0)).thenReturn(true);
+        // Act & Assert
+        assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Product already purchased");
 
-        // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
-
-        // Assert
-        assertThat(result).isFalse();
-        // Verify only historical product is present
-        assertThat(budgetItem.getProducts()).hasSize(1);
-        assertThat(budgetItem.getProducts()).contains(historicalProductDetails);
+        assertThat(budgetItem.getProducts()).containsExactly(historicalProductDetails);
     }
 
     @Test
@@ -470,7 +460,7 @@ class BudgetItemServiceTest {
                 .create(eq(VALID_EVENT_ID), any(CreateBudgetItemDTO.class), eq(VALID_OFFERING_ID));
 
         // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID,false);
 
         // Assert
         assertThat(result).isTrue();
@@ -497,7 +487,7 @@ class BudgetItemServiceTest {
                 .create(eq(VALID_EVENT_ID), any(CreateBudgetItemDTO.class), eq(VALID_OFFERING_ID));
 
         // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID,false);
 
         // Assert
         assertThat(result).isTrue();
@@ -519,7 +509,7 @@ class BudgetItemServiceTest {
         when(budgetItemService.hasMoneyLeft(budgetItem, 500.0, 0.0)).thenReturn(true);
 
         // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID,false);
 
         // Assert
         assertThat(result).isTrue();
@@ -538,7 +528,7 @@ class BudgetItemServiceTest {
         when(budgetItemService.hasMoneyLeft(budgetItem, 500.0, 0.2)).thenReturn(true);
 
         // Act
-        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
+        boolean result = budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID,false);
 
         // Assert
         assertThat(result).isTrue();
