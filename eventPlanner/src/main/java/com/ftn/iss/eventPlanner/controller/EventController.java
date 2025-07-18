@@ -203,8 +203,11 @@ public class EventController {
     }
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value="/{eventId}/budget/buy/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Boolean> buy(@PathVariable int eventId, @PathVariable int offeringId) {
-        boolean success = budgetItemService.buy(eventId, offeringId);
+    public ResponseEntity<Boolean> buy(
+            @PathVariable int eventId,
+            @PathVariable int offeringId,
+            @RequestBody boolean pending) {
+        boolean success = budgetItemService.buy(eventId, offeringId, pending);
         return ResponseEntity.ok(success);
     }
 

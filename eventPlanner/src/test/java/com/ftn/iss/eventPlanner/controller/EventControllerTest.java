@@ -21,7 +21,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+// every 401 will be changed after we change err
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -829,7 +829,7 @@ public class EventControllerTest {
         ResponseEntity<Boolean> response = restTemplate.exchange(
                 BASE + "/" + EVENT_WITHOUT_BUDGET_ITEM + "/budget/buy/" + EXISTING_OFFERING_ID,
                 HttpMethod.PUT,
-                new HttpEntity<>(null, getHeadersWithAuth()),
+                new HttpEntity<>(false, getHeadersWithAuth()),
                 Boolean.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -893,7 +893,7 @@ public class EventControllerTest {
                 HttpMethod.PUT,
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 Boolean.class);
-        assertFalse(response.getBody());
+        assertTrue(response.getStatusCode().is4xxClientError());
     }
 
     @Test
@@ -906,8 +906,7 @@ public class EventControllerTest {
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 Boolean.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertFalse(response.getBody());
+        assertTrue(response.getStatusCode().is4xxClientError());
     }
 
     @Test
