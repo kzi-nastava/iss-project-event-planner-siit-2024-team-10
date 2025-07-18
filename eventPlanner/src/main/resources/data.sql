@@ -40,7 +40,7 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
                                                                                                                                                          ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2026-01-15', FALSE, 1, '2025-03-10 13:20', 1),
                                                                                                                                                          ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2026-03-10', FALSE, 2, '2025-03-03 15:00',2),
-                                                                                                                                                         ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20', FALSE, 3, '2025-05-01 09:00',3),
+                                                                                                                                                         ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-08-20', FALSE, 3, '2025-05-01 09:00',3),
                                                                                                                                                          ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15', FALSE, 2, '2025-08-12 08:30',4),
                                                                                                                                                          ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01', FALSE, 1, '2025-07-15 18:00',5);
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
@@ -124,7 +124,7 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_product_details_
                                                                                                              ( 'Product',2 ,1,  6, FALSE, FALSE),
                                                                                                              ( 'Product',1 ,1,  7, FALSE, FALSE),
                                                                                                              ( 'Product',1 ,1,  8, FALSE, FALSE),
-                                                                                                             ( 'Product',2 ,1,  9, FALSE, FALSE),
+                                                                                                             ( 'Product',3 ,1,  9, FALSE, FALSE),
                                                                                                              ( 'Product',3 ,1,  10, FALSE, FALSE);
 INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_id, is_deleted, pending) VALUES
                                                                                                              ( 'Service',1 ,1,  1, FALSE, FALSE),
@@ -181,6 +181,6 @@ INSERT INTO event_type_recommended_categories(event_type_id,recommended_categori
 INSERT INTO budget_item (amount, is_deleted, category_id, event_id) VALUES
                                                                         (1500.0, false, 1, 1),
                                                                         (2000.0, false, 2, 1),
-                                                                        (1200.0, false, 3, 3);
+                                                                        (5000.0, false, 3, 3);
 
 INSERT INTO budget_item_services(budget_item_id,services_id) VALUES  (1,1);

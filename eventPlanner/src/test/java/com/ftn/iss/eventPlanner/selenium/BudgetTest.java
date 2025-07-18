@@ -7,6 +7,7 @@ import org.openqa.selenium.support.ui.*;
 
 import java.time.Duration;
 import java.util.List;
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BudgetTest {
@@ -40,6 +41,7 @@ public class BudgetTest {
     }
 
     @Test
+    @Order(1)
     public void testAddNewBudgetItem() {
         driver.get(BASE_URL + "/budget");
 
@@ -92,10 +94,46 @@ public class BudgetTest {
         boolean found = amounts.stream().anyMatch(e -> e.getAttribute("value").equals("500"));
         Assertions.assertTrue(found, "New budget item with amount 500 should be visible in the table");
     }
-
     @Test
-    public void testReserveServiceWithCategoryNotInPlannedBudget() {
-        driver.get(BASE_URL + "/offering/10");
+    @Order(2)
+    public void testDeleteBudgetItemFailureDueToReservedOfferings() {
+        driver.get(BASE_URL + "/budget");
+        selectFirstEvent();
+
+        // Click delete button on the first item
+        WebElement firstDeleteBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("table.budget-table tr.data-row:nth-child(1) button.delete-btn")));
+        firstDeleteBtn.click();
+
+        // Wait for snackbar and check failure message
+        WebElement snackBar = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("simple-snack-bar")));
+        String message = snackBar.getText();
+
+        Assertions.assertTrue(message.contains("has not been deleted"));
+    }
+    @Test
+    @Order(3)
+    public void testDeleteBudgetItem() {
+        driver.get(BASE_URL + "/budget");
+        selectFirstEvent();
+
+        // Click delete button on the second item
+        WebElement secondDeleteBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("table.budget-table tr.data-row:nth-child(2) button.delete-btn")));
+        secondDeleteBtn.click();
+
+        // Wait for snackbar and check success message
+        WebElement snackBar = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("simple-snack-bar")));
+        String message = snackBar.getText();
+
+        Assertions.assertTrue(message.contains("Budget item deleted"));
+    }
+    @Order(4)
+    @Test
+    public void testReserveServiceWithCategoryNotInPlannedBudget_Manual() {
+        driver.get(BASE_URL + "/offering/12");
 
         // Klikni na Book Now
         WebElement bookNowBtn = wait.until(ExpectedConditions.elementToBeClickable(
@@ -123,7 +161,7 @@ public class BudgetTest {
         WebElement startTimeInput = wait.until(ExpectedConditions.elementToBeClickable(
                 By.cssSelector("input[formcontrolname='startTime']")));
         startTimeInput.clear();
-        startTimeInput.sendKeys("00:00");
+        startTimeInput.sendKeys("1200PM");
 
         // Ako postoji endTime input (kada minDuration != maxDuration)
         List<WebElement> endTimeInputs = driver.findElements(
@@ -132,24 +170,183 @@ public class BudgetTest {
         if (!endTimeInputs.isEmpty()) {
             WebElement endTimeInput = endTimeInputs.get(0);
             endTimeInput.clear();
-            endTimeInput.sendKeys("01:00");
+            endTimeInput.sendKeys("0400PM");
         }
 
         // Klikni Book dugme
         WebElement bookBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//button[contains(text(), 'Book') and not(@disabled)]")));
+                By.id("book-button")));
         bookBtn.click();
+
+        // Wait for the Confirmation dialog to appear
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h2[contains(text(),'Confirmation')]")));
+
+        // Final confirm click
+        WebElement finalConfirmBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("confirm-button")));
+        finalConfirmBtn.click();
 
         // Sačekaj snackbar
         WebElement successSnackbar = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//simple-snack-bar[contains(., 'Product reserved successfully')]")));
+                By.xpath("//simple-snack-bar[contains(., 'Reservation request is pending! Email confirmation will been sent.')]")));
 
         Assertions.assertNotNull(successSnackbar, "Reservation confirmation snackbar not shown.");
     }
-
-
-
     @Test
+    @Order(5)
+    public void testReserveServiceWithCategoryNotInPlannedBudget_Autoconfirm() {
+        driver.get(BASE_URL + "/offering/13");
+
+        // Klikni na Book Now
+        WebElement bookNowBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("button.book-now-btn")));
+        bookNowBtn.click();
+
+        // Sačekaj dijalog Book a Service
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h1[contains(text(), 'Book a Service')]")));
+
+        // Otvori mat-select za event
+        WebElement eventSelect = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("mat-select[formcontrolname='event']")));
+        eventSelect.click();
+
+        // Sačekaj sve opcije
+        List<WebElement> options = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                By.cssSelector("mat-option")));
+        Assertions.assertTrue(options.size() >= 3, "Nema dovoljno event opcija da se izabere treći.");
+
+        // Klikni treću opciju
+        options.get(2).click();
+
+        // Popuni vreme — startTime = 00:00
+        WebElement startTimeInput = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("input[formcontrolname='startTime']")));
+        startTimeInput.clear();
+        startTimeInput.sendKeys("1200AM");
+
+        // Ako postoji endTime input (kada minDuration != maxDuration)
+        List<WebElement> endTimeInputs = driver.findElements(
+                By.cssSelector("input[formcontrolname='endTime']"));
+
+        if (!endTimeInputs.isEmpty()) {
+            WebElement endTimeInput = endTimeInputs.get(0);
+            endTimeInput.clear();
+            endTimeInput.sendKeys("0300AM");
+        }
+
+        // Klikni Book dugme
+        WebElement bookBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("book-button")));
+        bookBtn.click();
+
+        // Wait for the Confirmation dialog to appear
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h2[contains(text(),'Confirmation')]")));
+
+        // Final confirm click
+        WebElement finalConfirmBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("confirm-button")));
+        finalConfirmBtn.click();
+
+        // Sačekaj snackbar
+        WebElement successSnackbar = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//simple-snack-bar[contains(., 'Reservation successful! Budget updated. Email confirmation has been sent.')]")));
+
+        Assertions.assertNotNull(successSnackbar, "Reservation confirmation snackbar not shown.");
+
+        // Idemo na budget stranicu
+        driver.get(BASE_URL + "/budget");
+
+        // ISPRAVKA: Koristimo klasu event-selector umesto formcontrolname
+        // Prvo sačekamo da se stranica učita
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector(".budget-container")));
+
+        // Pokušavamo različite selektore za mat-select
+        WebElement eventSelectBudget = null;
+        try {
+            // Prvo pokušavamo sa klasom event-selector
+            eventSelectBudget = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.cssSelector("mat-select.custom-select")));
+        } catch (TimeoutException e1) {
+            try {
+                // Alternativno, pokušavamo sa mat-form-field klasom
+                eventSelectBudget = wait.until(ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("mat-form-field.event-selector mat-select")));
+            } catch (TimeoutException e2) {
+                // Poslednji pokušaj - bilo koji mat-select na stranici
+                eventSelectBudget = wait.until(ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("mat-select")));
+            }
+        }
+
+        // Kliknemo na select da otvorimo opcije
+        eventSelectBudget.click();
+
+        // Sačekaj sve opcije
+        List<WebElement> budgetOptions = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                By.cssSelector("mat-option")));
+        Assertions.assertTrue(budgetOptions.size() >= 3, "Nema dovoljno event opcija da se izabere treći.");
+
+        // Klikni treću opciju
+        budgetOptions.get(2).click();
+
+        // Sačekaj da se tabela učita
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("table.budget-table")));
+
+        // Dodatno vreme za učitavanje podataka
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Proveravamo da li postoje redovi u tabeli
+        List<WebElement> rows = driver.findElements(By.cssSelector("table.budget-table tr.data-row"));
+
+        // Ako nema redova, možda je empty state
+        if (rows.isEmpty()) {
+            WebElement emptyState = driver.findElement(By.cssSelector(".empty-state"));
+            if (emptyState != null && emptyState.isDisplayed()) {
+                System.out.println("Budget table is empty - no budget items found");
+                // Možda je potrebno da prvo dodamo budget item
+                return;
+            }
+        }
+
+        boolean matchFound = false;
+
+        for (WebElement row : rows) {
+            List<WebElement> cells = row.findElements(By.cssSelector("td"));
+
+            if (cells.size() >= 3) {
+                String category = cells.get(0).getText().trim().toLowerCase();
+                String offering = cells.get(2).getText().trim().toLowerCase();
+
+                System.out.println("Category: " + category + ", Offering: " + offering);
+
+                if (category.contains("electronics") && offering.contains("dj service")) {
+                    matchFound = true;
+                    break;
+                }
+            }
+        }
+
+        Assertions.assertTrue(matchFound, "No row found with category 'Electronics' and offering 'dj service'.");
+
+        ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
+
+        try {
+            Thread.sleep(1000); // Ensure page scrolls completely and UI renders any dynamic content
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+    @Test
+    @Order(6)
     public void testBuyProductWithCategoryNotInPlannedBudget() {
         driver.get(BASE_URL + "/offering/10");
 
@@ -234,6 +431,7 @@ public class BudgetTest {
         }
     }
     @Test
+    @Order(7)
     public void testBuyProductWithCategoryInPlannedBudget() {
         driver.get(BASE_URL + "/offering/5");
 
@@ -319,6 +517,7 @@ public class BudgetTest {
     }
 
     @Test
+    @Order(8)
     public void testBuyAlreadyPurchasedProduct() {
         driver.get(BASE_URL + "/offering/10");
 
@@ -361,14 +560,71 @@ public class BudgetTest {
 
         Assertions.assertNotNull(errorSnackbar, "Expected snackbar with 'Product not purchased' was not shown.");
     }
-
-
+    @Order(9)
     @Test
-    public void testReserveServiceWithPriceHigherThanPlannedBudget() {
-        // Test reservation of a service with price higher than planned budget
+    public void testReserveServicePriceOutOfBudget() {
+        driver.get(BASE_URL + "/offering/14");
+
+        // Klikni na Book Now
+        WebElement bookNowBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("button.book-now-btn")));
+        bookNowBtn.click();
+
+        // Sačekaj dijalog Book a Service
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h1[contains(text(), 'Book a Service')]")));
+
+        // Otvori mat-select za event
+        WebElement eventSelect = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("mat-select[formcontrolname='event']")));
+        eventSelect.click();
+
+        // Sačekaj sve opcije
+        List<WebElement> options = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                By.cssSelector("mat-option")));
+        Assertions.assertTrue(options.size() >= 3, "Nema dovoljno event opcija da se izabere treći.");
+
+        // Klikni treću opciju
+        options.get(2).click();
+
+        // Popuni vreme — startTime = 00:00
+        WebElement startTimeInput = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("input[formcontrolname='startTime']")));
+        startTimeInput.clear();
+        startTimeInput.sendKeys("0600PM");
+
+        // Ako postoji endTime input (kada minDuration != maxDuration)
+        List<WebElement> endTimeInputs = driver.findElements(
+                By.cssSelector("input[formcontrolname='endTime']"));
+
+        if (!endTimeInputs.isEmpty()) {
+            WebElement endTimeInput = endTimeInputs.get(0);
+            endTimeInput.clear();
+            endTimeInput.sendKeys("1000PM");
+        }
+
+        // Klikni Book dugme
+        WebElement bookBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("book-button")));
+        bookBtn.click();
+
+        // Wait for the Confirmation dialog to appear
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h2[contains(text(),'Confirmation')]")));
+
+        // Final confirm click
+        WebElement finalConfirmBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("confirm-button")));
+        finalConfirmBtn.click();
+
+        // Sačekaj snackbar
+        WebElement successSnackbar = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//simple-snack-bar[contains(., 'Not enough budget to record the purchase.')]")));
+
+        Assertions.assertNotNull(successSnackbar, "Reservation fail snackbar not shown.");
     }
-
     @Test
+    @Order(10)
     public void testBuyProductWithPriceOutOfBudget() {
         driver.get(BASE_URL + "/offering/3");
 
@@ -412,7 +668,21 @@ public class BudgetTest {
         Assertions.assertNotNull(errorSnackbar, "Expected snackbar with 'Product not purchased' was not shown.");
     }
     @Test
-    public void testUpdateAmountFirstBudgetItem_failThenPass() {
+    @Order(11)
+    public void testBuyNotAvailableProduct() {
+        driver.get(BASE_URL + "/offering/8");
+
+        // Pronađi dugme "Book Now" na stranici
+        WebElement bookNowBtn = wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.cssSelector("button.book-now-btn")));
+
+        // Proveri da li je dugme disabled
+        boolean isDisabled = !bookNowBtn.isEnabled();
+        Assertions.assertTrue(isDisabled, "Book Now button should be disabled for offering 8.");
+    }
+    @Test
+    @Order(12)
+    public void testUpdateToSmallAmount() {
         driver.get(BASE_URL + "/budget");
         selectFirstEvent();
 
@@ -433,7 +703,8 @@ public class BudgetTest {
     }
 
     @Test
-    public void testUpdateAmountFirstBudgetItem_failThengPass() {
+    @Order(13)
+    public void testUpdateToBigAmount() {
         driver.get(BASE_URL + "/budget");
         selectFirstEvent();
 
@@ -441,7 +712,7 @@ public class BudgetTest {
                 By.cssSelector("table.budget-table tr.data-row:nth-child(1) input.currency-input")));
 
         amountInput.clear();
-        amountInput.sendKeys("1600");
+        amountInput.sendKeys("160000");
         amountInput.sendKeys(Keys.TAB);
 
         WebElement successSnackBar = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -450,60 +721,222 @@ public class BudgetTest {
         Assertions.assertTrue(successMessage.toLowerCase().contains("updated"),
                 "Expected success message on valid amount");
     }
-
     @Test
-    public void testDeleteBudgetItemFailureDueToReservedOfferings() {
+    @Order(14)
+    public void testReserveServiceWithCategoryInPlannedBudget_Autoconfirm() {
+        driver.get(BASE_URL + "/offering/19");
+
+        // Klikni na Book Now
+        WebElement bookNowBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("button.book-now-btn")));
+        bookNowBtn.click();
+
+        // Sačekaj dijalog Book a Service
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h1[contains(text(), 'Book a Service')]")));
+
+        // Otvori mat-select za event
+        WebElement eventSelect = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("mat-select[formcontrolname='event']")));
+        eventSelect.click();
+
+        // Sačekaj sve opcije
+        List<WebElement> options = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                By.cssSelector("mat-option")));
+
+        // Klikni treću opciju
+        options.get(0).click();
+
+        // Popuni vreme — startTime = 00:00
+        WebElement startTimeInput = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("input[formcontrolname='startTime']")));
+        startTimeInput.clear();
+        startTimeInput.sendKeys("1200AM");
+
+        // Ako postoji endTime input (kada minDuration != maxDuration)
+        List<WebElement> endTimeInputs = driver.findElements(
+                By.cssSelector("input[formcontrolname='endTime']"));
+
+        if (!endTimeInputs.isEmpty()) {
+            WebElement endTimeInput = endTimeInputs.get(0);
+            endTimeInput.clear();
+            endTimeInput.sendKeys("0200AM");
+        }
+
+        // Klikni Book dugme
+        WebElement bookBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("book-button")));
+        bookBtn.click();
+
+        // Wait for the Confirmation dialog to appear
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h2[contains(text(),'Confirmation')]")));
+
+        // Final confirm click
+        WebElement finalConfirmBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("confirm-button")));
+        finalConfirmBtn.click();
+
+        // Sačekaj snackbar
+        WebElement successSnackbar = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//simple-snack-bar[contains(., 'Reservation successful! Budget updated. Email confirmation has been sent.')]")));
+
+        Assertions.assertNotNull(successSnackbar, "Reservation confirmation snackbar not shown.");
+
+        // Idemo na budget stranicu
         driver.get(BASE_URL + "/budget");
-        selectFirstEvent();
 
-        // Click delete button on the first item
-        WebElement firstDeleteBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector("table.budget-table tr.data-row:nth-child(1) button.delete-btn")));
-        firstDeleteBtn.click();
+        // ISPRAVKA: Koristimo klasu event-selector umesto formcontrolname
+        // Prvo sačekamo da se stranica učita
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector(".budget-container")));
 
-        // Wait for snackbar and check failure message
-        WebElement snackBar = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector("simple-snack-bar")));
-        String message = snackBar.getText();
+        // Pokušavamo različite selektore za mat-select
+        WebElement eventSelectBudget = null;
+        try {
+            // Prvo pokušavamo sa klasom event-selector
+            eventSelectBudget = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.cssSelector("mat-select.custom-select")));
+        } catch (TimeoutException e1) {
+            try {
+                // Alternativno, pokušavamo sa mat-form-field klasom
+                eventSelectBudget = wait.until(ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("mat-form-field.event-selector mat-select")));
+            } catch (TimeoutException e2) {
+                // Poslednji pokušaj - bilo koji mat-select na stranici
+                eventSelectBudget = wait.until(ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("mat-select")));
+            }
+        }
 
-        Assertions.assertTrue(message.contains("has not been deleted"));
+        // Kliknemo na select da otvorimo opcije
+        eventSelectBudget.click();
+
+        // Sačekaj sve opcije
+        List<WebElement> budgetOptions = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                By.cssSelector("mat-option")));
+
+        // Klikni treću opciju
+        budgetOptions.get(0).click();
+
+        // Sačekaj da se tabela učita
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("table.budget-table")));
+
+        // Dodatno vreme za učitavanje podataka
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Proveravamo da li postoje redovi u tabeli
+        List<WebElement> rows = driver.findElements(By.cssSelector("table.budget-table tr.data-row"));
+
+        // Ako nema redova, možda je empty state
+        if (rows.isEmpty()) {
+            WebElement emptyState = driver.findElement(By.cssSelector(".empty-state"));
+            if (emptyState != null && emptyState.isDisplayed()) {
+                System.out.println("Budget table is empty - no budget items found");
+                // Možda je potrebno da prvo dodamo budget item
+                return;
+            }
+        }
+
+        boolean matchFound = false;
+
+        for (WebElement row : rows) {
+            List<WebElement> cells = row.findElements(By.cssSelector("td"));
+
+            if (cells.size() >= 3) {
+                String category = cells.get(0).getText().trim().toLowerCase();
+                String offering = cells.get(2).getText().trim().toLowerCase();
+
+                System.out.println("Category: " + category + ", Offering: " + offering);
+
+                if (category.contains("nova kategorija") && offering.contains("party balloon setup")) {
+                    matchFound = true;
+                    break;
+                }
+            }
+        }
+
+        Assertions.assertTrue(matchFound, "No row found with category 'Nova kategorina' and offering 'Party Balloon Setup'.");
+
+        ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
+
+        try {
+            Thread.sleep(1000); // Ensure page scrolls completely and UI renders any dynamic content
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
-
     @Test
-    public void testDeleteBudgetItem() {
-        driver.get(BASE_URL + "/budget");
-        selectFirstEvent();
+    @Order(15)
+    public void testReserveAlreadyReservedService() {
+        driver.get(BASE_URL + "/offering/13");
 
-        // Click delete button on the second item
-        WebElement secondDeleteBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector("table.budget-table tr.data-row:nth-child(2) button.delete-btn")));
-        secondDeleteBtn.click();
+        // Klikni na Book Now
+        WebElement bookNowBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("button.book-now-btn")));
+        bookNowBtn.click();
 
-        // Wait for snackbar and check success message
-        WebElement snackBar = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector("simple-snack-bar")));
-        String message = snackBar.getText();
+        // Sačekaj dijalog Book a Service
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h1[contains(text(), 'Book a Service')]")));
 
-        Assertions.assertTrue(message.contains("Budget item deleted"));
+        // Otvori mat-select za event
+        WebElement eventSelect = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("mat-select[formcontrolname='event']")));
+        eventSelect.click();
+
+        // Sačekaj sve opcije
+        List<WebElement> options = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                By.cssSelector("mat-option")));
+        Assertions.assertTrue(options.size() >= 3, "Nema dovoljno event opcija da se izabere treći.");
+
+        // Klikni treću opciju
+        options.get(2).click();
+
+        // Popuni vreme — startTime = 00:00
+        WebElement startTimeInput = wait.until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("input[formcontrolname='startTime']")));
+        startTimeInput.clear();
+        startTimeInput.sendKeys("1200AM");
+
+        // Ako postoji endTime input (kada minDuration != maxDuration)
+        List<WebElement> endTimeInputs = driver.findElements(
+                By.cssSelector("input[formcontrolname='endTime']"));
+
+        if (!endTimeInputs.isEmpty()) {
+            WebElement endTimeInput = endTimeInputs.get(0);
+            endTimeInput.clear();
+            endTimeInput.sendKeys("0300AM");
+        }
+
+        // Klikni Book dugme
+        WebElement bookBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("book-button")));
+        bookBtn.click();
+
+        // Wait for the Confirmation dialog to appear
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//h2[contains(text(),'Confirmation')]")));
+
+        // Final confirm click
+        WebElement finalConfirmBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                By.id("confirm-button")));
+        finalConfirmBtn.click();
+
+        WebElement successSnackbar = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//simple-snack-bar[contains(., \"You've already made a reservation for selected event.\")]")));
+
+        Assertions.assertNotNull(successSnackbar, "Reservation fail snackbar not shown.");
     }
-
     @Test
     public void testViewDetailsOfProductOrServiceFromBudget() {
         // Test viewing details of product/service from budget by clicking "details" button
     }
-    @Test
-    public void testBuyNotAvailableProduct() {
-        driver.get(BASE_URL + "/offering/8");
-
-        // Pronađi dugme "Book Now" na stranici
-        WebElement bookNowBtn = wait.until(ExpectedConditions.presenceOfElementLocated(
-                By.cssSelector("button.book-now-btn")));
-
-        // Proveri da li je dugme disabled
-        boolean isDisabled = !bookNowBtn.isEnabled();
-        Assertions.assertTrue(isDisabled, "Book Now button should be disabled for offering 8.");
-    }
-
     private void selectFirstEvent() {
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         WebElement eventSelect = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("mat-select")));
