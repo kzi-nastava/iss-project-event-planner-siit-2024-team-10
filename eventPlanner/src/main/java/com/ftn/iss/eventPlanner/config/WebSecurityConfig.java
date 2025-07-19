@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.config;
 
+import com.ftn.iss.eventPlanner.security.auth.CustomAccountStatusChecker;
 import com.ftn.iss.eventPlanner.security.auth.RestAuthenticationEntryPoint;
 import com.ftn.iss.eventPlanner.security.auth.TokenAuthenticationFilter;
 import com.ftn.iss.eventPlanner.services.AccountService;
@@ -37,6 +38,8 @@ public class WebSecurityConfig {
 
     @Autowired
     private TokenUtils tokenUtils;
+    @Autowired
+    private CustomAccountStatusChecker customAccountStatusChecker;
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -53,6 +56,7 @@ public class WebSecurityConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPreAuthenticationChecks(customAccountStatusChecker);
         return authProvider;
     }
 
@@ -94,7 +98,7 @@ public class WebSecurityConfig {
                         "/api/offerings*", "/api/offerings/*", "/api/offerings/*/comments",
                         "/api/accounts/*/favourite-events", "/api/accounts/*/favourite-events/*",
                         "/api/accounts/*/favourite-offerings", "/api/accounts/*/favourite-offerings/*",
-                        "/api/messages/*/*",
+                        "/api/messages/**",
                         "/api/comments*",
                         "/api/images", "/api/images/*",
                         "/api/reservations/*",
