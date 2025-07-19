@@ -3,16 +3,17 @@ package com.ftn.iss.eventPlanner.services;
 import com.ftn.iss.eventPlanner.dto.accountreport.CreateAccountReportDTO;
 import com.ftn.iss.eventPlanner.dto.accountreport.CreatedAccountReportDTO;
 import com.ftn.iss.eventPlanner.dto.accountreport.GetAccountReportDTO;
-import com.ftn.iss.eventPlanner.dto.accountreport.SuspensionStatusDTO;
+import com.ftn.iss.eventPlanner.exception.AccountSuspendedException;
+import com.ftn.iss.eventPlanner.exception.ReportAlreadySentException;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.AccountReport;
-import com.ftn.iss.eventPlanner.model.AccountStatus;
 import com.ftn.iss.eventPlanner.model.Status;
 import com.ftn.iss.eventPlanner.repositories.AccountReportRepository;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class AccountReportService {
     @Autowired
     private AccountRepository accountRepository;
 
-    private final int SUSPENTION_TIME = 3;
+    private final int SUSPENSION_TIME = 3;
 
     public List<GetAccountReportDTO> findAllPending() {
         List<AccountReport> pendingReports = accountReportRepository.findAll().stream()
@@ -39,17 +40,15 @@ public class AccountReportService {
 
     public CreatedAccountReportDTO create(CreateAccountReportDTO createAccountReportDTO) {
         AccountReport accountReport = new AccountReport();
-        Account reporter = accountRepository.findByEmail(createAccountReportDTO.getReporterEmail());
-        if (reporter == null) {
-            throw  new IllegalArgumentException("Reporter not found");
-        }
-        Account reportee = accountRepository.findByEmail(createAccountReportDTO.getReporteeEmail());
-        if (reportee == null) {
-            throw  new IllegalArgumentException("Reportee not found");
-        }
+        Account reporter = accountRepository.findById(createAccountReportDTO.getReporterId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid reporter id"));
 
-        if(accountReportRepository.existsByReporter_EmailAndReportee_Email(createAccountReportDTO.getReporterEmail(), createAccountReportDTO.getReporteeEmail())) {
-            throw  new IllegalStateException("Report has already been created");
+        Account reportee = accountRepository.findById(createAccountReportDTO.getReporteeId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid reportee id"));
+
+
+        if(accountReportRepository.existsByReporter_IdAndReportee_Id(createAccountReportDTO.getReporterId(), createAccountReportDTO.getReporteeId())) {
+            throw  new ReportAlreadySentException("Report has already been sent.");
         }
 
         accountReport.setReporter(reporter);
@@ -66,7 +65,7 @@ public class AccountReportService {
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));
 
         accountReport.setStatus(Status.ACCEPTED);
-        accountReport.setProcessingTimestamp(LocalDateTime.now().plusDays(SUSPENTION_TIME));
+        accountReport.setProcessingTimestamp(LocalDateTime.now().plusDays(SUSPENSION_TIME));
 
         Account reportee = accountRepository.findByEmail(accountReport.getReportee().getEmail());
         if (reportee == null) {
@@ -85,44 +84,42 @@ public class AccountReportService {
         accountReportRepository.save(accountReport);
     }
 
-    public SuspensionStatusDTO getSuspensionDetails(int accountId) {
-        Optional<LocalDateTime> suspensionUntil= getSuspensionIfActive(accountId);
-        SuspensionStatusDTO dto = new SuspensionStatusDTO();
-
-        if (suspensionUntil.isPresent()) {
-            dto.setSuspended(true);
-            dto.setSuspendedUntil(suspensionUntil.get());
-        } else {
-            dto.setSuspended(false);
-            dto.setSuspendedUntil(null);
+    public void checkSuspensionStatus(int accountId) {
+        Optional<AccountReport> reportOpt = accountReportRepository.findTopByReportee_IdAndStatusOrderByProcessingTimestampDesc(accountId, Status.ACCEPTED);
+        if (reportOpt.isPresent()) {
+            AccountReport report = reportOpt.get();
+            if (report.getProcessingTimestamp().isBefore(LocalDateTime.now())) {
+                accountService.endAccountSuspension(accountId); // clean up expired status
+                report.setStatus(Status.DENIED); // the report is no longer valid
+                accountReportRepository.save(report);
+                return;
+            }
+            throw new AccountSuspendedException("Your account has been suspended.\nTime left until you can log in again: " + formatRemainingTime(report.getProcessingTimestamp()));
         }
-
-        return dto;
     }
 
-    private Optional<LocalDateTime> getSuspensionIfActive(int accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getStatus() != AccountStatus.SUSPENDED) {
-            return Optional.empty();
+    public String formatRemainingTime(LocalDateTime suspendedUntil) {
+        LocalDateTime now = LocalDateTime.now();
+        if (suspendedUntil.isBefore(now)) {
+            return "Suspension ended";
         }
+        Duration duration = Duration.between(now, suspendedUntil);
 
-        Optional<AccountReport> reportOpt = accountReportRepository
-                .findTopByReportee_IdAndStatusOrderByProcessingTimestampDesc(accountId, Status.ACCEPTED);
+        long days = duration.toDays();
+        duration = duration.minusDays(days);
+        long hours = duration.toHours();
+        duration = duration.minusHours(hours);
+        long minutes = duration.toMinutes();
+        duration = duration.minusMinutes(minutes);
+        long seconds = duration.toSeconds();
 
-        if (reportOpt.isEmpty()) {
-            return Optional.empty();
-        }
+        StringBuilder sb = new StringBuilder();
+        if (days > 0) sb.append(days).append(days == 1 ? " day " : " days ");
+        if (hours > 0) sb.append(hours).append(hours == 1 ? " hour " : " hours ");
+        if (minutes > 0) sb.append(minutes).append(minutes == 1 ? " minute " : " minutes ");
+        if (seconds > 0) sb.append(seconds).append(minutes == 1 ? " second" : " seconds");
 
-        AccountReport report = reportOpt.get();
-
-        if (report.getProcessingTimestamp() == null || report.getProcessingTimestamp().isBefore(LocalDateTime.now())) {
-            accountService.endAccountSuspension(accountId); // clean up expired status
-            return Optional.empty();
-        }
-
-        return Optional.of(report.getProcessingTimestamp());
+        return sb.toString().trim();
     }
 
     private List<GetAccountReportDTO> mapToAccountReportsDTO(List<AccountReport> accountReports) {
@@ -137,7 +134,6 @@ public class AccountReportService {
         dto.setDescription(accountReport.getDescription());
         dto.setReporterEmail(accountReport.getReporter().getEmail());
         dto.setReporteeEmail(accountReport.getReportee().getEmail());
-        dto.setStatus(accountReport.getStatus());
         return dto;
     }
 
@@ -148,7 +144,6 @@ public class AccountReportService {
         dto.setDescription(accountReport.getDescription());
         dto.setReporterEmail(accountReport.getReporter().getEmail());
         dto.setReporteeEmail(accountReport.getReportee().getEmail());
-        dto.setStatus(accountReport.getStatus());
 
         return dto;
     }
