@@ -101,7 +101,8 @@ public class WebSecurityConfig {
                         "/api/offerings/provider/*",
                         "/api/users/*",
                         "api/events/process-invitation/**",
-                        "/api/events/accept-invite/**"
+                        "/api/events/accept-invite/**",
+                        "api/auth/activate/redirect"
                 )
                 .requestMatchers(HttpMethod.POST,
                         "/api/accounts/*/favourite-events",
