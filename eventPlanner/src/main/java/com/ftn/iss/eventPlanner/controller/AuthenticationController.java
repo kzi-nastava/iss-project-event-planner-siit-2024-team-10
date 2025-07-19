@@ -10,6 +10,7 @@ import com.ftn.iss.eventPlanner.services.UserService;
 import com.ftn.iss.eventPlanner.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping(value = "api/auth")
@@ -65,5 +68,19 @@ public class AuthenticationController {
     public ResponseEntity<String> activateAccount(@RequestParam String token) {
         userService.Activate(token);
         return new ResponseEntity<>("Account activated", HttpStatus.OK);
+    }
+
+    @GetMapping("/activate/redirect")
+    public ResponseEntity<Void> redirectToClient(@RequestParam String token, @RequestHeader("User-Agent") String userAgent) {
+        String redirectUrl;
+        if (userAgent.toLowerCase().contains("android")) {
+            redirectUrl = "m3.eventplanner://activate-account?token=" + token;
+        } else {
+            redirectUrl = "http://localhost:4200/activate?token=" + token;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create(redirectUrl));
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 }
