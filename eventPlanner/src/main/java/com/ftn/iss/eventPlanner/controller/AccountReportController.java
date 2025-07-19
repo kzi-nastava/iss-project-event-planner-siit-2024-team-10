@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/reports")
 public class AccountReportController {
 
@@ -34,12 +35,6 @@ public class AccountReportController {
     public ResponseEntity<CreatedAccountReportDTO> createAccountReport(@RequestBody CreateAccountReportDTO report) throws Exception {
         CreatedAccountReportDTO createdAccountReportDTO = accountReportService.create(report);
         return new ResponseEntity<>(createdAccountReportDTO, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{accountId}/suspension-status")
-    public ResponseEntity<SuspensionStatusDTO> checkSuspensionDetails(@PathVariable("accountId") int accountId) {
-        SuspensionStatusDTO status = accountReportService.getSuspensionDetails(accountId);
-        return ResponseEntity.ok(status);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")

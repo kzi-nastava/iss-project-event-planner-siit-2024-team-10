@@ -17,7 +17,7 @@ public class AccountReport {
     @Column(nullable=false)
     private String description;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime processingTimestamp;
 
     @Column(nullable = false)
