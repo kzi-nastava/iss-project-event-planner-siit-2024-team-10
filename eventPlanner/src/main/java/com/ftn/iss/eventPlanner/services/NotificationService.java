@@ -86,9 +86,6 @@ public class NotificationService {
     }
 
     public void sendNotification(Integer recipientId, String title, String content) {
-        if (isNotificationsSilenced(recipientId)){
-            return;
-        }
         Account recipientAccount = accountRepository.findById(recipientId)
                 .orElseThrow(() -> new NotFoundException("Recipient account not found with ID: " + recipientId));
 
@@ -137,5 +134,20 @@ public class NotificationService {
         account.setNotificationsSilenced(!account.isNotificationsSilenced());
         accountRepository.save(account);
     }
+
+    public Boolean hasUnreadMessages(Integer accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account not found with ID: " + accountId));
+
+        if (account.isNotificationsSilenced()){
+            return false;
+        }
+
+        Set<Notification> notifications = account.getNotifications();
+
+        return notifications.stream()
+                .anyMatch(notification -> !notification.isRead());
+    }
+
 }
 
