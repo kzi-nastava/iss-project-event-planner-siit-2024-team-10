@@ -135,7 +135,7 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                                              ( 'Service',1 ,1,  6, FALSE, FALSE),
                                                                                                              ( 'Service',1 ,1,  7, FALSE, FALSE),
                                                                                                              ( 'Service',1 ,1,  8, FALSE, FALSE),
-                                                                                                             ( 'Service',1 ,1,  9, FALSE, FALSE),
+                                                                                                             ( 'Service',3 ,1,  9, FALSE, FALSE),
                                                                                                              ( 'Service',3 ,1,  10, FALSE, TRUE);
 
 INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
