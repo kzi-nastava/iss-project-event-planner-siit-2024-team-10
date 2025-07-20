@@ -9,7 +9,6 @@ import java.util.List;
 @Getter
 @Setter
 public class UpdateServiceDTO {
-	private int id;
 	private String name;
     private String description;
     private String specification;
