@@ -133,10 +133,27 @@ public class OfferingController {
         return new ResponseEntity<UpdatedCommentDTO>(updatedComment, HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/{offeringId}/comments/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable int offeringId, @PathVariable int commentId) throws Exception {
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @PutMapping (value = "/comments/{commentId}/reject",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> rejectComment(@PathVariable int commentId) throws Exception {
+        commentService.delete(commentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @PutMapping(value="/comments/{commentId}/approve", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> approveComment(@PathVariable int commentId) throws Exception {
+        commentService.approve(commentId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @GetMapping(value="/comments/pending")
+    public ResponseEntity<Collection<GetCommentDTO>> getPendingComments(){
+        Collection<GetCommentDTO> comments = commentService.getPendingComments();
+        return new ResponseEntity<>(comments, HttpStatus.OK);
+    }
+
 
     @GetMapping(value = "/highest-prices")
     public ResponseEntity<?> getHighestPrice(@RequestParam(required = false) Boolean isService) {
