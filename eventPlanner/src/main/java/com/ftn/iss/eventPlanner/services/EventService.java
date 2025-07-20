@@ -455,7 +455,7 @@ public class EventService {
         HashMap<String, Object> data = new HashMap<>();
 
         data.put("eventName", event.getName());
-        data.put("eventType", event.getEventType().getName());
+        data.put("eventType", event.getEventType()==null?"":event.getEventType().getName());
         data.put("description", event.getDescription());
         data.put("location", event.getLocation().toString());
         data.put("eventDate", event.getDate().toString());
