@@ -15,6 +15,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -174,6 +178,17 @@ public class UserService {
         user.setLocation(modelMapper.map(locationService.create(updateUserDTO.getLocation()), Location.class));
         userRepository.save(user);
         return modelMapper.map(user, UpdatedUserDTO.class);
+    }
+
+    public UpdatedProfilePhotoDTO updateProfilePhoto(int accountId, UpdateProfilePhotoDTO updateProfilePhotoDTO) throws IOException {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
+            throw new IllegalArgumentException("User with given account ID is not a provider or organizer");
+        User user = account.getUser();
+        user.setProfilePhoto(updateProfilePhotoDTO.getFilePath());
+        userRepository.save(user);
+        return new UpdatedProfilePhotoDTO(updateProfilePhotoDTO.getFilePath());
     }
 
     public UpdatedCompanyDTO updateCompany(int accountId, UpdateCompanyDTO updateCompanyDTO){
