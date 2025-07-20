@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.dto.service;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import lombok.Getter;
@@ -20,7 +21,9 @@ public class GetServiceDTO {
     private double price;
     private double discount;
     private List<String> photos;
+    @JsonProperty("visible")
     private boolean isVisible;
+    @JsonProperty("available")
     private boolean isAvailable;
     private int maxDuration;
     private int minDuration;
