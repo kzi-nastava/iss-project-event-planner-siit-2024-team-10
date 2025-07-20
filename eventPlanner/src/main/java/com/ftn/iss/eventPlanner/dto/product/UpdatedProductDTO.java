@@ -1,5 +1,7 @@
 package com.ftn.iss.eventPlanner.dto.product;
 
+import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import lombok.Getter;
 import lombok.Setter;
 
