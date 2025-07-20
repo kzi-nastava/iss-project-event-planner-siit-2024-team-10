@@ -4,6 +4,7 @@ import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
 import com.ftn.iss.eventPlanner.model.*;
@@ -46,6 +47,8 @@ public class UserService {
     private EmailService emailService;
     @Autowired
     private VerificationTokenRepository verificationTokenRepository;
+    @Autowired
+    private ReservationService reservationService;
 
 
     private ModelMapper modelMapper = new ModelMapper();
@@ -55,6 +58,8 @@ public class UserService {
     @Value("${app.frontend-base-url}") private String baseUrl;
 
     private static final String CONFIRMATION_URL = "/activate?token=";
+    @Autowired
+    private ReservationRepository reservationRepository;
 
     public CreatedUserDTO create(CreateUserDTO userDTO, boolean roleUpgrade) {
         Account account = accountRepository.findByEmail(userDTO.getEmail());
@@ -224,7 +229,14 @@ public class UserService {
             if(events.stream().anyMatch(event -> event.getDate().isAfter(LocalDate.now())))
                 throw new IllegalArgumentException("Organizer has upcoming events, can't deactivate account");
         }
-        //TODO if provider check upcoming reservations
+        if(account.getRole()==Role.PROVIDER){
+            Provider provider=(Provider) account.getUser();
+            List<GetReservationDTO> reservations = reservationService.findByProviderId(provider.getId());
+            if(reservations.stream()
+                    .filter(reservation->reservation.getStatus()==Status.ACCEPTED)
+                    .anyMatch(reservation->reservation.getEvent().getDate().isAfter(LocalDate.now())))
+                throw new IllegalArgumentException("Provider has upcoming reservations, can't deactivate account");
+        }
         account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
     }
