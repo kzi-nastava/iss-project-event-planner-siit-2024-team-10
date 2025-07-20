@@ -2,7 +2,9 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyPhotosDTO;
 import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyPhotosDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.services.UserService;
 import jakarta.validation.Valid;
@@ -45,6 +47,13 @@ public class UserController {
     public ResponseEntity<UpdatedCompanyDTO> updateCompany(@Valid @RequestBody UpdateCompanyDTO company, @PathVariable int accountId) {
         UpdatedCompanyDTO updatedCompanyDTO = userService.updateCompany(accountId, company);
         return new ResponseEntity<>(updatedCompanyDTO, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
+    @PutMapping(value = "/{accountId}/company/photos", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedCompanyPhotosDTO> updateCompanyPhotos(@Valid @RequestBody UpdateCompanyPhotosDTO updateCompanyPhotosDTO, @PathVariable int accountId) throws IOException {
+        UpdatedCompanyPhotosDTO updatedCompanyPhotosDTO = userService.updateCompanyPhotos(accountId, updateCompanyPhotosDTO);
+        return new ResponseEntity<>(updatedCompanyPhotosDTO, HttpStatus.OK);
     }
 
     @PutMapping("/{accountId}/password")
