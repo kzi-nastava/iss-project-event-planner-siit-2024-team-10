@@ -213,9 +213,6 @@ public class EventService {
         if(updateEventDTO.getMaxParticipants() < event.getStats().getParticipantsCount()) {
             throw new IllegalArgumentException("Max participants cannot be less than current participants count");
         }
-        if(updateEventDTO.getMaxParticipants() < event.getGuestList().size()) {
-            throw new IllegalArgumentException("Max participants cannot be less than current guest list size");
-        }
         event.setMaxParticipants(updateEventDTO.getMaxParticipants());
         checkDateUpdate(event, updateEventDTO.getDate());
         event.setDate(updateEventDTO.getDate());
