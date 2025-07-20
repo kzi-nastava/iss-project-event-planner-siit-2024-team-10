@@ -1,8 +1,6 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.*;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
@@ -17,9 +15,6 @@ import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -194,6 +189,18 @@ public class UserService {
         user.setProfilePhoto(updateProfilePhotoDTO.getFilePath());
         userRepository.save(user);
         return new UpdatedProfilePhotoDTO(updateProfilePhotoDTO.getFilePath());
+    }
+
+    public UpdatedCompanyPhotosDTO updateCompanyPhotos(int accountId, UpdateCompanyPhotosDTO updateCompanyPhotosDTO) throws IOException {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()!=Role.PROVIDER)
+            throw new IllegalArgumentException("User with given account ID is not a provider");
+        Provider provider = (Provider) account.getUser();
+        Company company = provider.getCompany();
+        company.setPhotos(updateCompanyPhotosDTO.getFilePaths());
+        companyRepository.save(company);
+        return new UpdatedCompanyPhotosDTO(updateCompanyPhotosDTO.getFilePaths());
     }
 
     public UpdatedCompanyDTO updateCompany(int accountId, UpdateCompanyDTO updateCompanyDTO){
