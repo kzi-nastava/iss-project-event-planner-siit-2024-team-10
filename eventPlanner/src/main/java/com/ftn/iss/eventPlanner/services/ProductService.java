@@ -214,4 +214,11 @@ public class ProductService {
 
         return modelMapper.map(productRepository.save(product), UpdatedProductDTO.class);
     }
+
+    public void delete(int productId){
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product with ID " + productId + " not found"));
+        product.setDeleted(true);
+        productRepository.save(product);
+    }
 }
