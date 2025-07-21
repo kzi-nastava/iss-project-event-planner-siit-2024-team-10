@@ -81,10 +81,13 @@ public class ProductController {
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable("id") int id) {
+        productService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
     @PostMapping(value = "/{id}/buy", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> buyProduct(@PathVariable("id") int productId) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
