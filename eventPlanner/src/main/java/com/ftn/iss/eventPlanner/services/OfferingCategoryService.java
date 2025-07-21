@@ -29,6 +29,7 @@ public class OfferingCategoryService {
         List<OfferingCategory> offeringCategorys = offeringCategoryRepository.findAll();
         return offeringCategorys.stream()
                 .map(offeringCategory -> modelMapper.map(offeringCategory, GetOfferingCategoryDTO.class))
+                .filter(offeringCategory->!offeringCategory.isDeleted())
                 .collect(Collectors.toList());
     }
 
@@ -50,11 +51,15 @@ public class OfferingCategoryService {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
 
-        modelMapper.map(updateOfferingCategoryDTO, offeringCategory);
+        offeringCategory.setName(updateOfferingCategoryDTO.getName());
+        offeringCategory.setDescription(updateOfferingCategoryDTO.getDescription());
+
         offeringCategory = offeringCategoryRepository.save(offeringCategory);
+
         approve(id, "Your category has been updated and approved");
         return modelMapper.map(offeringCategory, UpdatedOfferingCategoryDTO.class);
     }
+
 
     public boolean delete(int id) {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
