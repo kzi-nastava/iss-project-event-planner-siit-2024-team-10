@@ -106,6 +106,7 @@ public class WebSecurityConfig {
                         "/api/users/*",
                         "api/events/process-invitation/**",
                         "/api/events/accept-invite/**",
+                        "api/auth/activate/redirect",
                         "/api/reports/*/suspension-status"
                 )
                 .requestMatchers(HttpMethod.POST,
