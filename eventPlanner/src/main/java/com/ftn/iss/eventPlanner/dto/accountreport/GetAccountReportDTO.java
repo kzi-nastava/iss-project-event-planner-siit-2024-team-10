@@ -10,7 +10,6 @@ public class GetAccountReportDTO
 {
     private int id;
     private String description;
-    private Status status;
     private String reporterEmail;
     private String reporteeEmail;
 

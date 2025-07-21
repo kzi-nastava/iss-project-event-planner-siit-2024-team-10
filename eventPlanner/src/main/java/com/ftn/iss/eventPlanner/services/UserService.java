@@ -7,6 +7,7 @@ import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.*;
+import com.ftn.iss.eventPlanner.util.NetworkUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+
 import java.io.IOException;
+import java.net.SocketException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,17 +47,20 @@ public class UserService {
     private VerificationTokenRepository verificationTokenRepository;
     @Autowired
     private ReservationService reservationService;
+    @Autowired
+    private ReservationRepository reservationRepository;
 
 
     private ModelMapper modelMapper = new ModelMapper();
 
     private static final int TOKEN_EXPIRATION = 24;
 
-    @Value("${app.frontend-base-url}") private String baseUrl;
+    private final String IP_BASE_URL = "http://" + NetworkUtils.getLocalIpAddress() + ":8080/api";
+   
+    private static final String CONFIRMATION_URL = "/auth/activate/redirect?token=";
 
-    private static final String CONFIRMATION_URL = "/activate?token=";
-    @Autowired
-    private ReservationRepository reservationRepository;
+    public UserService() throws SocketException {
+    }
 
     public CreatedUserDTO create(CreateUserDTO userDTO, boolean roleUpgrade) {
         Account account = accountRepository.findByEmail(userDTO.getEmail());
@@ -127,10 +133,11 @@ public class UserService {
         token.setToken(UUID.randomUUID().toString());
         token.setExpiresAt(LocalDateTime.now().plusHours(TOKEN_EXPIRATION));
         token=verificationTokenRepository.save(token);
+        String confirmationLink = IP_BASE_URL + CONFIRMATION_URL + token.getToken();
         EmailDetails emailDetails=new EmailDetails();
         emailDetails.setRecipient(user.getAccount().getEmail());
         emailDetails.setSubject("Account activation");
-        emailDetails.setMsgBody("To activate your account click on the following link: "+baseUrl+CONFIRMATION_URL+token.getToken());
+        emailDetails.setMsgBody("To activate your account click on the following link: "+confirmationLink);
         emailService.sendSimpleEmail(emailDetails);
     }
 
