@@ -22,7 +22,7 @@ UPDATE account SET user_id = 1 WHERE id = 3;
 
 INSERT INTO offering_category (name, description, is_deleted, pending, creator_id) VALUES
                                                                                ('Electronics', 'Category for electronic items.', FALSE, FALSE, 2),
-                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE, 2),
+                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, FALSE, 2),
                                                                                 ( 'Nova kategorija', 'Category for home-related services.', FALSE, TRUE, 3);
 
 INSERT INTO event_type ( name, description, is_active) VALUES
@@ -75,13 +75,7 @@ INSERT INTO comment (content, status, commenter_id, rating) VALUES
                                                                 ('There was a delay in service.', 0, 2, 3),
                                                                 ('Everything was perfect.', 1, 1, 5),
                                                                 ('The food was too spicy.', 1, 3, 2),
-                                                                ('The lighting was great.', 1, 2, 4),
-                                                                ('The stage design was creative.', 1, 4, 5),
-                                                                ('The event exceeded my expectations.', 1, 1, 5),
-                                                                ('The parking area was small.', 0, 3, 3),
-                                                                ('Good value for money.', 1, 4, 4),
-                                                                ('The event was too crowded.', 1, 2, 2),
-                                                                ('I had a wonderful time.', 1, 1, 5);
+                                                                ('The lighting was great.', 1, 2, 4);
 INSERT INTO message (content, timestamp, sender_id, receiver_id, is_read) VALUES
                                                                                   ( 'Hello, when is the event?', '2023-12-05 09:00:00', 1, 2, FALSE),
                                                                                   ( 'Can you provide more details?', '2023-12-06 10:00:00', 2, 1, TRUE);
@@ -173,8 +167,7 @@ INSERT INTO offerings_comments (offering_id, comments_id) VALUES
                                                              (16, 25),
                                                              (17, 26),
                                                              (18, 27),
-                                                             (19, 28),
-                                                             (20, 29);
+                                                             (19, 28);
 INSERT INTO account_notifications (account_id, notifications_id) VALUES
                                                                      (2, 1),
                                                                      (2, 2),

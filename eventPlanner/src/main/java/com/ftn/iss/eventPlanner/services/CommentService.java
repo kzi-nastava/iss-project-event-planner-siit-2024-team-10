@@ -2,6 +2,7 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.comment.CreateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.CreatedCommentDTO;
+import com.ftn.iss.eventPlanner.dto.comment.GetCommentDTO;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.Comment;
 import com.ftn.iss.eventPlanner.model.Offering;
@@ -14,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -39,5 +42,50 @@ public class CommentService {
         commentRepository.save(comment);
         offeringRepository.save(offering);
         return modelMapper.map(comment, CreatedCommentDTO.class);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetCommentDTO> getPendingComments() {
+        List<Comment> comments = commentRepository.findAll();
+
+        return comments.stream()
+                .filter(comment -> comment.getStatus() == Status.PENDING)
+                .map(this::mapToGetCommentDTO)
+                .collect(Collectors.toList());
+    }
+
+    public void approve(int commentId){
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        Offering offering = offeringRepository.findByCommentId(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Offering not found"));
+
+        comment.setStatus(Status.ACCEPTED);
+        commentRepository.save(comment);
+    }
+
+    public void delete(int commentId){
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        Offering offering = offeringRepository.findByCommentId(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Offering not found"));
+
+        comment.setStatus(Status.DENIED);
+        offering.getComments().remove(comment);
+        offeringRepository.save(offering);
+        commentRepository.save(comment);
+    }
+
+    private GetCommentDTO mapToGetCommentDTO(Comment comment) {
+        return new GetCommentDTO(
+                comment.getId(),
+                comment.getContent(),
+                comment.getStatus(),
+                comment.getCommenter().getId(),
+                comment.getRating(),
+                comment.getCommenter().getUsername()
+        );
     }
 }
