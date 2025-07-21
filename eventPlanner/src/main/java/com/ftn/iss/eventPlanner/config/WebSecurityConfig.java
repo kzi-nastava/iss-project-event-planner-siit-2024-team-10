@@ -117,7 +117,8 @@ public class WebSecurityConfig {
                         "/api/messages/**",
                         "/api/offerings/*/change/*",
                         "/api/events/accept-invite/**",
-                        "api/events/process-invitation/**"
+                        "api/events/process-invitation/**",
+                        "api/upload"
                 )
                 .requestMatchers(HttpMethod.DELETE,
                         "/api/accounts/*/favourite-events/*",

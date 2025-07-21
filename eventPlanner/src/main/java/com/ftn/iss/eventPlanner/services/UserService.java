@@ -1,9 +1,8 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.*;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
 import com.ftn.iss.eventPlanner.model.*;
@@ -16,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+
+import java.io.IOException;
 import java.net.SocketException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,6 +45,10 @@ public class UserService {
     private EmailService emailService;
     @Autowired
     private VerificationTokenRepository verificationTokenRepository;
+    @Autowired
+    private ReservationService reservationService;
+    @Autowired
+    private ReservationRepository reservationRepository;
 
 
     private ModelMapper modelMapper = new ModelMapper();
@@ -51,7 +56,7 @@ public class UserService {
     private static final int TOKEN_EXPIRATION = 24;
 
     private final String IP_BASE_URL = "http://" + NetworkUtils.getLocalIpAddress() + ":8080/api";
-
+   
     private static final String CONFIRMATION_URL = "/auth/activate/redirect?token=";
 
     public UserService() throws SocketException {
@@ -182,6 +187,29 @@ public class UserService {
         return modelMapper.map(user, UpdatedUserDTO.class);
     }
 
+    public UpdatedProfilePhotoDTO updateProfilePhoto(int accountId, UpdateProfilePhotoDTO updateProfilePhotoDTO) throws IOException {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
+            throw new IllegalArgumentException("User with given account ID is not a provider or organizer");
+        User user = account.getUser();
+        user.setProfilePhoto(updateProfilePhotoDTO.getFilePath());
+        userRepository.save(user);
+        return new UpdatedProfilePhotoDTO(updateProfilePhotoDTO.getFilePath());
+    }
+
+    public UpdatedCompanyPhotosDTO updateCompanyPhotos(int accountId, UpdateCompanyPhotosDTO updateCompanyPhotosDTO) throws IOException {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()!=Role.PROVIDER)
+            throw new IllegalArgumentException("User with given account ID is not a provider");
+        Provider provider = (Provider) account.getUser();
+        Company company = provider.getCompany();
+        company.setPhotos(updateCompanyPhotosDTO.getFilePaths());
+        companyRepository.save(company);
+        return new UpdatedCompanyPhotosDTO(updateCompanyPhotosDTO.getFilePaths());
+    }
+
     public UpdatedCompanyDTO updateCompany(int accountId, UpdateCompanyDTO updateCompanyDTO){
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
@@ -215,7 +243,14 @@ public class UserService {
             if(events.stream().anyMatch(event -> event.getDate().isAfter(LocalDate.now())))
                 throw new IllegalArgumentException("Organizer has upcoming events, can't deactivate account");
         }
-        //TODO if provider check upcoming reservations
+        if(account.getRole()==Role.PROVIDER){
+            Provider provider=(Provider) account.getUser();
+            List<GetReservationDTO> reservations = reservationService.findByProviderId(provider.getId());
+            if(reservations.stream()
+                    .filter(reservation->reservation.getStatus()==Status.ACCEPTED)
+                    .anyMatch(reservation->reservation.getEvent().getDate().isAfter(LocalDate.now())))
+                throw new IllegalArgumentException("Provider has upcoming reservations, can't deactivate account");
+        }
         account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
     }

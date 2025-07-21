@@ -213,9 +213,6 @@ public class EventService {
         if(updateEventDTO.getMaxParticipants() < event.getStats().getParticipantsCount()) {
             throw new IllegalArgumentException("Max participants cannot be less than current participants count");
         }
-        if(updateEventDTO.getMaxParticipants() < event.getGuestList().size()) {
-            throw new IllegalArgumentException("Max participants cannot be less than current guest list size");
-        }
         event.setMaxParticipants(updateEventDTO.getMaxParticipants());
         checkDateUpdate(event, updateEventDTO.getDate());
         event.setDate(updateEventDTO.getDate());
@@ -458,7 +455,7 @@ public class EventService {
         HashMap<String, Object> data = new HashMap<>();
 
         data.put("eventName", event.getName());
-        data.put("eventType", event.getEventType().getName());
+        data.put("eventType", event.getEventType()==null?"":event.getEventType().getName());
         data.put("description", event.getDescription());
         data.put("location", event.getLocation().toString());
         data.put("eventDate", event.getDate().toString());

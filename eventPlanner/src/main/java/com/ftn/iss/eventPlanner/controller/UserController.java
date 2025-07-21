@@ -2,7 +2,9 @@ package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyPhotosDTO;
 import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyPhotosDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.services.UserService;
 import jakarta.validation.Valid;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,10 +49,24 @@ public class UserController {
         return new ResponseEntity<>(updatedCompanyDTO, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
+    @PutMapping(value = "/{accountId}/company/photos", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedCompanyPhotosDTO> updateCompanyPhotos(@Valid @RequestBody UpdateCompanyPhotosDTO updateCompanyPhotosDTO, @PathVariable int accountId) throws IOException {
+        UpdatedCompanyPhotosDTO updatedCompanyPhotosDTO = userService.updateCompanyPhotos(accountId, updateCompanyPhotosDTO);
+        return new ResponseEntity<>(updatedCompanyPhotosDTO, HttpStatus.OK);
+    }
+
     @PutMapping("/{accountId}/password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO, @PathVariable int accountId) {
         userService.changePassword(accountId, changePasswordDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER')")
+    @PutMapping("/{accountId}/profile-photo")
+    public ResponseEntity<UpdatedProfilePhotoDTO> updateProfilePhoto(@Valid @RequestBody UpdateProfilePhotoDTO updateProfilePhotoDTO, @PathVariable int accountId) throws IOException {
+        UpdatedProfilePhotoDTO updatedProfilePhotoDTO = userService.updateProfilePhoto(accountId, updateProfilePhotoDTO);
+        return new ResponseEntity<>(updatedProfilePhotoDTO,HttpStatus.OK);
     }
 
     @PutMapping("/{userID}/favorites")
