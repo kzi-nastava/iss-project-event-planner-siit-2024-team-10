@@ -47,7 +47,7 @@ public class AccountReportService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid reportee id"));
 
 
-        if(accountReportRepository.existsByReporter_IdAndReportee_Id(createAccountReportDTO.getReporterId(), createAccountReportDTO.getReporteeId())) {
+        if(accountReportRepository.existsByReporter_IdAndReportee_IdAndStatusNot(createAccountReportDTO.getReporterId(), createAccountReportDTO.getReporteeId(), Status.DENIED)) {
             throw  new ReportAlreadySentException("Report has already been sent.");
         }
 

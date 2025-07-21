@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface AccountReportRepository extends JpaRepository<AccountReport,Integer> {
-    boolean existsByReporter_IdAndReportee_Id(int reporterId, int reporteeId);
+    boolean existsByReporter_IdAndReportee_IdAndStatusNot(int reporterId, int reporteeId, Status status);
     Optional<AccountReport> findTopByReportee_IdAndStatusOrderByProcessingTimestampDesc(int reporteeId, Status status);
 }
