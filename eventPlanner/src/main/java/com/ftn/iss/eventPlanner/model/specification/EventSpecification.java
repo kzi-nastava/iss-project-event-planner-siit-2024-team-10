@@ -1,8 +1,11 @@
 package com.ftn.iss.eventPlanner.model.specification;
+import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.EventStats;
 import com.ftn.iss.eventPlanner.model.Product;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 import com.ftn.iss.eventPlanner.model.Event;
 
@@ -62,4 +65,45 @@ public class EventSpecification {
     public static Specification<Event> isNotDeleted() {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isDeleted"), false);
     }
+
+    public static Specification<Event> isNotBlocked(Integer accountId) {
+        return (root, query, cb) -> {
+            if (accountId == null) {
+                return cb.conjunction();
+            }
+
+            Subquery<Integer> subquery = query.subquery(Integer.class);
+            Root<Account> organizerAccount = subquery.from(Account.class);
+            Join<Account, Account> blockedAccounts = organizerAccount.join("blockedAccounts");
+
+            subquery.select(organizerAccount.get("id"))
+                    .where(
+                            cb.equal(organizerAccount, root.get("organizer").get("account")),
+                            cb.equal(blockedAccounts.get("id"), accountId)
+                    );
+
+            return cb.not(cb.exists(subquery));
+        };
+    }
+
+    public static Specification<Event> organizerNotBlocked(Integer accountId) {
+        return (root, query, cb) -> {
+            if (accountId == null) {
+                return cb.conjunction();
+            }
+
+            Subquery<Integer> subquery = query.subquery(Integer.class);
+            Root<Account> userAccount = subquery.from(Account.class);
+            Join<Account, Account> blockedAccounts = userAccount.join("blockedAccounts");
+
+            subquery.select(userAccount.get("id"))
+                    .where(
+                            cb.equal(userAccount.get("id"), accountId),
+                            cb.equal(blockedAccounts.get("id"), root.get("organizer").get("account").get("id"))
+                    );
+
+            return cb.not(cb.exists(subquery));
+        };
+    }
+
 }
