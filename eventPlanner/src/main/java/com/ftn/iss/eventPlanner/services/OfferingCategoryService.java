@@ -53,10 +53,13 @@ public class OfferingCategoryService {
 
         offeringCategory.setName(updateOfferingCategoryDTO.getName());
         offeringCategory.setDescription(updateOfferingCategoryDTO.getDescription());
+
         offeringCategory = offeringCategoryRepository.save(offeringCategory);
+
         approve(id, "Your category has been updated and approved");
         return modelMapper.map(offeringCategory, UpdatedOfferingCategoryDTO.class);
     }
+
 
     public boolean delete(int id) {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
