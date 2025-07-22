@@ -213,7 +213,7 @@ public class EventController {
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value="/{eventId}/budget/{budgetItemId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedBudgetItemDTO> updateBudgetItemAmount(@PathVariable int eventId, @PathVariable int budgetItemId, @RequestBody int amount) {
+    public ResponseEntity<UpdatedBudgetItemDTO> updateBudgetItemAmount(@PathVariable int eventId, @PathVariable int budgetItemId, @RequestBody UpdateBudgetItemDTO amount) {
         UpdatedBudgetItemDTO updatedBudgetItemDTO = budgetItemService.updateAmount(budgetItemId, amount);
         return ResponseEntity.ok(updatedBudgetItemDTO);
     }
