@@ -29,6 +29,7 @@ public class OfferingCategoryService {
         List<OfferingCategory> offeringCategorys = offeringCategoryRepository.findAll();
         return offeringCategorys.stream()
                 .map(offeringCategory -> modelMapper.map(offeringCategory, GetOfferingCategoryDTO.class))
+                .filter(offeringCategory -> !offeringCategory.isDeleted())
                 .collect(Collectors.toList());
     }
 
@@ -50,7 +51,8 @@ public class OfferingCategoryService {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
 
-        modelMapper.map(updateOfferingCategoryDTO, offeringCategory);
+        offeringCategory.setName(updateOfferingCategoryDTO.getName());
+        offeringCategory.setDescription(updateOfferingCategoryDTO.getDescription());
         offeringCategory = offeringCategoryRepository.save(offeringCategory);
         approve(id, "Your category has been updated and approved");
         return modelMapper.map(offeringCategory, UpdatedOfferingCategoryDTO.class);
@@ -77,7 +79,9 @@ public class OfferingCategoryService {
                 offeringRepository.save(offering);
             }
         }
-        notificationService.sendNotification(offeringCategory.getCreatorId(),title, "Your category" + offeringCategory.getName() + " " + " with description " + offeringCategory.getDescription() + " - your offerings have been approved and are now visible on your page!");
+        // if not admin
+        if(offeringCategory.getCreatorId()!=0)
+            notificationService.sendNotification(offeringCategory.getCreatorId(),title, "Your category" + offeringCategory.getName() + " " + " with description " + offeringCategory.getDescription() + " - your offerings have been approved and are now visible on your page!");
     }
 
     public boolean hasOfferings(int id) {
