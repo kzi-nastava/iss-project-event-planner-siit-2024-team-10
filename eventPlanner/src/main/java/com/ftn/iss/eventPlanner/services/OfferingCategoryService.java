@@ -29,7 +29,7 @@ public class OfferingCategoryService {
         List<OfferingCategory> offeringCategorys = offeringCategoryRepository.findAll();
         return offeringCategorys.stream()
                 .map(offeringCategory -> modelMapper.map(offeringCategory, GetOfferingCategoryDTO.class))
-                .filter(offeringCategory->!offeringCategory.isDeleted())
+                .filter(offeringCategory -> !offeringCategory.isDeleted())
                 .collect(Collectors.toList());
     }
 
@@ -82,7 +82,9 @@ public class OfferingCategoryService {
                 offeringRepository.save(offering);
             }
         }
-        notificationService.sendNotification(offeringCategory.getCreatorId(),title, "Your category" + offeringCategory.getName() + " " + " with description " + offeringCategory.getDescription() + " - your offerings have been approved and are now visible on your page!");
+        // if not admin
+        if(offeringCategory.getCreatorId()!=0)
+            notificationService.sendNotification(offeringCategory.getCreatorId(),title, "Your category" + offeringCategory.getName() + " " + " with description " + offeringCategory.getDescription() + " - your offerings have been approved and are now visible on your page!");
     }
 
     public boolean hasOfferings(int id) {

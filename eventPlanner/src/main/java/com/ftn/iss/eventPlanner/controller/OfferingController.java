@@ -3,7 +3,7 @@ package com.ftn.iss.eventPlanner.controller;
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
-import com.ftn.iss.eventPlanner.dto.offeringcategory.ChangeCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.offeringcategory.ChangeOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.services.CommentService;
 import com.ftn.iss.eventPlanner.services.OfferingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -181,11 +181,9 @@ public class OfferingController {
     }
     @PutMapping("/{offeringId}/category")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseEntity<?> changeOfferingCategory(
-            @PathVariable int offeringId,
-            @RequestBody ChangeCategoryDTO request) {
+    public ResponseEntity<?> changeOfferingCategory(@PathVariable int offeringId, @RequestBody ChangeOfferingCategoryDTO dto) {
         try {
-            offeringService.changeCategory(offeringId, request.getNewCategoryId());
+            offeringService.changeCategory(offeringId, dto.getCategoryId());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());

@@ -150,7 +150,9 @@ public class ServiceService {
         BeanUtils.copyProperties(service.getCurrentDetails(), historicalDetails);
 
         service.getServiceDetailsHistory().add(historicalDetails);
-        modelMapper.map(updateServiceDTO, service.getCurrentDetails());
+        ServiceDetails newDetails = new ServiceDetails();
+        modelMapper.map(updateServiceDTO, newDetails);
+        service.setCurrentDetails(newDetails);
         service.getCurrentDetails().setTimestamp(LocalDateTime.now());
 
         return modelMapper.map(serviceRepository.save(service), UpdatedServiceDTO.class);
