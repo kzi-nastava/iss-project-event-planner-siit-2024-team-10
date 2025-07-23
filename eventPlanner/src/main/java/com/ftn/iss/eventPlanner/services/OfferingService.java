@@ -152,8 +152,8 @@ public class OfferingService {
                     .and(ServiceSpecification.isAvailable(searchByAvailability))
                     .and(ServiceSpecification.hasProviderId(providerId))
                     .and(ServiceSpecification.isNotDeleted())
-                    .and(ServiceSpecification.isNotBlocked(accountId))
-                    .and(ServiceSpecification.providerNotBlocked(accountId));
+                    .and(ServiceSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ServiceSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 serviceSpecification = serviceSpecification.and(ServiceSpecification.isVisible())
@@ -172,8 +172,8 @@ public class OfferingService {
                     .and(ProductSpecification.isAvailable(searchByAvailability))
                     .and(ProductSpecification.hasProviderId(providerId))
                     .and(ProductSpecification.isNotDeleted())
-                    .and(ProductSpecification.isNotBlocked(accountId))
-                    .and(ProductSpecification.providerNotBlocked(accountId));
+                    .and(ProductSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ProductSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 productSpecification = productSpecification.and(ProductSpecification.isVisible())
@@ -186,14 +186,14 @@ public class OfferingService {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasProviderId(providerId))
                     .and(ServiceSpecification.isNotDeleted())
                     .and(ServiceSpecification.hasLocation(location, providerId))
-                    .and(ServiceSpecification.isNotBlocked(accountId))
-                    .and(ServiceSpecification.providerNotBlocked(accountId));
+                    .and(ServiceSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ServiceSpecification.accountHasNotBlockedProvider(accountId));
 
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasProviderId(providerId))
                     .and(ProductSpecification.isNotDeleted())
                     .and(ProductSpecification.hasLocation(location, providerId))
-                    .and(ProductSpecification.isNotBlocked(accountId))
-                    .and(ProductSpecification.providerNotBlocked(accountId));
+                    .and(ProductSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ProductSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 serviceSpecification = serviceSpecification.and(ServiceSpecification.isVisible())

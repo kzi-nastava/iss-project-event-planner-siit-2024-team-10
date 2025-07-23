@@ -1,7 +1,6 @@
 package com.ftn.iss.eventPlanner.model.specification;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.EventStats;
-import com.ftn.iss.eventPlanner.model.Product;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
@@ -10,7 +9,6 @@ import org.springframework.data.jpa.domain.Specification;
 import com.ftn.iss.eventPlanner.model.Event;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 public class EventSpecification {
 
@@ -66,7 +64,7 @@ public class EventSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isDeleted"), false);
     }
 
-    public static Specification<Event> isNotBlocked(Integer accountId) {
+    public static Specification<Event> organizerHasNotBlockedAccount(Integer accountId) {
         return (root, query, cb) -> {
             if (accountId == null) {
                 return cb.conjunction();
@@ -86,7 +84,7 @@ public class EventSpecification {
         };
     }
 
-    public static Specification<Event> organizerNotBlocked(Integer accountId) {
+    public static Specification<Event> accountHasNotBlockedOrganizer(Integer accountId) {
         return (root, query, cb) -> {
             if (accountId == null) {
                 return cb.conjunction();

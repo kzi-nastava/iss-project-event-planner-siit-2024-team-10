@@ -137,8 +137,8 @@ public class EventService {
                 .and(EventSpecification.hasName(name))
                 .and(EventSpecification.isOpen())
                 .and(EventSpecification.isNotDeleted())
-                .and(EventSpecification.isNotBlocked(accountId))
-                .and(EventSpecification.organizerNotBlocked(accountId));
+                .and(EventSpecification.organizerHasNotBlockedAccount(accountId))
+                .and(EventSpecification.accountHasNotBlockedOrganizer(accountId));
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 

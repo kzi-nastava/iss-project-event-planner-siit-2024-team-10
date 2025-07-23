@@ -99,7 +99,7 @@ public class ProductSpecification {
                         : criteriaBuilder.conjunction();
     }
 
-    public static Specification<Product> isNotBlocked(Integer accountId) {
+    public static Specification<Product> providerHasNotBlockedAccount(Integer accountId) {
         return (root, query, cb) -> {
             if (accountId == null) {
                 return cb.conjunction();
@@ -118,7 +118,7 @@ public class ProductSpecification {
             return cb.not(cb.exists(subquery));
         };
     }
-    public static Specification<Product> providerNotBlocked(Integer accountId) {
+    public static Specification<Product> accountHasNotBlockedProvider(Integer accountId) {
         return (root, query, cb) -> {
             if (accountId == null) {
                 return cb.conjunction();

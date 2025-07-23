@@ -118,7 +118,7 @@ public class ServiceSpecification {
                         : criteriaBuilder.conjunction();
     }
 
-    public static Specification<Service> isNotBlocked(Integer accountId) {
+    public static Specification<Service> providerHasNotBlockedAccount(Integer accountId) {
         return (root, query, cb) -> {
             if (accountId == null) {
                 return cb.conjunction();
@@ -138,7 +138,7 @@ public class ServiceSpecification {
         };
     }
 
-    public static Specification<Service> providerNotBlocked(Integer accountId) {
+    public static Specification<Service> accountHasNotBlockedProvider(Integer accountId) {
         return (root, query, cb) -> {
             if (accountId == null) {
                 return cb.conjunction();
