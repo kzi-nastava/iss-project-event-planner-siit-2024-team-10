@@ -108,9 +108,10 @@ public class OfferingService {
             String sortBy,
             String sortDirection,
             Integer accountId,
-            Integer providerId
+            Integer providerId,
+            Boolean initLoad
     ) {
-        if (accountId != null && (location == null || location.isEmpty())) {
+        if (accountId != null && (location == null || location.isEmpty()) && initLoad != null) {
             Account account = accountRepository.findById(accountId).orElse(null);
             if (account != null && account.getUser() != null){
                 Location userLocation = account.getUser().getLocation();
@@ -150,7 +151,9 @@ public class OfferingService {
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability))
                     .and(ServiceSpecification.hasProviderId(providerId))
-                    .and(ServiceSpecification.isNotDeleted());
+                    .and(ServiceSpecification.isNotDeleted())
+                    .and(ServiceSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ServiceSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 serviceSpecification = serviceSpecification.and(ServiceSpecification.isVisible())
@@ -168,7 +171,9 @@ public class OfferingService {
                     .and(ProductSpecification.minRating(minRating))
                     .and(ProductSpecification.isAvailable(searchByAvailability))
                     .and(ProductSpecification.hasProviderId(providerId))
-                    .and(ProductSpecification.isNotDeleted());
+                    .and(ProductSpecification.isNotDeleted())
+                    .and(ProductSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ProductSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 productSpecification = productSpecification.and(ProductSpecification.isVisible())
@@ -180,11 +185,15 @@ public class OfferingService {
         } else {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasProviderId(providerId))
                     .and(ServiceSpecification.isNotDeleted())
-                    .and(ServiceSpecification.hasLocation(location, providerId));
+                    .and(ServiceSpecification.hasLocation(location, providerId))
+                    .and(ServiceSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ServiceSpecification.accountHasNotBlockedProvider(accountId));
 
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasProviderId(providerId))
                     .and(ProductSpecification.isNotDeleted())
-                    .and(ProductSpecification.hasLocation(location, providerId));
+                    .and(ProductSpecification.hasLocation(location, providerId))
+                    .and(ProductSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ProductSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 serviceSpecification = serviceSpecification.and(ServiceSpecification.isVisible())
@@ -228,10 +237,22 @@ public class OfferingService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetOfferingDTO> findTopOfferings() {
+    public List<GetOfferingDTO> findTopOfferings(int accountId) {
         List<Offering> offerings = offeringRepository.findAll();
 
         return offerings.stream()
+                .filter(offering -> offering.getProvider().getAccount().getBlockedAccounts()
+                .stream()
+                .noneMatch(blockedAcc -> blockedAcc.getId() == accountId))
+                .filter(offering -> {
+                    Optional<Account> currentUserOpt = accountRepository.findById(accountId);
+                    if (currentUserOpt.isEmpty()) return true;
+
+                    Account currentUser = currentUserOpt.get();
+                    return currentUser.getBlockedAccounts()
+                            .stream()
+                            .noneMatch(blocked -> blocked.getId() == offering.getProvider().getAccount().getId());
+                })
                 .filter(offering -> {
                     if (offering instanceof Product p) {
                         return p.getCurrentDetails().isVisible()

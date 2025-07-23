@@ -5,6 +5,7 @@ import com.ftn.iss.eventPlanner.dto.calendaritem.GetCalendarItemDTO;
 import com.ftn.iss.eventPlanner.dto.event.AddFavouriteEventDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
+import com.ftn.iss.eventPlanner.dto.user.BlockStatusDTO;
 import com.ftn.iss.eventPlanner.services.AccountService;
 import com.ftn.iss.eventPlanner.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,5 +76,26 @@ public class AccountController {
     public ResponseEntity<Collection<GetCalendarItemDTO>> getCalendar(@PathVariable int accountId) {
         Collection<GetCalendarItemDTO> calendar = accountService.getCalendar(accountId);
         return ResponseEntity.ok(calendar);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER', 'ADMIN', 'AUTHENTICATED_USER')")
+    @GetMapping(value="/{loggedInId}/blocked-accounts/{accountToBlockId}", produces = MediaType.APPLICATION_JSON_VALUE )
+    public ResponseEntity<BlockStatusDTO> isAccountBlocked(@PathVariable int loggedInId, @PathVariable int accountToBlockId) {
+        BlockStatusDTO blockStatusDTO = accountService.isAccountBlocked(loggedInId, accountToBlockId);
+        return ResponseEntity.ok(blockStatusDTO);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER', 'ADMIN', 'AUTHENTICATED_USER')")
+    @PostMapping(value="/{loggedInId}/block/{accountToBlockId}")
+    public ResponseEntity<?> blockAccount(@PathVariable int loggedInId, @PathVariable int accountToBlockId) {
+        accountService.blockAccount(loggedInId, accountToBlockId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','ADMIN','AUTHENTICATED_USER')")
+    @DeleteMapping("/{loggedInId}/unblock/{accountToUnblockId}")
+    public ResponseEntity<Void> unblockAccount(@PathVariable int loggedInId, @PathVariable int accountToUnblockId) {
+        accountService.unblockAccount(loggedInId, accountToUnblockId);
+        return ResponseEntity.noContent().build();
     }
 }

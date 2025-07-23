@@ -61,11 +61,12 @@ public class EventController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection,
-            @RequestParam(required = false) Integer accountId
+            @RequestParam(required = false) Integer accountId,
+            @RequestParam(required = false) Boolean initLoad
     ) {
         try {
             PagedResponse<GetEventDTO> response = eventService.getAllEvents(
-                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection, accountId);
+                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection, accountId, initLoad);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

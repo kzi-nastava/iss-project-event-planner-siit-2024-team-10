@@ -1,7 +1,7 @@
 package com.ftn.iss.eventPlanner.model.specification;
 
+import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.Comment;
-import com.ftn.iss.eventPlanner.model.Product;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
@@ -116,5 +116,45 @@ public class ServiceSpecification {
                 providerId != null
                         ? criteriaBuilder.equal(root.get("provider").get("id"), providerId)
                         : criteriaBuilder.conjunction();
+    }
+
+    public static Specification<Service> providerHasNotBlockedAccount(Integer accountId) {
+        return (root, query, cb) -> {
+            if (accountId == null) {
+                return cb.conjunction();
+            }
+
+            Subquery<Integer> subquery = query.subquery(Integer.class);
+            Root<Account> providerAccount = subquery.from(Account.class);
+            Join<Account, Account> blockedAccounts = providerAccount.join("blockedAccounts");
+
+            subquery.select(providerAccount.get("id"))
+                    .where(
+                            cb.equal(providerAccount, root.get("provider").get("account")),
+                            cb.equal(blockedAccounts.get("id"), accountId)
+                    );
+
+            return cb.not(cb.exists(subquery));
+        };
+    }
+
+    public static Specification<Service> accountHasNotBlockedProvider(Integer accountId) {
+        return (root, query, cb) -> {
+            if (accountId == null) {
+                return cb.conjunction();
+            }
+
+            Subquery<Integer> subquery = query.subquery(Integer.class);
+            Root<Account> userAccount = subquery.from(Account.class);
+            Join<Account, Account> blockedAccounts = userAccount.join("blockedAccounts");
+
+            subquery.select(userAccount.get("id"))
+                    .where(
+                            cb.equal(userAccount.get("id"), accountId),
+                            cb.equal(blockedAccounts.get("id"), root.get("provider").get("account").get("id"))
+                    );
+
+            return cb.not(cb.exists(subquery));
+        };
     }
 }

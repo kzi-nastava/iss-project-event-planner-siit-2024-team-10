@@ -22,4 +22,10 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     @Query("SELECT a FROM Account a JOIN a.acceptedEvents e WHERE e.id = :eventId")
     List<Account> findAccountsByAcceptedEventId(@Param("eventId") int eventId);
+
+    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.blockedAccounts WHERE a.id = :id")
+    Optional<Account> findByIdWithBlockedAccounts(@Param("id") int id);
+
+    @Query("SELECT COUNT(b) > 0 FROM Account a JOIN a.blockedAccounts b WHERE a.id = :loggedInId AND b.id = :targetId")
+    boolean isBlocked(int loggedInId, int targetId);
 }

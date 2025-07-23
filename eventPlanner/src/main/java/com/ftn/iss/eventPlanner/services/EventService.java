@@ -87,6 +87,8 @@ public class EventService {
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
     public PagedResponse<GetEventDTO> getAllEvents(
             Pageable pageable,
             Integer eventTypeId,
@@ -98,9 +100,10 @@ public class EventService {
             String name,
             String sortBy,
             String sortDirection,
-            Integer accountId
+            Integer accountId,
+            Boolean initLoad
     ) {
-        if (accountId != null && (location == null || location.isEmpty())) {
+        if (accountId != null && (location == null || location.isEmpty()) && initLoad != null) {
             Location userLocation = accountService.findUserLocation(accountId);
             if (userLocation != null) {
                 location = userLocation.getCity();
@@ -133,7 +136,9 @@ public class EventService {
                 .and(EventSpecification.minAverageRating(minRating))
                 .and(EventSpecification.hasName(name))
                 .and(EventSpecification.isOpen())
-                .and(EventSpecification.isNotDeleted());
+                .and(EventSpecification.isNotDeleted())
+                .and(EventSpecification.organizerHasNotBlockedAccount(accountId))
+                .and(EventSpecification.accountHasNotBlockedOrganizer(accountId));
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
@@ -156,6 +161,7 @@ public class EventService {
         return eventDTOs;
     }
 
+    @Transactional
     public List<GetEventDTO> findTopEvents(Integer accountId) {
         List<Event> events = eventRepository.findAll();
 
@@ -173,6 +179,18 @@ public class EventService {
 
         return events.stream()
                 .filter(Event::isOpen)
+                .filter(event -> event.getOrganizer().getAccount().getBlockedAccounts()
+                        .stream()
+                        .noneMatch(blockedAcc -> blockedAcc.getId() == accountId))
+                .filter(event -> {
+                    Optional<Account> currentUserOpt = accountRepository.findById(accountId);
+                    if (currentUserOpt.isEmpty()) return true;
+
+                    Account currentUser = currentUserOpt.get();
+                    return currentUser.getBlockedAccounts()
+                            .stream()
+                            .noneMatch(blocked -> blocked.getId() == event.getOrganizer().getAccount().getId());
+                })
                 .sorted((e1, e2) -> e2.getDateCreated().compareTo(e1.getDateCreated()))
                 .limit(5)
                 .map(this::mapToGetEventDTO)
