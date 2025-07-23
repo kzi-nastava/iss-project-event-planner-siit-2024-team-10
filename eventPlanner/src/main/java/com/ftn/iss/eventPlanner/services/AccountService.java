@@ -156,6 +156,20 @@ public class AccountService implements UserDetailsService {
     }
 
     @Transactional
+    public void suspendAccount(int accountId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        account.setStatus(AccountStatus.SUSPENDED);
+        accountRepository.save(account);
+    }
+
+    @Transactional
+    public void endAccountSuspension(int accountId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+    }
+
+    @Transactional
     public Collection<GetCalendarItemDTO> getCalendar(int accountId){
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));

@@ -22,7 +22,7 @@ UPDATE account SET user_id = 1 WHERE id = 3;
 
 INSERT INTO offering_category (name, description, is_deleted, pending, creator_id) VALUES
                                                                                ('Electronics', 'Category for electronic items.', FALSE, FALSE, 2),
-                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, TRUE, 2),
+                                                                               ( 'Home Services', 'Category for home-related services.', FALSE, FALSE, 2),
                                                                                 ( 'Nova kategorija', 'Category for home-related services.', FALSE, TRUE, 3);
 
 INSERT INTO event_type ( name, description, is_active) VALUES

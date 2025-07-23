@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.services;
 
+import com.ftn.iss.eventPlanner.dto.budgetitem.BuyRequestDTO;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
@@ -46,6 +47,8 @@ public class ReservationService {
     private ScheduledNotificationService scheduledNotificationService;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private BudgetItemService budgetItemService;
 
 
     public List<GetReservationDTO> findAll(){
@@ -304,6 +307,7 @@ public class ReservationService {
         createdReservation.setTimestamp(LocalDateTime.now());
         if (service.getCurrentDetails().isAutoConfirm()) {
             createdReservation.setStatus(Status.ACCEPTED);
+            budgetItemService.buy(event.getId(),service.getId());
         } else {
             createdReservation.setStatus(Status.PENDING);
         }
@@ -381,6 +385,7 @@ public class ReservationService {
     public void acceptReservation(int reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
+        budgetItemService.buy(reservation.getEvent().getId(),reservation.getService().getId());
         reservation.setStatus(Status.ACCEPTED);
         reservationRepository.save(reservation);
         notificationService.sendNotification(reservation.getEvent().getOrganizer().getAccount().getId(),"Reservation Accepted",
