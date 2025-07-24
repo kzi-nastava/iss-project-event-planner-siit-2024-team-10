@@ -53,9 +53,14 @@ public class EventSpecification {
                 return null;
             }
             Join<Event, EventStats> statsJoin = root.join("stats", JoinType.LEFT);
-            return criteriaBuilder.greaterThanOrEqualTo(statsJoin.get("averageRating"), minRating);
+            return criteriaBuilder.and(
+                    criteriaBuilder.isNotNull(statsJoin.get("averageRating")),
+                    criteriaBuilder.greaterThan(statsJoin.get("averageRating"), 0.0),
+                    criteriaBuilder.greaterThanOrEqualTo(statsJoin.get("averageRating"), minRating)
+            );
         };
     }
+
     public static Specification<Event> isOpen() {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("isOpen"), true);
     }

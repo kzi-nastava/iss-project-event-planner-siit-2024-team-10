@@ -179,13 +179,22 @@ public class EventService {
 
         return events.stream()
                 .filter(Event::isOpen)
-                .filter(event -> event.getOrganizer().getAccount().getBlockedAccounts()
-                        .stream()
-                        .noneMatch(blockedAcc -> blockedAcc.getId() == accountId))
                 .filter(event -> {
+                    if (accountId == null) {
+                        return true;
+                    }
+                    return event.getOrganizer().getAccount().getBlockedAccounts()
+                            .stream()
+                            .noneMatch(blockedAcc -> blockedAcc.getId() == accountId);
+                })
+                .filter(event -> {
+                    if (accountId == null) {
+                        return true;
+                    }
                     Optional<Account> currentUserOpt = accountRepository.findById(accountId);
-                    if (currentUserOpt.isEmpty()) return true;
-
+                    if (currentUserOpt.isEmpty()) {
+                        return true;
+                    }
                     Account currentUser = currentUserOpt.get();
                     return currentUser.getBlockedAccounts()
                             .stream()
@@ -195,6 +204,7 @@ public class EventService {
                 .limit(5)
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
+
     }
 
     public CreatedEventDTO create (CreateEventDTO createEventDTO){
@@ -606,18 +616,20 @@ public class EventService {
 
         String inviteLink = IP_BASE_URL + CONFIRMATION_URL + token.getToken();
 
-        String message = "You're invited to the event: " + event.getName() +
-                "\n\n📅 Date: " + event.getDate() +
-                "\n📍 Location: " + event.getLocation().getStreet() + " " + event.getLocation().getHouseNumber() + ", " +
-                event.getLocation().getCity() + ", " + event.getLocation().getCountry() +
-                "\n\n📝 Description: " + event.getDescription() +
-                "\n\n👉 Click here to participate: " + inviteLink;
+        String message = "<p>You're invited to the event: <strong>" + event.getName() + "</strong></p>" +
+                "<p>📅 <strong>Date:</strong> " + event.getDate() + "<br>" +
+                "📍 <strong>Location:</strong> " + event.getLocation().getStreet() + " " +
+                event.getLocation().getHouseNumber() + ", " +
+                event.getLocation().getCity() + ", " +
+                event.getLocation().getCountry() + "</p>" +
+                "<p>📝 <strong>Description:</strong> " + event.getDescription() + "</p>" +
+                "<p>👉 <a href=\"" + inviteLink + "\">Click here to participate</a></p>";
 
         if (password != null) {
-            message += "\n\n🔑 Your generated password: " + password;
+            message += "<p>🔑 <strong>Your generated password:</strong> " + password + "</p>";
         }
 
-        emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
+        emailService.sendHtmlEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
 
         if (!event.getGuestList().contains(account.getEmail())) {
             event.getGuestList().add(account.getEmail());
