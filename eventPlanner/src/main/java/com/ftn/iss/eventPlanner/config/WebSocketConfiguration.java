@@ -1,3 +1,4 @@
+// WebSocketConfiguration.java
 package com.ftn.iss.eventPlanner.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -10,15 +11,15 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
-    @Value("${app.frontend-base-url}") private String baseUrl;
+    @Value("${app.frontend-base-url}")
+    private String baseUrl;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/socket")
-                .setAllowedOrigins(baseUrl)
+                .setAllowedOriginPatterns("*") // Allow all origins for development
                 .withSockJS();
     }
-
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
