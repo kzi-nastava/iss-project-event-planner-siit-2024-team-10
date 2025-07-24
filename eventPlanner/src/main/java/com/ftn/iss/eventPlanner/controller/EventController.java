@@ -88,13 +88,8 @@ public class EventController {
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedEventDTO> createEvent(@Valid @RequestBody CreateEventDTO event) {
-        try{
-            CreatedEventDTO createdEventType = eventService.create(event);
-            return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        CreatedEventDTO createdEventType = eventService.create(event);
+        return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
@@ -108,22 +103,6 @@ public class EventController {
     @DeleteMapping(value = "/{eventId}")
     public ResponseEntity<?> deleteEvent(@PathVariable int eventId) throws Exception {
         eventService.delete(eventId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @PutMapping(value = "/{eventId}/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int eventId, @PathVariable int commentId)
-            throws Exception {
-        UpdatedCommentDTO updatedComment = new UpdatedCommentDTO();
-
-        updatedComment.setId(commentId);
-        updatedComment.setContent(comment.getContent());
-
-        return new ResponseEntity<UpdatedCommentDTO>(updatedComment, HttpStatus.OK);
-    }
-
-    @DeleteMapping(value = "/{eventId}/comments/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable int eventId, @PathVariable int commentId) throws Exception {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
