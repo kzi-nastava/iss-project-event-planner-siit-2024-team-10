@@ -28,6 +28,7 @@ public class UserController {
     private UserService userService;
 
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','ADMIN','AUTHENTICATED_USER')")
     @GetMapping(value = "/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetUserDTO> getUserDetails(@PathVariable("accountId") int accountId) {
         GetUserDTO user = userService.getUserDetails(accountId);
@@ -69,25 +70,12 @@ public class UserController {
         return new ResponseEntity<>(updatedProfilePhotoDTO,HttpStatus.OK);
     }
 
-    @PutMapping("/{userID}/favorites")
-    public ResponseEntity<CreatedFavoriteDTO> addToFavorites(@PathVariable int userID, @RequestBody CreateFavoriteDTO createFavoriteDTO) {
-        CreatedFavoriteDTO createdFavoriteDTO = new CreatedFavoriteDTO();
-        createdFavoriteDTO.setUserID(userID);
-        createdFavoriteDTO.setOfferingID(createFavoriteDTO.getOfferingId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdFavoriteDTO);
-    }
-
-    @GetMapping("/{userId}/favorites")
-    public ResponseEntity<List<Integer>> getFavorites(@PathVariable int userId) {
-        ArrayList<Integer> favorites = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
-        return ResponseEntity.ok(favorites);
-    }
-
     @PostMapping("/{id}/suspend")
     public ResponseEntity<?> suspendUser(@PathVariable("id") int id) {
         return ResponseEntity.ok(HttpStatus.NO_CONTENT);
     }
 
+    @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','ADMIN','AUTHENTICATED_USER')")
     @PutMapping("/{accountId}/deactivate")
     public ResponseEntity<?> deactivateAccount(@PathVariable("accountId") int accountId) {
         userService.deactivateAccount(accountId);
