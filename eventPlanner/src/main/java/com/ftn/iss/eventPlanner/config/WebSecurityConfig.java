@@ -96,21 +96,17 @@ public class WebSecurityConfig {
                         "/api/products*", "/api/products/*",
                         "/api/categories*", "/api/categories/*",
                         "/api/offerings*", "/api/offerings/*", "/api/offerings/*/comments",
-                        "/api/accounts/*/favourite-events", "/api/accounts/*/favourite-events/*",
-                        "/api/accounts/*/favourite-offerings", "/api/accounts/*/favourite-offerings/*",
                         "/api/messages/**",
                         "/api/comments*",
                         "/api/images", "/api/images/*",
                         "/api/reservations/*",
                         "/api/offerings/provider/*",
-                        "/api/users/*",
                         "api/events/process-invitation/**",
                         "/api/events/accept-invite/**",
                         "api/auth/activate/redirect",
                         "/api/reports/*/suspension-status"
                 )
                 .requestMatchers(HttpMethod.POST,
-                        "/api/accounts/*/favourite-events",
                         "/api/accounts/*/favourite-offerings",
                         "/api/events/*/stats/participants",
                         "/api/events/*/ratings",
@@ -121,7 +117,6 @@ public class WebSecurityConfig {
                         "api/upload"
                 )
                 .requestMatchers(HttpMethod.DELETE,
-                        "/api/accounts/*/favourite-events/*",
                         "/api/accounts/*/favourite-offerings/*"
                 );
     }
