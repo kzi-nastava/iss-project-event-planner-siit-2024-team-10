@@ -76,7 +76,7 @@ public class ProductController {
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedProductDTO> updateProduct(@RequestBody UpdateProductDTO product, @PathVariable("id") int id) {
+    public ResponseEntity<UpdatedProductDTO> updateProduct(@RequestBody @Valid UpdateProductDTO product, @PathVariable("id") int id) {
         UpdatedProductDTO updatedProduct = productService.update(id, product);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }

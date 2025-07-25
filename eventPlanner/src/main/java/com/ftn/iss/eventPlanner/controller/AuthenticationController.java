@@ -9,6 +9,7 @@ import com.ftn.iss.eventPlanner.services.AccountService;
 import com.ftn.iss.eventPlanner.services.UserService;
 import com.ftn.iss.eventPlanner.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -59,9 +60,9 @@ public class AuthenticationController {
     }
 
     @PostMapping(value="/register",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedUserDTO> createUser(@RequestBody CreateUserDTO user, @RequestParam boolean roleUpgrade) {
+    public ResponseEntity<CreatedUserDTO> createUser(@Valid @RequestBody CreateUserDTO user, @RequestParam boolean roleUpgrade) {
         CreatedUserDTO savedUser = userService.create(user, roleUpgrade);
-        return new ResponseEntity<CreatedUserDTO>(savedUser, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/activate")

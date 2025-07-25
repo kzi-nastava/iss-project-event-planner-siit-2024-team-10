@@ -182,7 +182,6 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Provider with ID " + productDTO.getProviderID() + " not found"));
         product.setProvider(provider);
 
-        //TODO add custom model mapper
         ProductDetails productDetails = new ProductDetails();
         productDetails.setName(productDTO.getName());
         productDetails.setDescription(productDTO.getDescription());
@@ -195,8 +194,14 @@ public class ProductService {
 
         product.setCurrentDetails(productDetails);
         product = productRepository.save(product);
-        //TODO add custom model mapper
-        return modelMapper.map(product, CreatedProductDTO.class);
+
+        CreatedProductDTO createdProductDTO = modelMapper.map(productDetails, CreatedProductDTO.class);
+        createdProductDTO.setId(product.getId());
+        createdProductDTO.setCategoryId(product.getCategory().getId());
+        createdProductDTO.setProviderID(product.getProvider().getId());
+        createdProductDTO.setPending(product.isPending());
+
+        return createdProductDTO;
     }
 
     public UpdatedProductDTO update(int productId, UpdateProductDTO updateProductDTO){
@@ -212,7 +217,7 @@ public class ProductService {
         product.getCurrentDetails().setTimestamp(LocalDateTime.now());
         product.getCurrentDetails().setId(0);
 
-        return modelMapper.map(productRepository.save(product), UpdatedProductDTO.class);
+        return modelMapper.map(productRepository.save(product).getCurrentDetails(), UpdatedProductDTO.class);
     }
 
     public void delete(int productId){
