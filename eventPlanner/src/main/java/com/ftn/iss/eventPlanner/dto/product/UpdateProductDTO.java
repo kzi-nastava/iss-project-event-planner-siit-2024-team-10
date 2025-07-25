@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.dto.product;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +14,9 @@ public class UpdateProductDTO {
     private double price;
     private double discount;
     private List<String> photos;
+    @JsonProperty("isVisible")
     private boolean isVisible;
+    @JsonProperty("isAvailable")
     private boolean isAvailable;
 
     public UpdateProductDTO() {}
