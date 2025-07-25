@@ -24,14 +24,8 @@ public class EventTypeController {
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedEventTypeDTO> createEventType(@Valid @RequestBody CreateEventTypeDTO createEventTypeDTO) {
-        try{
-            CreatedEventTypeDTO createdEventType = eventTypeService.create(createEventTypeDTO);
-            return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-    }
+        CreatedEventTypeDTO createdEventType = eventTypeService.create(createEventTypeDTO);
+        return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);}
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<GetEventTypeDTO>> getAllEventTypes() {
@@ -41,44 +35,28 @@ public class EventTypeController {
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetEventTypeDTO> getEventTypeById(@PathVariable int id) {
-        try {
-            GetEventTypeDTO eventType = eventTypeService.findById(id);
-            return new ResponseEntity<>(eventType, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        GetEventTypeDTO eventType = eventTypeService.findById(id);
+        return new ResponseEntity<>(eventType, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedEventTypeDTO> updateEventType(@PathVariable int id, @Valid @RequestBody UpdateEventTypeDTO updateEventTypeDTO) {
-        try {
-            UpdatedEventTypeDTO updatedEventType = eventTypeService.update(id, updateEventTypeDTO);
-            return new ResponseEntity<>(updatedEventType, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        UpdatedEventTypeDTO updatedEventType = eventTypeService.update(id, updateEventTypeDTO);
+        return new ResponseEntity<>(updatedEventType, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteEventType(@PathVariable int id) {
-        try {
-            eventTypeService.delete(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        eventTypeService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value = "/{id}/activate")
     public ResponseEntity<Void> activateEventType(@PathVariable int id) {
-        try {
-            eventTypeService.activate(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        eventTypeService.activate(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
