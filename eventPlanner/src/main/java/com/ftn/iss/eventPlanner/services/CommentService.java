@@ -3,10 +3,7 @@ package com.ftn.iss.eventPlanner.services;
 import com.ftn.iss.eventPlanner.dto.comment.CreateCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.CreatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.comment.GetCommentDTO;
-import com.ftn.iss.eventPlanner.model.Account;
-import com.ftn.iss.eventPlanner.model.Comment;
-import com.ftn.iss.eventPlanner.model.Offering;
-import com.ftn.iss.eventPlanner.model.Status;
+import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.CommentRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
@@ -27,6 +24,8 @@ public class CommentService {
     private AccountRepository accountRepository;
     @Autowired
     private OfferingRepository offeringRepository;
+    @Autowired
+    private NotificationService notificationService;
     private ModelMapper modelMapper = new ModelMapper();
     @Transactional
 
@@ -63,6 +62,15 @@ public class CommentService {
 
         comment.setStatus(Status.ACCEPTED);
         commentRepository.save(comment);
+
+        String offeringName = "";
+        if (offering instanceof Product p){
+            offeringName = p.getCurrentDetails().getName();
+        } else if (offering instanceof com.ftn.iss.eventPlanner.model.Service s){
+            offeringName = s.getCurrentDetails().getName();
+        }
+
+        notificationService.sendNotification(offering.getProvider().getAccount().getId(), "New Comment", "Your offering "+ offeringName +" has received a new comment with rating "+comment.getRating()+"/5.");
     }
 
     public void delete(int commentId){

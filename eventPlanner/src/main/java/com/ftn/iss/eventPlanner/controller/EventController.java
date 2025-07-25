@@ -39,15 +39,9 @@ public class EventController {
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetEventDTO>> getTopEvents(
-            @RequestParam(required = false) Integer accountId
-            ) {
-        try {
-            List<GetEventDTO> events = eventService.findTopEvents(accountId);
-
-            return ResponseEntity.ok(events);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
-        }
+            @RequestParam(required = false) Integer accountId) {
+        List<GetEventDTO> events = eventService.findTopEvents(accountId);
+        return new ResponseEntity<Collection<GetEventDTO>>(events, HttpStatus.OK);
     }
     @GetMapping
     public ResponseEntity<PagedResponse<GetEventDTO>> getEvents(
@@ -64,15 +58,10 @@ public class EventController {
             @RequestParam(required = false) Integer accountId,
             @RequestParam(required = false) Boolean initLoad
     ) {
-        try {
-            PagedResponse<GetEventDTO> response = eventService.getAllEvents(
-                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection, accountId, initLoad);
+        PagedResponse<GetEventDTO> response = eventService.getAllEvents(
+                pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection, accountId, initLoad);
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new PagedResponse<>(List.of(), 0, 0));
-        }
+        return new ResponseEntity<PagedResponse<GetEventDTO>>(response, HttpStatus.OK);
     }
 
     @GetMapping(value="/organizers", produces = MediaType.APPLICATION_JSON_VALUE)

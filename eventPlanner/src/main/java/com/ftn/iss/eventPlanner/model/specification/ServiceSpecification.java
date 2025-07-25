@@ -2,6 +2,7 @@ package com.ftn.iss.eventPlanner.model.specification;
 
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.Comment;
+import com.ftn.iss.eventPlanner.model.Status;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
@@ -68,7 +69,10 @@ public class ServiceSpecification {
             Join<Service, Comment> commentJoin = offeringRoot.join("comments", JoinType.LEFT);
 
             subquery.select(criteriaBuilder.avg(commentJoin.get("rating")))
-                    .where(criteriaBuilder.equal(offeringRoot.get("id"), root.get("id")));
+                    .where(
+                            criteriaBuilder.equal(offeringRoot.get("id"), root.get("id")),
+                            criteriaBuilder.equal(commentJoin.get("status"), Status.ACCEPTED)
+                    );
 
             return criteriaBuilder.greaterThanOrEqualTo(subquery, minRating);
         };

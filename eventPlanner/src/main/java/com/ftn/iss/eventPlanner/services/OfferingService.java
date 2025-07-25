@@ -35,6 +35,8 @@ public class OfferingService {
     private OfferingCategoryRepository offeringCategoryRepository;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private LocationService locationService;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -237,18 +239,42 @@ public class OfferingService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetOfferingDTO> findTopOfferings(int accountId) {
+    public List<GetOfferingDTO> findTopOfferings(Integer accountId) {
         List<Offering> offerings = offeringRepository.findAll();
 
-        return offerings.stream()
-                .filter(offering -> offering.getProvider().getAccount().getBlockedAccounts()
-                .stream()
-                .noneMatch(blockedAcc -> blockedAcc.getId() == accountId))
-                .filter(offering -> {
-                    Optional<Account> currentUserOpt = accountRepository.findById(accountId);
-                    if (currentUserOpt.isEmpty()) return true;
+        if (accountId != null) {
+            Location userLocation = locationService.findLocationByAccountId(accountId);
 
+            if (userLocation != null) {
+                offerings = offerings.stream()
+                        .filter(offering -> offering.getProvider().getCompany().getLocation() != null &&
+                                offering.getProvider().getCompany().getLocation().getCity().equalsIgnoreCase(userLocation.getCity()))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        return offerings.stream()
+
+                .filter(offering -> {
+                    if (accountId == null) {
+                        return true;
+                    }
+                    return offering.getProvider().getAccount().getBlockedAccounts()
+                            .stream()
+                            .noneMatch(blockedAcc -> blockedAcc.getId() == accountId);
+                })
+                .filter(offering -> {
+                    if (accountId == null) {
+                        return true;
+                    }
+
+
+                    Optional<Account> currentUserOpt = accountRepository.findById(accountId);
+                    if (currentUserOpt.isEmpty()) {
+                        return true;
+                    }
                     Account currentUser = currentUserOpt.get();
+
                     return currentUser.getBlockedAccounts()
                             .stream()
                             .noneMatch(blocked -> blocked.getId() == offering.getProvider().getAccount().getId());
