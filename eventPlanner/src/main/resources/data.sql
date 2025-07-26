@@ -46,6 +46,21 @@ INSERT INTO event (organizer_id, event_type_id, name, description, max_participa
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
                                                                                                 ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
+INSERT INTO event_agenda (agenda_id,event_id) VALUES
+                                                  (1,1),
+                                                  (2,1);
+
+INSERT INTO guests (event_id,guest_list) VALUES
+                                             (2,'guest1@mail.com'),
+                                             (2,'guest2@mail.com'),
+                                             (2,'guest3@mail.com'),
+                                             (2,'guest4@mail.com'),
+                                             (2,'guest5@mail.com'),
+                                             (2,'guest6@mail.com'),
+                                             (2,'guest7@mail.com'),
+                                             (2,'guest8@mail.com');
+
+
 
 INSERT INTO comment (content, status, commenter_id, rating) VALUES
                                                                 ('Great event!', 1, 1, 5),
@@ -172,6 +187,20 @@ INSERT INTO account_notifications (account_id, notifications_id) VALUES
                                                                      (2, 1),
                                                                      (2, 2),
                                                                      (2,3);
+
+INSERT INTO account_favourite_events (account_id, favourite_events_id) VALUES
+                                                                                  (1, 1),
+                                                                                  (1, 2),
+                                                                                  (1, 3),
+                                                                                  (2, 4),
+                                                                                  (2, 5);
+
+INSERT INTO account_favourite_offerings (account_id, favourite_offerings_id) VALUES
+                                                                           (1, 1),
+                                                                           (1, 2),
+                                                                           (1, 3),
+                                                                           (2, 4),
+                                                                           (2, 5);
 
 INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
                                                                                          (1,2);

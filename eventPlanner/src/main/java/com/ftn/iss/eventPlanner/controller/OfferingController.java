@@ -3,7 +3,7 @@ package com.ftn.iss.eventPlanner.controller;
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
-import com.ftn.iss.eventPlanner.dto.offeringcategory.ChangeCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.offeringcategory.ChangeOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.services.CommentService;
 import com.ftn.iss.eventPlanner.services.OfferingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +31,9 @@ public class OfferingController {
     }
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings() {
+    public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings(@RequestParam(required = false) Integer accountId) {
         try {
-            List<GetOfferingDTO> offerings = offeringService.findTopOfferings();
+            List<GetOfferingDTO> offerings = offeringService.findTopOfferings(accountId);
 
             return ResponseEntity.ok(offerings);
         } catch (Exception e) {
@@ -90,12 +90,14 @@ public class OfferingController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection,
             @RequestParam(required = false) Integer accountId,
-            @RequestParam(required = false) Integer providerId
+            @RequestParam(required = false) Integer providerId,
+            @RequestParam(required = false) Boolean initLoad
+
     ){
         try{
             PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
                     pageable, isServiceFilter, name, categoryId, location, startPrice,
-                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection, accountId, providerId);
+                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection, accountId, providerId, initLoad);
 
 
             return ResponseEntity.ok(offerings);
@@ -181,11 +183,9 @@ public class OfferingController {
     }
     @PutMapping("/{offeringId}/category")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseEntity<?> changeOfferingCategory(
-            @PathVariable int offeringId,
-            @RequestBody ChangeCategoryDTO request) {
+    public ResponseEntity<?> changeOfferingCategory(@PathVariable int offeringId, @RequestBody ChangeOfferingCategoryDTO dto) {
         try {
-            offeringService.changeCategory(offeringId, request.getNewCategoryId());
+            offeringService.changeCategory(offeringId, dto.getCategoryId());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());

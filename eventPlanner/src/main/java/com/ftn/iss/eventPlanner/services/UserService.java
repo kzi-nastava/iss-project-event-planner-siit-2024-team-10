@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.company.*;
+import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
@@ -106,14 +107,19 @@ public class UserService {
         accountRepository.save(account);
 
         sendConfirmation(user);
-        return modelMapper.map(user, CreatedUserDTO.class);
+
+        CreatedUserDTO createdUserDTO = modelMapper.map(user, CreatedUserDTO.class);
+        createdUserDTO.setEmail(account.getEmail());
+        createdUserDTO.setRole(account.getRole());
+
+        return createdUserDTO;
     }
 
     private User registerProvider(CreateUserDTO userDTO, Account account){
         Provider provider = modelMapper.map(userDTO, Provider.class);
         provider.setAccount(account);
         provider.setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
-        provider.getCompany().setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
+        provider.getCompany().setLocation(modelMapper.map(locationService.create(userDTO.getCompany().getLocation()), Location.class));
         provider.setCompany(companyRepository.save(provider.getCompany()));
         providerRepository.save(provider);
         return provider;

@@ -5,10 +5,7 @@ import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
-import com.ftn.iss.eventPlanner.dto.product.CreateProductDTO;
-import com.ftn.iss.eventPlanner.dto.product.CreatedProductDTO;
-import com.ftn.iss.eventPlanner.dto.product.GetProductDTO;
-import com.ftn.iss.eventPlanner.dto.product.UpdatedProductDTO;
+import com.ftn.iss.eventPlanner.dto.product.*;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.dto.service.UpdatedServiceDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
@@ -21,6 +18,7 @@ import com.ftn.iss.eventPlanner.repositories.ProductRepository;
 import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
 import jdk.jfr.Category;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -184,7 +182,6 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Provider with ID " + productDTO.getProviderID() + " not found"));
         product.setProvider(provider);
 
-        //TODO add custom model mapper
         ProductDetails productDetails = new ProductDetails();
         productDetails.setName(productDTO.getName());
         productDetails.setDescription(productDTO.getDescription());
@@ -197,7 +194,36 @@ public class ProductService {
 
         product.setCurrentDetails(productDetails);
         product = productRepository.save(product);
-        //TODO add custom model mapper
-        return modelMapper.map(product, CreatedProductDTO.class);
+
+        CreatedProductDTO createdProductDTO = modelMapper.map(productDetails, CreatedProductDTO.class);
+        createdProductDTO.setId(product.getId());
+        createdProductDTO.setCategoryId(product.getCategory().getId());
+        createdProductDTO.setProviderID(product.getProvider().getId());
+        createdProductDTO.setPending(product.isPending());
+
+        return createdProductDTO;
+    }
+
+    public UpdatedProductDTO update(int productId, UpdateProductDTO updateProductDTO){
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product with ID " + productId + " not found"));
+
+        // Create a copy of current details before adding to history
+        ProductDetails historicalDetails = new ProductDetails();
+        BeanUtils.copyProperties(product.getCurrentDetails(), historicalDetails);
+
+        product.getProductDetailsHistory().add(historicalDetails);
+        modelMapper.map(updateProductDTO, product.getCurrentDetails());
+        product.getCurrentDetails().setTimestamp(LocalDateTime.now());
+        product.getCurrentDetails().setId(0);
+
+        return modelMapper.map(productRepository.save(product).getCurrentDetails(), UpdatedProductDTO.class);
+    }
+
+    public void delete(int productId){
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product with ID " + productId + " not found"));
+        product.setDeleted(true);
+        productRepository.save(product);
     }
 }

@@ -10,6 +10,7 @@ import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
+import com.ftn.iss.eventPlanner.dto.user.BlockStatusDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
@@ -217,6 +218,42 @@ public class AccountService implements UserDetailsService {
 
         return calendarItems;
     }
+
+    public void blockAccount(int loggedInId, int accountToBlockId) {
+        if (loggedInId == accountToBlockId) {
+            throw new IllegalArgumentException("Cannot block yourself");
+        }
+
+        Account account = accountRepository.findByIdWithBlockedAccounts(loggedInId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+
+        Account blockedAccount = accountRepository.findById(accountToBlockId)
+                .orElseThrow(() -> new NotFoundException("Account to block not found"));
+
+        if (!account.getBlockedAccounts().contains(blockedAccount)) {
+            account.getBlockedAccounts().add(blockedAccount);
+            accountRepository.save(account);
+        }
+    }
+
+    public void unblockAccount(int loggedInId, int accountToUnblockId) {
+        Account account = accountRepository.findByIdWithBlockedAccounts(loggedInId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+
+        Account accountToUnblock = accountRepository.findById(accountToUnblockId)
+                .orElseThrow(() -> new NotFoundException("Account to unblock not found"));
+
+        if (account.getBlockedAccounts().contains(accountToUnblock)) {
+            account.getBlockedAccounts().remove(accountToUnblock);
+            accountRepository.save(account);
+        }
+    }
+
+    public BlockStatusDTO isAccountBlocked(int loggedInId, int accountToBlockId) {
+        boolean blocked = accountRepository.isBlocked(loggedInId, accountToBlockId);
+        return new BlockStatusDTO(blocked);
+    }
+
 
     private GetOfferingDTO mapToGetOfferingDTO(Offering offering) {
         GetOfferingDTO dto = new GetOfferingDTO();

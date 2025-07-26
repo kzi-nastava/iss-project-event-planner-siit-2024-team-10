@@ -71,4 +71,20 @@ public class EmailService {
             return "Error while sending mail!!!";
         }
     }
+    public String sendHtmlEmail(EmailDetails details) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "utf-8");
+            message.setContent(details.getMsgBody(), "text/html; charset=utf-8");
+            helper.setTo(details.getRecipient());
+            helper.setSubject(details.getSubject());
+            helper.setFrom(sender);
+
+            javaMailSender.send(message);
+            return "HTML mail sent successfully";
+        } catch (Exception e) {
+            return "Error while sending HTML email: " + e.getMessage();
+        }
+    }
+
 }

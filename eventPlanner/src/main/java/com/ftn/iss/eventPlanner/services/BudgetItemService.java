@@ -71,7 +71,7 @@ public class BudgetItemService {
         return modelMapper.map(budgetItems, GetBudgetItemDTO.class);
     }
 
-    public UpdatedBudgetItemDTO updateAmount(int budgetItemId, int newAmount) {
+    public UpdatedBudgetItemDTO updateAmount(int budgetItemId, UpdateBudgetItemDTO dto) {
         BudgetItem budgetItem = budgetItemRepository.findById(budgetItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemId + " not found"));
 
@@ -85,11 +85,11 @@ public class BudgetItemService {
             usedAmount += product.getPrice() * (1 - product.getDiscount() / 100.0);
         }
 
-        if (newAmount < usedAmount) {
+        if (dto.getAmount() < usedAmount) {
             throw new IllegalArgumentException("New amount cannot be less than the amount already used (" + usedAmount + ").");
         }
 
-        budgetItem.setAmount(newAmount);
+        budgetItem.setAmount(dto.getAmount());
         budgetItem = budgetItemRepository.save(budgetItem);
 
         return modelMapper.map(budgetItem, UpdatedBudgetItemDTO.class);

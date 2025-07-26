@@ -6,9 +6,11 @@ import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
 import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.model.EventType;
+import com.ftn.iss.eventPlanner.model.User;
 import com.ftn.iss.eventPlanner.model.Location;
 import com.ftn.iss.eventPlanner.model.OfferingCategory;
 import com.ftn.iss.eventPlanner.repositories.LocationRepository;
+import com.ftn.iss.eventPlanner.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 public class LocationService {
     @Autowired
     private LocationRepository locationRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     ModelMapper modelMapper = new ModelMapper();
 
@@ -45,5 +49,11 @@ public class LocationService {
         return locations.stream()
                 .map(location -> modelMapper.map(location, GetLocationDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    public Location findLocationByAccountId(Integer accountId) {
+        return userRepository.findByAccountId(accountId)
+                .map(User::getLocation)
+                .orElse(null);
     }
 }
