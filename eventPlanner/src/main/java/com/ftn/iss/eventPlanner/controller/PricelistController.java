@@ -10,6 +10,7 @@ import com.ftn.iss.eventPlanner.dto.service.UpdatedServiceDTO;
 import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.model.Service;
 import com.ftn.iss.eventPlanner.services.OfferingService;
+import com.ftn.iss.eventPlanner.services.PricelistService;
 import com.ftn.iss.eventPlanner.services.ProductService;
 import com.ftn.iss.eventPlanner.services.ServiceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +34,7 @@ public class PricelistController {
 
     private OfferingService offeringService;
     @Autowired
-    private ServiceService serviceService;
-    @Autowired
-    private ProductService productService;
+    private PricelistService pricelistService;
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetPricelistItemDTO>> getPricelist() {
@@ -56,34 +55,10 @@ public class PricelistController {
         return ResponseEntity.ok(pricelist);
     }
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-    @PutMapping("/{id}")
-    public ResponseEntity<UpdatedPricelistItemDTO> updatePricing(@PathVariable int id, @RequestBody UpdatePricelistItemDTO updatePricingDTO) {
-        try {
-            UpdatedServiceDTO updatedService = serviceService.updatePrice(id, updatePricingDTO);
-
-            UpdatedPricelistItemDTO response = new UpdatedPricelistItemDTO();
-            response.setId(updatedService.getId());
-            response.setName(updatedService.getName());
-            response.setPrice(updatedService.getPrice());
-            response.setDiscount(updatedService.getDiscount());
-
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            try {
-                UpdatedProductDTO updatedProduct = productService.updatePrice(id, updatePricingDTO);
-
-                UpdatedPricelistItemDTO response = new UpdatedPricelistItemDTO();
-                response.setId(updatedProduct.getId());
-                response.setName(updatedProduct.getName());
-                response.setPrice(updatedProduct.getPrice());
-                response.setDiscount(updatedProduct.getDiscount());
-
-
-                return ResponseEntity.ok(response);
-            } catch (NoSuchElementException ex) {
-                return ResponseEntity.notFound().build();
-            }
-        }
+    @PutMapping("/{offeringId}")
+    public ResponseEntity<UpdatedPricelistItemDTO> updatePricing(@PathVariable int offeringId, @RequestBody UpdatePricelistItemDTO updatePricingDTO) {
+        UpdatedPricelistItemDTO response = pricelistService.updatePricing(offeringId, updatePricingDTO);
+        return ResponseEntity.ok(response);
     }
 
 
