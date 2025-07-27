@@ -35,14 +35,17 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
                                                                                                                                      (4,2,6,1,1,14, 2.8),
                                                                                                                                      (1,2,1,0,0,4, 2.0),
                                                                                                                                      (0,0,2,3,7,12, 4.4),
+                                                                                                                                     (4,2,1,7,1,15, 3.2),
                                                                                                                                      (4,2,1,7,1,15, 3.2);
+
 
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
                                                                                                                                                    ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2026-01-15 12:00', FALSE, 1, '2025-03-10', 1),
                                                                                                                                                    ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2026-03-10 15:00', FALSE, 2, '2025-03-03',2),
                                                                                                                                                    ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20 09:00', FALSE, 3, '2025-05-01',3),
                                                                                                                                                    ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
-                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5);
+                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5),
+                                                                                                                                                   ( 2, 1, 'Deleted event', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', TRUE, 1, '2021-07-15',6);
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
                                                                                                 ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
@@ -204,3 +207,11 @@ INSERT INTO account_favourite_offerings (account_id, favourite_offerings_id) VAL
 
 INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
                                                                                          (1,2);
+
+INSERT INTO budget_item (amount, is_deleted, category_id, event_id) VALUES
+                                                                        (150000.0, false, 1, 1),
+                                                                        (2000.0, true, 2, 1),
+                                                                        (2.0, false, 3, 1);
+
+INSERT INTO budget_item_services(budget_item_id,services_id) VALUES (1,1);
+INSERT INTO budget_item_products(budget_item_id,products_id) VALUES (1,1);

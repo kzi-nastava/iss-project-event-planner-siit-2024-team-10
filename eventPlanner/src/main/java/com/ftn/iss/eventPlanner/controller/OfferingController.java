@@ -32,23 +32,13 @@ public class OfferingController {
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings(@RequestParam(required = false) Integer accountId) {
-        try {
-            List<GetOfferingDTO> offerings = offeringService.findTopOfferings(accountId);
-
-            return ResponseEntity.ok(offerings);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
-        }
+        List<GetOfferingDTO> offerings = offeringService.findTopOfferings(accountId);
+        return ResponseEntity.ok(offerings);
     }
     @GetMapping(value="/providerId", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getProvidersOfferings(@PathVariable int providerId) {
-        try {
-            List<GetOfferingDTO> offerings = offeringService.findProvidersOfferings(providerId);
-
-            return ResponseEntity.ok(offerings);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
-        }
+        List<GetOfferingDTO> offerings = offeringService.findProvidersOfferings(providerId);
+        return ResponseEntity.ok(offerings);
     }
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getOfferings(
@@ -63,15 +53,11 @@ public class OfferingController {
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) Boolean isAvailable
     ){
-        try {
-            List<GetOfferingDTO> offerings = offeringService.getAllOfferings(
-                    isServiceFilter, name, categoryId, location, minPrice, maxPrice,
-                    minDiscount, serviceDuration, minRating, isAvailable);
+        List<GetOfferingDTO> offerings = offeringService.getAllOfferings(
+                isServiceFilter, name, categoryId, location, minPrice, maxPrice,
+                minDiscount, serviceDuration, minRating, isAvailable);
 
-            return ResponseEntity.ok(offerings);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
-        }
+        return ResponseEntity.ok(offerings);
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

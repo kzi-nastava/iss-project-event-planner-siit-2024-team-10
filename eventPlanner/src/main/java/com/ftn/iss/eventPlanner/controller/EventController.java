@@ -3,8 +3,6 @@ package com.ftn.iss.eventPlanner.controller;
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.agendaitem.*;
 import com.ftn.iss.eventPlanner.dto.budgetitem.*;
-import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
-import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.*;
 import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.services.BudgetItemService;
@@ -24,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -41,7 +38,7 @@ public class EventController {
     public ResponseEntity<Collection<GetEventDTO>> getTopEvents(
             @RequestParam(required = false) Integer accountId) {
         List<GetEventDTO> events = eventService.findTopEvents(accountId);
-        return new ResponseEntity<Collection<GetEventDTO>>(events, HttpStatus.OK);
+        return new ResponseEntity<>(events, HttpStatus.OK);
     }
     @GetMapping
     public ResponseEntity<PagedResponse<GetEventDTO>> getEvents(
@@ -61,7 +58,7 @@ public class EventController {
         PagedResponse<GetEventDTO> response = eventService.getAllEvents(
                 pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection, accountId, initLoad);
 
-        return new ResponseEntity<PagedResponse<GetEventDTO>>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping(value="/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -84,14 +81,14 @@ public class EventController {
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value = "/{eventId}", consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedEventDTO> updateEvent(@Valid @RequestBody UpdateEventDTO event, @PathVariable int eventId) throws Exception {
+    public ResponseEntity<UpdatedEventDTO> updateEvent(@Valid @RequestBody UpdateEventDTO event, @PathVariable int eventId) {
         UpdatedEventDTO createdEventType = eventService.update(eventId, event);
         return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @DeleteMapping(value = "/{eventId}")
-    public ResponseEntity<?> deleteEvent(@PathVariable int eventId) throws Exception {
+    public ResponseEntity<?> deleteEvent(@PathVariable int eventId) {
         eventService.delete(eventId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -187,17 +184,20 @@ public class EventController {
         return ResponseEntity.ok(updatedBudgetItemDTO);
     }
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
-    @PutMapping(value="/{eventId}/budget/buy/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Boolean> buy(@PathVariable int eventId, @PathVariable int offeringId) {
-        boolean success = budgetItemService.buy(eventId, offeringId);
-        return ResponseEntity.ok(success);
+    @PutMapping(value = "/{eventId}/budget/buy/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> buyOfferingForEvent(
+            @PathVariable int eventId,
+            @PathVariable int offeringId
+    ) {
+        budgetItemService.buy(eventId, offeringId);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @DeleteMapping(value="/{eventId}/budget/{budgetItemId}")
-    public ResponseEntity<Boolean> deleteBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId) {
-        boolean deleted = budgetItemService.delete(eventId, budgetItemId);
-        return new ResponseEntity<>(deleted, HttpStatus.OK);
+    public ResponseEntity<Void> deleteBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId) {
+        budgetItemService.delete(eventId, budgetItemId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")

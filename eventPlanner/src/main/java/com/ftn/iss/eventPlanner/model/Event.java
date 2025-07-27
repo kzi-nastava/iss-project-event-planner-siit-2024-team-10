@@ -52,8 +52,8 @@ public class Event {
     @OneToMany(fetch = FetchType.EAGER)
     private Set<AgendaItem> agenda = new HashSet<>();
 
-    @OneToMany(fetch = FetchType.EAGER)
-    private Set<BudgetItem> budget;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<BudgetItem> budget = new HashSet<>();
 
     @OneToOne
     private EventStats stats;
