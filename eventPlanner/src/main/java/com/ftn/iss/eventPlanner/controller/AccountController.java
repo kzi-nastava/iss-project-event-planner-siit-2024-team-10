@@ -96,7 +96,7 @@ public class AccountController {
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER', 'ADMIN', 'AUTHENTICATED_USER')")
-    @PostMapping(value="/{loggedInId}/block/{accountToBlockId}")
+    @PutMapping(value="/{loggedInId}/block/{accountToBlockId}")
     public ResponseEntity<?> blockAccount(@PathVariable int loggedInId, @PathVariable int accountToBlockId) {
         accountService.blockAccount(loggedInId, accountToBlockId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

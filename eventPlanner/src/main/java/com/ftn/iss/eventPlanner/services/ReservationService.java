@@ -12,6 +12,7 @@ import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
+import com.ftn.iss.eventPlanner.exception.ServiceUnavailableException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.ReservationRepository;
@@ -295,6 +296,9 @@ public class ReservationService {
         LocalTime startTime = reservation.getStartTime();
         LocalTime endTime = reservation.getEndTime();
 
+        if(!service.getCurrentDetails().isAvailable()){
+            throw new ServiceUnavailableException("Service is not available at selected time.");
+        }
         isServiceReservedForEvent(event, service);
         isDateWithinReservationPeriod(startTime, event, service.getCurrentDetails());
         validateReservationTime(startTime, endTime, service.getCurrentDetails());

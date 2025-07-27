@@ -3,10 +3,12 @@ package com.ftn.iss.eventPlanner.services;
 import com.ftn.iss.eventPlanner.dto.accountreport.CreateAccountReportDTO;
 import com.ftn.iss.eventPlanner.dto.accountreport.CreatedAccountReportDTO;
 import com.ftn.iss.eventPlanner.dto.accountreport.GetAccountReportDTO;
+import com.ftn.iss.eventPlanner.dto.accountreport.UpdatedAccountReportDTO;
 import com.ftn.iss.eventPlanner.exception.AccountSuspendedException;
 import com.ftn.iss.eventPlanner.exception.ReportAlreadySentException;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.AccountReport;
+import com.ftn.iss.eventPlanner.model.AccountStatus;
 import com.ftn.iss.eventPlanner.model.Status;
 import com.ftn.iss.eventPlanner.repositories.AccountReportRepository;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
@@ -60,28 +62,48 @@ public class AccountReportService {
         return mapToCreatedAccountReportDTO(accountReport);
     }
 
-    public void acceptReport(int reportId){
+    public UpdatedAccountReportDTO acceptReport(int reportId){
         AccountReport accountReport = accountReportRepository.findById(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));
 
-        accountReport.setStatus(Status.ACCEPTED);
-        accountReport.setProcessingTimestamp(LocalDateTime.now().plusDays(SUSPENSION_TIME));
+        if (accountReport.getStatus() == Status.ACCEPTED) {
+            throw new IllegalStateException("Report has already been accepted.");
+        }
 
         Account reportee = accountRepository.findByEmail(accountReport.getReportee().getEmail());
         if (reportee == null) {
             throw  new IllegalArgumentException("Reportee not found");
         }
 
+        accountReport.setStatus(Status.ACCEPTED);
+        accountReport.setProcessingTimestamp(LocalDateTime.now().plusDays(SUSPENSION_TIME));
+
         accountService.suspendAccount(reportee.getId());
         accountReportRepository.save(accountReport);
+
+        return mapToUpdatedAccountReportDTO(accountReport);
     }
 
-    public void rejectReport(int reportId){
+    public UpdatedAccountReportDTO rejectReport(int reportId){
         AccountReport accountReport = accountReportRepository.findById(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));
 
+        if(accountReport.getStatus() == Status.ACCEPTED){
+            throw new IllegalStateException("Report has been already been accepted.");
+        }
+        Account reportee = accountRepository.findByEmail(accountReport.getReportee().getEmail());
+        if (reportee == null) {
+            throw  new IllegalArgumentException("Reportee not found");
+        }
+
+        if (reportee.getStatus() == AccountStatus.SUSPENDED){
+            throw new IllegalStateException("User has already been suspended.");
+        }
+
         accountReport.setStatus(Status.DENIED);
         accountReportRepository.save(accountReport);
+
+        return mapToUpdatedAccountReportDTO(accountReport);
     }
 
     public void checkSuspensionStatus(int accountId) {
@@ -144,6 +166,19 @@ public class AccountReportService {
         dto.setDescription(accountReport.getDescription());
         dto.setReporterEmail(accountReport.getReporter().getEmail());
         dto.setReporteeEmail(accountReport.getReportee().getEmail());
+
+        return dto;
+    }
+
+    private UpdatedAccountReportDTO mapToUpdatedAccountReportDTO(AccountReport accountReport) {
+        UpdatedAccountReportDTO dto = new UpdatedAccountReportDTO();
+
+        dto.setId(accountReport.getId());
+        dto.setDescription(accountReport.getDescription());
+        dto.setReporterEmail(accountReport.getReporter().getEmail());
+        dto.setReporteeEmail(accountReport.getReportee().getEmail());
+        dto.setStatus(accountReport.getStatus());
+        dto.setProcessingTimestamp(accountReport.getProcessingTimestamp());
 
         return dto;
     }

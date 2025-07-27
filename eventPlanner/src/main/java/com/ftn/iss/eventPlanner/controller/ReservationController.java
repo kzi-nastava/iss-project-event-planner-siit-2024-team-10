@@ -5,6 +5,7 @@ import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.*;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.services.ReservationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -58,18 +59,13 @@ public class ReservationController {
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @GetMapping(value = "/events/{organizerId}", produces = "application/json")
     public ResponseEntity<List<GetEventDTO>> findEventsByOrganizer(@PathVariable("organizerId") int organizerId) {
-        try{
-            List<GetEventDTO> events = reservationService.findEventsByOrganizer(organizerId);
-            return new ResponseEntity<>(events, HttpStatus.OK);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        List<GetEventDTO> events = reservationService.findEventsByOrganizer(organizerId);
+        return new ResponseEntity<>(events, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedReservationDTO> createReservation(@RequestBody CreateReservationDTO reservation) throws Exception {
+    public ResponseEntity<CreatedReservationDTO> createReservation(@Valid @RequestBody CreateReservationDTO reservation) throws Exception {
         CreatedReservationDTO createdReservation = reservationService.create(reservation);
         return new ResponseEntity<>(createdReservation, HttpStatus.CREATED);
     }
