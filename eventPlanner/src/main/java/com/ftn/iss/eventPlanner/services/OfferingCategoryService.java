@@ -7,9 +7,11 @@ import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.model.OfferingCategory;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingRepository;
+import com.ftn.iss.eventPlanner.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +24,8 @@ public class OfferingCategoryService {
     private OfferingRepository offeringRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -49,7 +53,7 @@ public class OfferingCategoryService {
     }
     public UpdatedOfferingCategoryDTO update(int id, UpdateOfferingCategoryDTO updateOfferingCategoryDTO) {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Category with ID " + id + " not found"));
 
         offeringCategory.setName(updateOfferingCategoryDTO.getName());
         offeringCategory.setDescription(updateOfferingCategoryDTO.getDescription());
@@ -63,7 +67,7 @@ public class OfferingCategoryService {
 
     public boolean delete(int id) {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Category with ID " + id + " not found"));
         if (!hasOfferings(id)){
             offeringCategory.setDeleted(true);
             offeringCategoryRepository.save(offeringCategory);
@@ -73,7 +77,7 @@ public class OfferingCategoryService {
     }
     public void approve(int id, String title){
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Category with ID " + id + " not found"));
         offeringCategory.setPending(false);
         offeringCategoryRepository.save(offeringCategory);
         for(Offering offering : offeringRepository.findAll()){
