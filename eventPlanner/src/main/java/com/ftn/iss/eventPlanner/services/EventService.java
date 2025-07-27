@@ -8,6 +8,7 @@ import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
+import com.ftn.iss.eventPlanner.exception.EventFullException;
 import com.ftn.iss.eventPlanner.model.Event;
 import com.ftn.iss.eventPlanner.model.EventType;
 import com.ftn.iss.eventPlanner.model.Location;
@@ -417,6 +418,9 @@ public class EventService {
     public GetGuestsDTO getGuestList(int eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        if(event.isOpen()){
+            throw new IllegalArgumentException("Event with ID " + eventId + " is open");
+        }
         GetGuestsDTO dto = new GetGuestsDTO();
         dto.setGuests(event.getGuestList());
         return dto;
@@ -573,17 +577,18 @@ public class EventService {
     }
 
     public void sendInvitations(int eventId, CreateGuestListDTO emails){
-        for (String email : emails.getGuests()) {
-            inviteGuest(eventId, email);
-        }
-
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found."));
 
         EventStats stats = event.getStats();
-        if(stats.getParticipantsCount()>=event.getMaxParticipants()){
-            throw new IllegalArgumentException("Event is full");
+        if(stats.getParticipantsCount()+emails.getGuests().toArray().length>=event.getMaxParticipants()){
+            throw new EventFullException("Event is full");
         }
+
+        for (String email : emails.getGuests()) {
+            inviteGuest(eventId, email);
+        }
+
         stats.setParticipantsCount(event.getGuestList().size());
         eventStatsRepository.save(stats);
     }
@@ -713,27 +718,4 @@ public class EventService {
         organizerDTO.setAccountId(event.getOrganizer().getAccount().getId());
         return organizerDTO;
     }
-
-
-    private Comparator<Event> getEventComparator(String sortBy, String sortDirection) {
-        if (sortBy == null || "none".equalsIgnoreCase(sortBy)) {
-            return null;
-        }
-
-        Comparator<Event> comparator = switch (sortBy.toLowerCase()) {
-            case "name" -> Comparator.comparing(Event::getName, String.CASE_INSENSITIVE_ORDER);
-            case "date" -> Comparator.comparing(Event::getDate);
-            case "averagerating" -> Comparator.comparing(event -> event.getStats() != null
-                    ? event.getStats().getAverageRating() : 0.0);
-            case "location.city" -> Comparator.comparing(event -> event.getLocation().getCity(), String.CASE_INSENSITIVE_ORDER);
-            default -> null;
-        };
-
-        if (comparator != null && "desc".equalsIgnoreCase(sortDirection)) {
-            comparator = comparator.reversed();
-        }
-
-        return comparator;
-    }
-
 }

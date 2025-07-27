@@ -33,7 +33,7 @@ public class OfferingController {
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getTopOfferings(@RequestParam(required = false) Integer accountId) {
         List<GetOfferingDTO> offerings = offeringService.findTopOfferings(accountId);
-        return ResponseEntity.ok(offerings);
+        return new ResponseEntity<>(offerings, HttpStatus.OK);
     }
     @GetMapping(value="/providerId", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getProvidersOfferings(@PathVariable int providerId) {
@@ -80,17 +80,11 @@ public class OfferingController {
             @RequestParam(required = false) Boolean initLoad
 
     ){
-        try{
-            PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
-                    pageable, isServiceFilter, name, categoryId, location, startPrice,
-                    endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection, accountId, providerId, initLoad);
+        PagedResponse<GetOfferingDTO> offerings = offeringService.getAllOfferings(
+                pageable, isServiceFilter, name, categoryId, location, startPrice,
+                endPrice, minDiscount, serviceDuration, minRating, isAvailable, sortBy, sortDirection, accountId, providerId, initLoad);
 
-
-            return ResponseEntity.ok(offerings);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new PagedResponse<>(List.of(), 0, 0));
-        }
+        return new ResponseEntity<>(offerings, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
@@ -109,17 +103,6 @@ public class OfferingController {
     public ResponseEntity<Collection<GetCommentDTO>> getComments(@PathVariable("offeringId") int offeringId) {
         Collection<GetCommentDTO> comments = offeringService.getComments(offeringId);
         return new ResponseEntity<>(comments, HttpStatus.OK);
-    }
-
-    @PutMapping(value = "/{offeringId}/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int offeringId, @PathVariable int commentId)
-            throws Exception {
-        UpdatedCommentDTO updatedComment = new UpdatedCommentDTO();
-
-        updatedComment.setId(commentId);
-        updatedComment.setContent(comment.getContent());
-
-        return new ResponseEntity<UpdatedCommentDTO>(updatedComment, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
@@ -143,21 +126,12 @@ public class OfferingController {
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
-
     @GetMapping(value = "/highest-prices")
     public ResponseEntity<?> getHighestPrice(@RequestParam(required = false) Boolean isService) {
-        try {
-            Double highestPrice = offeringService.getHighestPrice(isService);
-            return ResponseEntity.ok(highestPrice);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An unexpected error occurred: " + e.getMessage());
-        }
+        Double highestPrice = offeringService.getHighestPrice(isService);
+        return new ResponseEntity<>(highestPrice, HttpStatus.OK);
     }
+
     @GetMapping(value = "/provider/{providerId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getOfferingsByProviderId(@PathVariable int providerId) {
         try {

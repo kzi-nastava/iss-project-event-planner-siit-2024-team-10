@@ -59,6 +59,21 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(EventFullException.class)
+    public ResponseEntity<String> handleEventFullException(EventFullException ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<String> handleServiceUnavailableException(ServiceUnavailableException ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(DuplicateProductException.class)
     public ResponseEntity<String> handleProductAlreadyBoughtException(DuplicateProductException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);

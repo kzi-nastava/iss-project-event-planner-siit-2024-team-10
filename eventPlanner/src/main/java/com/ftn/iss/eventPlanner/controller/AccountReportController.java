@@ -3,8 +3,9 @@ package com.ftn.iss.eventPlanner.controller;
 import com.ftn.iss.eventPlanner.dto.accountreport.CreateAccountReportDTO;
 import com.ftn.iss.eventPlanner.dto.accountreport.CreatedAccountReportDTO;
 import com.ftn.iss.eventPlanner.dto.accountreport.GetAccountReportDTO;
-import com.ftn.iss.eventPlanner.dto.accountreport.SuspensionStatusDTO;
+import com.ftn.iss.eventPlanner.dto.accountreport.UpdatedAccountReportDTO;
 import com.ftn.iss.eventPlanner.services.AccountReportService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,23 +33,23 @@ public class AccountReportController {
 
     @PreAuthorize("hasAnyAuthority('AUTHENTICATED_USER','EVENT_ORGANIZER','PROVIDER','ADMIN')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedAccountReportDTO> createAccountReport(@RequestBody CreateAccountReportDTO report) throws Exception {
+    public ResponseEntity<CreatedAccountReportDTO> createAccountReport(@Valid @RequestBody CreateAccountReportDTO report) throws Exception {
         CreatedAccountReportDTO createdAccountReportDTO = accountReportService.create(report);
         return new ResponseEntity<>(createdAccountReportDTO, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    @PutMapping(value="/{reportId}/accept", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> acceptReport(@PathVariable int reportId) throws Exception {
-        accountReportService.acceptReport(reportId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @PutMapping(value="/{reportId}/accept", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedAccountReportDTO> acceptReport(@PathVariable int reportId) throws Exception {
+        UpdatedAccountReportDTO dto = accountReportService.acceptReport(reportId);
+        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    @PutMapping(value="/{reportId}/reject", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> rejectReport(@PathVariable int reportId) throws Exception {
-        accountReportService.rejectReport(reportId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @PutMapping(value="/{reportId}/reject", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedAccountReportDTO> rejectReport(@PathVariable int reportId) throws Exception {
+        UpdatedAccountReportDTO dto = accountReportService.rejectReport(reportId);
+        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
 }

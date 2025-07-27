@@ -70,11 +70,6 @@ public class UserController {
         return new ResponseEntity<>(updatedProfilePhotoDTO,HttpStatus.OK);
     }
 
-    @PostMapping("/{id}/suspend")
-    public ResponseEntity<?> suspendUser(@PathVariable("id") int id) {
-        return ResponseEntity.ok(HttpStatus.NO_CONTENT);
-    }
-
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER','ADMIN','AUTHENTICATED_USER')")
     @PutMapping("/{accountId}/deactivate")
     public ResponseEntity<?> deactivateAccount(@PathVariable("accountId") int accountId) {
