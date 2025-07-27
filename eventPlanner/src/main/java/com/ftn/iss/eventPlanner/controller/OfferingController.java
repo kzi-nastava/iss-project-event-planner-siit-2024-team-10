@@ -6,6 +6,7 @@ import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.ChangeOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.services.CommentService;
 import com.ftn.iss.eventPlanner.services.OfferingService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -89,7 +90,7 @@ public class OfferingController {
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value = "{offeringId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedCommentDTO> createComment(@PathVariable int offeringId, @RequestBody CreateCommentDTO comment) {
+    public ResponseEntity<CreatedCommentDTO> createComment(@PathVariable int offeringId,@Valid @RequestBody CreateCommentDTO comment) {
         CreatedCommentDTO createdEventType = commentService.create(comment,offeringId);
         return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
     }
@@ -128,7 +129,7 @@ public class OfferingController {
 
     @PutMapping("/{offeringId}/category")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public ResponseEntity<?> changeOfferingCategory(@PathVariable int offeringId, @RequestBody ChangeOfferingCategoryDTO dto) {
+    public ResponseEntity<?> changeOfferingCategory(@PathVariable int offeringId,@Valid @RequestBody ChangeOfferingCategoryDTO dto) {
         offeringService.changeCategory(offeringId, dto.getCategoryId());
         return ResponseEntity.ok().build();
     }

@@ -41,7 +41,7 @@ public class OfferingCategoryController {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedOfferingCategoryDTO> updateCategory(@RequestBody UpdateOfferingCategoryDTO category, @PathVariable int id) {
+    public ResponseEntity<UpdatedOfferingCategoryDTO> updateCategory(@Valid @RequestBody UpdateOfferingCategoryDTO category, @PathVariable int id) {
         UpdatedOfferingCategoryDTO updatedOfferingCategoryDTO = offeringCategoryService.update(id, category);
         return new ResponseEntity<>(updatedOfferingCategoryDTO, HttpStatus.CREATED);
     }
