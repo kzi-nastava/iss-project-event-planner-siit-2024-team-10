@@ -250,6 +250,11 @@ public class AccountService implements UserDetailsService {
     }
 
     public BlockStatusDTO isAccountBlocked(int loggedInId, int accountToBlockId) {
+        Account account = accountRepository.findByIdWithBlockedAccounts(loggedInId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+
+        Account accountToUnblock = accountRepository.findById(accountToBlockId)
+                .orElseThrow(() -> new NotFoundException("Account to block not found"));
         boolean blocked = accountRepository.isBlocked(loggedInId, accountToBlockId);
         return new BlockStatusDTO(blocked);
     }
