@@ -8,6 +8,7 @@ import com.ftn.iss.eventPlanner.exception.AccountSuspendedException;
 import com.ftn.iss.eventPlanner.exception.ReportAlreadySentException;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.AccountReport;
+import com.ftn.iss.eventPlanner.model.AccountStatus;
 import com.ftn.iss.eventPlanner.model.Status;
 import com.ftn.iss.eventPlanner.repositories.AccountReportRepository;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
@@ -69,13 +70,13 @@ public class AccountReportService {
             throw new IllegalStateException("Report has already been accepted.");
         }
 
-        accountReport.setStatus(Status.ACCEPTED);
-        accountReport.setProcessingTimestamp(LocalDateTime.now().plusDays(SUSPENSION_TIME));
-
         Account reportee = accountRepository.findByEmail(accountReport.getReportee().getEmail());
         if (reportee == null) {
             throw  new IllegalArgumentException("Reportee not found");
         }
+
+        accountReport.setStatus(Status.ACCEPTED);
+        accountReport.setProcessingTimestamp(LocalDateTime.now().plusDays(SUSPENSION_TIME));
 
         accountService.suspendAccount(reportee.getId());
         accountReportRepository.save(accountReport);
@@ -89,6 +90,14 @@ public class AccountReportService {
 
         if(accountReport.getStatus() == Status.ACCEPTED){
             throw new IllegalStateException("Report has been already been accepted.");
+        }
+        Account reportee = accountRepository.findByEmail(accountReport.getReportee().getEmail());
+        if (reportee == null) {
+            throw  new IllegalArgumentException("Reportee not found");
+        }
+
+        if (reportee.getStatus() == AccountStatus.SUSPENDED){
+            throw new IllegalStateException("User has already been suspended.");
         }
 
         accountReport.setStatus(Status.DENIED);

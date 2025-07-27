@@ -69,4 +69,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleEventFullException(EventFullException ex){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<String> handleServiceUnavailableException(ServiceUnavailableException ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }
