@@ -7,7 +7,8 @@ INSERT INTO account (email, password, role, last_password_reset_date,notificatio
                                                                                                                      ( 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 0, null),
                                                                                                                      ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', FALSE, 0, null),
                                                                                                                      ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', FALSE, 0, null);
+                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                     ( 'dummy_user@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 2, null);
 
 
 INSERT INTO company ( email, name, phone_number, description, location_id) VALUES
@@ -35,6 +36,7 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
                                                                                                                                      (4,2,6,1,1,14, 2.8),
                                                                                                                                      (1,2,1,0,0,4, 2.0),
                                                                                                                                      (0,0,2,3,7,12, 4.4),
+                                                                                                                                     (4,2,1,7,1,15, 3.2),
                                                                                                                                      (4,2,1,7,1,15, 3.2);
 
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
@@ -42,7 +44,8 @@ INSERT INTO event (organizer_id, event_type_id, name, description, max_participa
                                                                                                                                                    ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2026-03-10 15:00', FALSE, 2, '2025-03-03',2),
                                                                                                                                                    ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20 09:00', FALSE, 3, '2025-05-01',3),
                                                                                                                                                    ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
-                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5);
+                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5),
+                                                                                                                                                   (2, 1, 'Tech Convention', 'Learn about new tech trends.',15, FALSE, '2025-12-12 12:00', FALSE, 1, '2025-02-02', 6);
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
                                                                                                 ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
                                                                                                 ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
@@ -204,3 +207,9 @@ INSERT INTO account_favourite_offerings (account_id, favourite_offerings_id) VAL
 
 INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
                                                                                          (1,2);
+
+INSERT INTO account_report(reportee_id, reporter_id, status, processing_timestamp, description) VALUES
+                                                                                                    (1, 2, 0, NULL, 'Spam behavior'),
+                                                                                                    (1, 3, 0,  NULL, 'Inappropriate messages'),
+                                                                                                    (2, 1, 0, NULL, 'False information'),
+                                                                                                    (5, 1, 1, '2025-12-12 08:00:00', 'False information');
