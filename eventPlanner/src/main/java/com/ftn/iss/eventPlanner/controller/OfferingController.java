@@ -35,7 +35,7 @@ public class OfferingController {
         List<GetOfferingDTO> offerings = offeringService.findTopOfferings(accountId);
         return new ResponseEntity<>(offerings, HttpStatus.OK);
     }
-    @GetMapping(value="/providerId", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value="/{providerId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getProvidersOfferings(@PathVariable int providerId) {
         List<GetOfferingDTO> offerings = offeringService.findProvidersOfferings(providerId);
         return ResponseEntity.ok(offerings);
@@ -90,14 +90,8 @@ public class OfferingController {
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value = "{offeringId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedCommentDTO> createComment(@PathVariable int offeringId, @RequestBody CreateCommentDTO comment) {
-        try{
-            CreatedCommentDTO createdEventType = commentService.create(comment,offeringId);
-            return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
-            System.out.println(e);
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        CreatedCommentDTO createdEventType = commentService.create(comment,offeringId);
+        return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
     }
     @GetMapping(value = "{offeringId}/comments", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetCommentDTO>> getComments(@PathVariable("offeringId") int offeringId) {
@@ -132,33 +126,16 @@ public class OfferingController {
         return new ResponseEntity<>(highestPrice, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/provider/{providerId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingDTO>> getOfferingsByProviderId(@PathVariable int providerId) {
-        try {
-            List<GetOfferingDTO> offerings = offeringService.getOfferingsByProviderId(providerId);
-            return ResponseEntity.ok(offerings);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
-        }
-    }
     @PutMapping("/{offeringId}/category")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<?> changeOfferingCategory(@PathVariable int offeringId, @RequestBody ChangeOfferingCategoryDTO dto) {
-        try {
-            offeringService.changeCategory(offeringId, dto.getCategoryId());
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
-        }
+        offeringService.changeCategory(offeringId, dto.getCategoryId());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping(value="/all-non-paged", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetOfferingDTO>> getOfferings() {
-        try {
-            List<GetOfferingDTO> offerings = offeringService.findAll();
-            return ResponseEntity.ok(offerings);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
-        }
+        List<GetOfferingDTO> offerings = offeringService.findAll();
+        return ResponseEntity.ok(offerings);
     }
 }

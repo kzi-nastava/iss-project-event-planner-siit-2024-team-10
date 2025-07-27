@@ -12,6 +12,6 @@ public class CreatedCommentDTO {
     private int id;
     private String content;
     private Status status;
-    private int accountId;
+    private int account;
     private int rating;
 }
