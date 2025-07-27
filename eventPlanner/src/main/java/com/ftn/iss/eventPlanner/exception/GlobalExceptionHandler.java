@@ -59,4 +59,8 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(DuplicateProductException.class)
+    public ResponseEntity<String> handleProductAlreadyBoughtException(DuplicateProductException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
 }
