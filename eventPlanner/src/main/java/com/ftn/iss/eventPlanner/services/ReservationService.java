@@ -268,7 +268,8 @@ public class ReservationService {
             LocalDateTime reservationStartDateTime = LocalDateTime.of(date, reservation.getStartTime());
             LocalDateTime reservationEndDateTime = LocalDateTime.of(date, reservation.getEndTime());
 
-            if ((providedStart.isBefore(reservationEndDateTime) && providedStart.isAfter(reservationStartDateTime)) ||
+            if ((providedStart.isBefore(reservationStartDateTime) && providedEnd.isAfter(reservationEndDateTime)) ||
+                    (providedStart.isBefore(reservationEndDateTime) && providedStart.isAfter(reservationStartDateTime)) ||
                     (providedEnd.isBefore(reservationEndDateTime) && providedEnd.isAfter(reservationStartDateTime)) ||
                     (providedStart.isEqual(reservationStartDateTime) || providedEnd.isEqual(reservationEndDateTime))) {
                 throw new IllegalArgumentException("Service not available at selected time.");
@@ -300,8 +301,8 @@ public class ReservationService {
             throw new ServiceUnavailableException("Service is not available at selected time.");
         }
         isServiceReservedForEvent(event, service);
-        isDateWithinReservationPeriod(startTime, event, service.getCurrentDetails());
         validateReservationTime(startTime, endTime, service.getCurrentDetails());
+        isDateWithinReservationPeriod(startTime, event, service.getCurrentDetails());
         checkServiceAvailability(event.getDate(), startTime, endTime, service);
 
         createdReservation.setService(service);

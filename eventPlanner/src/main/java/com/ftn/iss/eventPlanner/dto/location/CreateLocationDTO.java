@@ -23,7 +23,6 @@ public class CreateLocationDTO {
 
     @NotNull(message = "House number cannot be null")
     @NotBlank(message = "House number cannot be blank")
-    @Pattern(regexp = "\\d+", message = "House number must be a numeric string")
     private String houseNumber;
 
     public CreateLocationDTO() {}

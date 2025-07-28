@@ -45,6 +45,8 @@ public class ServiceService {
     @Autowired
     private ProviderRepository providerRepository;
     @Autowired
+    private FileService fileService;
+    @Autowired
     private ModelMapper modelMapper;
 
 
@@ -88,6 +90,11 @@ public class ServiceService {
         serviceDetails.setSpecification(serviceDTO.getSpecification());
         serviceDetails.setPrice(serviceDTO.getPrice());
         serviceDetails.setDiscount(serviceDTO.getDiscount());
+        for(String photo : serviceDTO.getPhotos()) {
+            if(!fileService.filesExist(photo)){
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+        }
         serviceDetails.setPhotos(serviceDTO.getPhotos());
         serviceDetails.setVisible(serviceDTO.isVisible());
         serviceDetails.setAvailable(serviceDTO.isAvailable());
@@ -160,6 +167,11 @@ public class ServiceService {
         service.getServiceDetailsHistory().add(historicalDetails);
         ServiceDetails newDetails = new ServiceDetails();
         modelMapper.map(updateServiceDTO, newDetails);
+        for(String photo : updateServiceDTO.getPhotos()) {
+            if(!fileService.filesExist(photo)){
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+        }
         service.setCurrentDetails(newDetails);
         service.getCurrentDetails().setTimestamp(LocalDateTime.now());
 

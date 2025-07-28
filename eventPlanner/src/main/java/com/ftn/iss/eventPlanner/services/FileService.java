@@ -43,4 +43,8 @@ public class FileService {
 
         return fileNames;
     }
+    public boolean filesExist(String fileName) {
+        File file = new File(UPLOAD_DIR + fileName);
+        return file.exists();
+    }
 }

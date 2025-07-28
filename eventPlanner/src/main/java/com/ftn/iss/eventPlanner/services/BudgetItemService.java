@@ -5,6 +5,7 @@ import com.ftn.iss.eventPlanner.dto.eventtype.*;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.product.GetProductDTO;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
+import com.ftn.iss.eventPlanner.exception.ServiceHasReservationsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
@@ -132,21 +133,19 @@ public class BudgetItemService {
 
         return modelMapper.map(budgetItem, UpdatedBudgetItemDTO.class);
     }
-
-
-    public boolean delete(int eventId, int budgetItemId) {
+    public void delete(int eventId, int budgetItemId) {
         BudgetItem budgetItem = budgetItemRepository.findById(budgetItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemId + " not found"));
         if(budgetItem.isDeleted())
-            return false;
+            throw new IllegalArgumentException("Budget item with ID " + budgetItemId + " is deleted");
         if(budgetItem.getServices().size() + budgetItem.getProducts().size() != 0)
-            return false;
+            throw new IllegalArgumentException("Budget item cannot be deleted because it has offerings");
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
         event.getBudget().remove(budgetItem);
+        budgetItem.setEvent(null);
         eventRepository.save(event);
         budgetItem.setDeleted(true);
         budgetItemRepository.save(budgetItem);
-        return true;
     }
     public boolean hasMoneyLeft(BudgetItem budgetItem, double price, double discount) {
         double remainingAmount = budgetItem.getAmount();

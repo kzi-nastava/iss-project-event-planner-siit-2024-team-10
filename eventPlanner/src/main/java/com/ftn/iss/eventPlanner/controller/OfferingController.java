@@ -145,4 +145,9 @@ public class OfferingController {
             @PathVariable int offeringId) {
         return ResponseEntity.ok(offeringService.hasUserPurchasedOffering(userId, offeringId));
     }
+    @GetMapping(value="/provider/{providerId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<GetOfferingDTO>> getOfferingsByProviderId(@PathVariable int providerId) {
+        List<GetOfferingDTO> offerings = offeringService.getOfferingsByProviderId(providerId);
+        return ResponseEntity.ok(offerings);
+    }
 }
