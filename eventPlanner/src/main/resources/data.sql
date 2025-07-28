@@ -48,12 +48,17 @@ INSERT INTO event (organizer_id, event_type_id, name, description, max_participa
                                                                                                                                                    ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
                                                                                                                                                    ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5),
                                                                                                                                                    ( 2, 1, 'Deleted event', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', TRUE, 1, '2021-07-15',6);
-INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
-                                                                                                ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
-                                                                                                ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
-INSERT INTO event_agenda (agenda_id,event_id) VALUES
-                                                  (1,1),
-                                                  (2,1);
+INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted, event_id) VALUES
+                                                                                                      ('Opening Session', 'Kick-off of the tech workshop.', 'Main Hall', '09:00:00', '10:00:00', FALSE, 1),
+                                                                                                      ('AI Trends', 'Discussion on recent advancements in AI.', 'Tech Room 1', '10:15:00', '11:15:00', FALSE, 1),
+                                                                                                      ('Welcome Speech', 'Introduction by organizers.', 'Conference Hall', '09:00:00', '09:30:00', FALSE, 2),
+                                                                                                      ('Panel Discussion', 'Business leaders share insights.', 'Conference Hall', '09:45:00', '11:00:00', FALSE, 2),
+                                                                                                      ('Opening Band', 'Local band performance.', 'Outdoor Stage A', '15:00:00', '16:00:00', FALSE, 3),
+                                                                                                      ('Headliner', 'Main act of the evening.', 'Main Stage', '20:00:00', '22:00:00', FALSE, 3),
+                                                                                                        ('Dinner', 'Formal dinner with guests.', 'Banquet Hall', '19:00:00', '20:30:00', FALSE, 4),
+                                                                                                        ('Silent Auction', 'Auction of donated items.', 'Main Lobby', '20:30:00', '22:00:00', FALSE, 4),
+                                                                                                        ('Gallery Walkthrough', 'Guided tour of the exhibits.', 'Exhibition Room 1', '10:00:00', '11:00:00', FALSE, 5),
+                                                                                                        ('Artist Q&A', 'Meet the featured artists.', 'Exhibition Room 2', '11:15:00', '12:15:00', FALSE, 5);
 
 INSERT INTO guests (event_id,guest_list) VALUES
                                              (2,'guest1@mail.com'),
@@ -121,15 +126,15 @@ INSERT INTO product_details (name, description, price, discount, is_visible, is_
 
 INSERT INTO service_details (name, description, specification, price, discount, fixed_time, max_duration, min_duration, cancellation_period, reservation_period, is_visible, is_available, auto_confirm, timestamp) VALUES
                                                                                                                                                                                                                             ( 'Wedding Photography', 'Professional photography for weddings.', 'Includes pre-event shoot, event coverage, and photo album.', 1200.00, 10.0, TRUE, 6, 6, 48, 72, TRUE, TRUE, TRUE, '2023-10-30 09:00:00'),
-                                                                                                                                                                                                                            ( 'Event Catering', 'Complete catering service for events.', 'Includes setup, serving, and cleanup for up to 200 guests.', 5000.00, 50.0, TRUE, 4, 4, 72, 96, TRUE, TRUE, FALSE, '2023-11-03 11:30:00'),
-                                                                                                                                                                                                                            ( 'DJ Service', 'Professional DJ for weddings and parties.', 'Includes sound system and personalized playlist.', 700.00, 50.0, FALSE, 6, 3, 24, 48, TRUE, TRUE, TRUE, '2023-11-06 19:00:00'),
+                                                                                                                                                                                                                            ( 'Event Catering', 'Complete catering service for events.', 'Includes setup, serving, and cleanup for up to 200 guests.', 5000.00, 50.0, TRUE, 4, 4, 72, 96, TRUE, TRUE, TRUE, '2023-11-03 11:30:00'),
+                                                                                                                                                                                                                            ( 'DJ Service', 'Professional DJ for weddings and parties.', 'Includes sound system and personalized playlist.', 700.00, 50.0, FALSE, 6, 3, 24, 48, TRUE, TRUE, FALSE, '2023-11-06 19:00:00'),
                                                                                                                                                                                                                             ( 'Conference Setup', 'Venue setup for business conferences.', 'Includes table arrangements, projector setup, and refreshments.', 1500.00, 15.0, FALSE, 5, 3, 48, 72, TRUE, TRUE, FALSE, '2023-11-10 08:00:00'),
-                                                                                                                                                                                                                            ( 'Event Security', 'Security personnel for large events.', 'Up to 5 guards equipped for crowd management.', 1000.00, 10.0, FALSE, 8, 4, 24, 48, TRUE, TRUE, TRUE, '2023-11-14 20:15:00'),
+                                                                                                                                                                                                                            ( 'Event Security', 'Security personnel for large events.', 'Up to 5 guards equipped for crowd management.', 1000.00, 10.0, FALSE, 8, 4, 24, 48, TRUE, TRUE, FALSE, '2023-11-14 20:15:00'),
                                                                                                                                                                                                                             ( 'Floral Arrangement', 'Custom floral arrangements for weddings or funerals.', 'Includes bouquets, table arrangements, and venue decor.', 300.00, 25.0, FALSE, 6, 2, 24, 48, TRUE, TRUE, FALSE, '2023-11-16 10:10:00'),
                                                                                                                                                                                                                             ( 'Master of Ceremonies', 'Experienced MC for formal events.', 'Includes script preparation and event hosting.', 400.00, 40.0, FALSE, 6, 3, 24, 48, FALSE, TRUE, TRUE, '2023-11-19 14:25:00'),
-                                                                                                                                                                                                                            ( 'Funeral Planning', 'Comprehensive funeral arrangement services.', 'Includes venue setup, catering, and floral decor.', 2000.00, 20.0, FALSE, 10, 6, 72, 96, TRUE, TRUE, FALSE, '2023-11-22 09:50:00'),
+                                                                                                                                                                                                                            ( 'Funeral Planning', 'Comprehensive funeral arrangement services.', 'Includes venue setup, catering, and floral decor.', 2000.00, 20.0, FALSE, 10, 6, 72, 96, TRUE, TRUE, TRUE, '2023-11-22 09:50:00'),
                                                                                                                                                                                                                             ( 'Party Balloon Setup', 'Balloon decorations for birthdays and celebrations.', 'Includes customized balloon arches and centerpieces.', 250.00, 20.0, FALSE, 4, 2, 24, 48, TRUE, TRUE, TRUE, '2023-11-25 13:40:00'),
-                                                                                                                                                                                                                            ( 'Event Clean-Up', 'Post-event cleanup service.', 'Includes garbage disposal and venue tidying.', 500.00, 50.0, FALSE, 5, 2, 24, 48, TRUE, TRUE, FALSE, '2023-11-28 18:00:00');
+                                                                                                                                                                                                                            ( 'Event Clean-Up', 'Post-event cleanup service.', 'Includes garbage disposal and venue tidying.', 500.00, 50.0, FALSE, 5, 2, 24, 48, TRUE, TRUE, TRUE, '2023-11-28 18:00:00');
 
 
 INSERT INTO offerings (dtype, category_id, provider_id, current_product_details_id, is_deleted, pending) VALUES
@@ -154,10 +159,6 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                        ( 'Service',1 ,1,  8, FALSE, FALSE),
                                                                                        ( 'Service',1 ,1,  9, FALSE, FALSE),
                                                                                        ( 'Service',3 ,1,  10, FALSE, TRUE);
-
-INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
-                                                                                     ( '2025-01-15 09:00:00', '2025-01-15 17:00:00', 1, 1, 13,'2025-12-12 08:00:00'),
-                                                                                     ( '2025-03-10 08:00:00', '2025-03-10 20:00:00', 0, 2, 11,'2025-12-12 08:00:00');
 
 INSERT INTO offerings_comments (offering_id, comments_id) VALUES
                                                              (1, 1),
@@ -210,17 +211,10 @@ INSERT INTO account_favourite_offerings (account_id, favourite_offerings_id) VAL
 INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
                                                                                          (1,2);
 
-INSERT INTO budget_item (amount, is_deleted, category_id, event_id) VALUES
-                                                                        (150000.0, false, 1, 1),
-                                                                        (2000.0, true, 2, 1),
-                                                                        (2.0, false, 3, 1);
-
-INSERT INTO budget_item_services(budget_item_id,services_id) VALUES (1,1);
-INSERT INTO budget_item_products(budget_item_id,products_id) VALUES (1,1);
-
 INSERT INTO account_report(reportee_id, reporter_id, status, processing_timestamp, description) VALUES
                                                                                                     (1, 2, 0, NULL, 'Spam behavior'),
                                                                                                     (1, 3, 0,  NULL, 'Inappropriate messages'),
                                                                                                     (2, 1, 0, NULL, 'False information'),
                                                                                                     (5, 1, 1, '2025-12-12 08:00:00', 'False information');
+
 INSERT INTO offering_details_photos(offering_details_id, photo_url) VALUES (10, '30c1f88-5e59-4f6c-991b-b5d8fbcbd4d8.png');

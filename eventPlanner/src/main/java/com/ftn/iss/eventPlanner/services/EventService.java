@@ -358,6 +358,9 @@ public class EventService {
                 throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
         eventStatsRepository.save(stats);
+        notificationService.sendNotification(event.getOrganizer().getAccount().getId(),
+                "Event Rated",
+                "Your event " + event.getName() + " has been rated with " + rating + " stars.");
         return new CreatedEventRatingDTO(stats.getAverageRating());
     }
 
@@ -368,6 +371,7 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         AgendaItem agendaItem = modelMapper.map(agendaItemDto, AgendaItem.class);
+        agendaItem.setEvent(event);
         agendaItemRepository.save(agendaItem);
         event.getAgenda().add(agendaItem);
         eventRepository.save(event);

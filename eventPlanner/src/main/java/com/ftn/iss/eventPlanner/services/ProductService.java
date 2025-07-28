@@ -43,6 +43,8 @@ public class ProductService {
     @Autowired
     private ProviderRepository providerRepository;
     @Autowired
+    private FileService fileService;
+    @Autowired
     private ModelMapper modelMapper;
 
     public List<GetProductDTO> findAll(
@@ -183,6 +185,11 @@ public class ProductService {
         productDetails.setDescription(productDTO.getDescription());
         productDetails.setPrice(productDTO.getPrice());
         productDetails.setDiscount(productDTO.getDiscount());
+        for(String photo : productDTO.getPhotos()) {
+            if(!fileService.filesExist(photo)){
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+        }
         productDetails.setPhotos(productDTO.getPhotos());
         productDetails.setVisible(productDTO.isVisible());
         productDetails.setAvailable(productDTO.isAvailable());
@@ -210,6 +217,11 @@ public class ProductService {
 
         product.getProductDetailsHistory().add(historicalDetails);
         modelMapper.map(updateProductDTO, product.getCurrentDetails());
+        for(String photo : updateProductDTO.getPhotos()) {
+            if(!fileService.filesExist(photo)){
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+        }
         product.getCurrentDetails().setTimestamp(LocalDateTime.now());
         product.getCurrentDetails().setId(0);
 

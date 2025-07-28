@@ -98,8 +98,6 @@ public class WebSecurityConfig {
                         "/api/products*", "/api/products/*",
                         "/api/categories*", "/api/categories/*",
                         "/api/offerings*", "/api/offerings/*", "/api/offerings/*/comments",
-                        "/api/accounts/*/favourite-events", "/api/accounts/*/favourite-events/*",
-                        "/api/accounts/*/favourite-offerings", "/api/accounts/*/favourite-offerings/*",
                         "/api/comments*",
                         "/api/images", "/api/images/*",
                         "/api/reservations/*",

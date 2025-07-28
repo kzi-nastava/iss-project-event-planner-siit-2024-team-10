@@ -31,6 +31,9 @@ public class AgendaItem {
 
     @Column(nullable = false)
     private boolean isDeleted;
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
 
     public AgendaItem() {
     }

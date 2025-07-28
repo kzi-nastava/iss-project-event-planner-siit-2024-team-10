@@ -45,6 +45,8 @@ public class UserService {
     @Autowired
     private EmailService emailService;
     @Autowired
+    private FileService fileService;
+    @Autowired
     private VerificationTokenRepository verificationTokenRepository;
     @Autowired
     private ReservationService reservationService;
@@ -91,8 +93,11 @@ public class UserService {
         }
         account.setRole(userDTO.getRole());
         account.setStatus(AccountStatus.PENDING);
-        if(!roleUpgrade)
+        if(!roleUpgrade){
+            if(userDTO.getPassword() == null || userDTO.getPassword().length()<8)
+                throw new IllegalArgumentException("Password must be at least 8 characters.");
             account.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
 
         account = accountRepository.save(account);
 
@@ -117,6 +122,14 @@ public class UserService {
 
     private User registerProvider(CreateUserDTO userDTO, Account account){
         Provider provider = modelMapper.map(userDTO, Provider.class);
+        for(String photo : provider.getCompany().getPhotos()){
+            if(!fileService.filesExist(photo)){
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+        }
+        if(!fileService.filesExist(provider.getProfilePhoto())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
         provider.setAccount(account);
         provider.setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
         provider.getCompany().setLocation(modelMapper.map(locationService.create(userDTO.getCompany().getLocation()), Location.class));
@@ -127,6 +140,9 @@ public class UserService {
 
     private User registerOrganizer(CreateUserDTO userDTO, Account account){
         Organizer organizer = modelMapper.map(userDTO, Organizer.class);
+        if(!fileService.filesExist(organizer.getProfilePhoto())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
         organizer.setAccount(account);
         organizer.setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
         organizerRepository.save(organizer);
@@ -199,6 +215,9 @@ public class UserService {
         if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
             throw new IllegalArgumentException("User with given account ID is not a provider or organizer");
         User user = account.getUser();
+        if(!fileService.filesExist(updateProfilePhotoDTO.getFilePath())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
         user.setProfilePhoto(updateProfilePhotoDTO.getFilePath());
         userRepository.save(user);
         return new UpdatedProfilePhotoDTO(updateProfilePhotoDTO.getFilePath());
@@ -211,6 +230,11 @@ public class UserService {
             throw new IllegalArgumentException("User with given account ID is not a provider");
         Provider provider = (Provider) account.getUser();
         Company company = provider.getCompany();
+        for(String photo:updateCompanyPhotosDTO.getFilePaths()){
+            if(!fileService.filesExist(photo)) {
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+        }
         company.setPhotos(updateCompanyPhotosDTO.getFilePaths());
         companyRepository.save(company);
         return new UpdatedCompanyPhotosDTO(updateCompanyPhotosDTO.getFilePaths());
