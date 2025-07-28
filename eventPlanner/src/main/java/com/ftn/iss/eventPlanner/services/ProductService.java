@@ -5,6 +5,7 @@ import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
+import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.product.*;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.dto.service.UpdatedServiceDTO;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -86,34 +88,28 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
         return mapToGetProductDTO(product);
     }
-    public UpdatedProductDTO updatePrice(int id, UpdatePricelistItemDTO updateServiceDTO) {
+    public UpdatedPricelistItemDTO updatePrice(int id, UpdatePricelistItemDTO updatePricelistItemDTO) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Product with ID " + id + " not found"));
 
-        ProductDetails newCurrent = new ProductDetails();
-        newCurrent.setName(product.getCurrentDetails().getName());
-        newCurrent.setDescription(product.getCurrentDetails().getDescription());
-        newCurrent.setPrice(updateServiceDTO.getPrice());
-        newCurrent.setDiscount(updateServiceDTO.getDiscount());
+        UpdateProductDTO productDTO = new UpdateProductDTO();
+        productDTO.setPrice(updatePricelistItemDTO.getPrice());
+        productDTO.setPhotos(product.getCurrentDetails().getPhotos());
+        productDTO.setName(product.getCurrentDetails().getName());
+        productDTO.setDiscount(updatePricelistItemDTO.getDiscount());
+        productDTO.setAvailable(product.getCurrentDetails().isAvailable());
+        productDTO.setVisible(product.getCurrentDetails().isVisible());
+        productDTO.setDescription(product.getCurrentDetails().getDescription());
 
-        newCurrent.setPhotos(
-                product.getCurrentDetails().getPhotos() != null
-                        ? new ArrayList<>(product.getCurrentDetails().getPhotos())
-                        : new ArrayList<>()
-        );
+        update(product.getId(),productDTO);
 
-        newCurrent.setVisible(product.getCurrentDetails().isVisible());
-        newCurrent.setAvailable(product.getCurrentDetails().isAvailable());
-        newCurrent.setTimestamp(LocalDateTime.now());
-
-        ProductDetails historicalDetails = product.getCurrentDetails();
-        product.getProductDetailsHistory().add(historicalDetails);
-
-        product.setCurrentDetails(newCurrent);
-
-        Product productSaved = productRepository.save(product);
-
-        return modelMapper.map(productSaved, UpdatedProductDTO.class);
+        UpdatedPricelistItemDTO dto = new UpdatedPricelistItemDTO();
+        dto.setId(product.getId());
+        dto.setPrice(updatePricelistItemDTO.getPrice());
+        dto.setOfferingId(product.getId());
+        dto.setDiscount(updatePricelistItemDTO.getDiscount());
+        dto.setName(product.getCurrentDetails().getName());
+        return dto;
     }
     private GetProductDTO mapToGetProductDTO(Product product) {
         GetProductDTO dto = new GetProductDTO();

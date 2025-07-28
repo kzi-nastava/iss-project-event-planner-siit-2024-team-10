@@ -74,4 +74,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleServiceUnavailableException(ServiceUnavailableException ex){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(DuplicateProductException.class)
+    public ResponseEntity<String> handleProductAlreadyBoughtException(DuplicateProductException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+    @ExceptionHandler(ServiceHasReservationsException.class)
+    public ResponseEntity<String> handleServiceHasReservationsException(ServiceHasReservationsException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
 }

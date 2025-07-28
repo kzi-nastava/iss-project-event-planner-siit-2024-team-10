@@ -58,8 +58,6 @@ public class EventService {
     private AccountService accountService;
     @Autowired
     private NotificationService notificationService;
-
-    private ModelMapper modelMapper = new ModelMapper();
     @Autowired
     private AgendaItemRepository agendaItemRepository;
     @Autowired
@@ -72,6 +70,7 @@ public class EventService {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Value("${app.base-url}") private String baseUrl;
+    private ModelMapper modelMapper = new ModelMapper();
 
     private static final int TOKEN_EXPIRATION = 7;
     private final String IP_BASE_URL = "http://" + NetworkUtils.getLocalIpAddress() + ":8080/api";

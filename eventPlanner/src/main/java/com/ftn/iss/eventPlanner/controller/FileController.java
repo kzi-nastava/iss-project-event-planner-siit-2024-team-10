@@ -1,5 +1,7 @@
 package com.ftn.iss.eventPlanner.controller;
 
+import com.ftn.iss.eventPlanner.services.FileService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,39 +11,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-@CrossOrigin
+import java.util.UUID;
 @RestController
 @RequestMapping("/api/upload")
+@CrossOrigin
 public class FileController {
-
-    private final String UPLOAD_DIR = System.getProperty("user.dir") + "/data/";
+    @Autowired
+    private  FileService fileStorageService;
 
     @PostMapping
-    public ResponseEntity<List<String>> uploadFiles(
-            @RequestParam("files") MultipartFile[] files) {
-        List<String> filePaths = new ArrayList<>();
-
-        try {
-            // Ensure the upload directory exists
-            File uploadDir = new File(UPLOAD_DIR);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();  // Create the directory if it doesn't exist
-            }
-
-            for (MultipartFile file : files) {
-                if (!file.isEmpty()) {
-                    String filePath = UPLOAD_DIR + file.getOriginalFilename();
-                    File dest = new File(filePath);
-                    file.transferTo(dest);
-                    filePaths.add(filePath); // Add the file path to the list
-                }
-            }
-
-            // Return the list of file paths as response
-            return ResponseEntity.ok(filePaths);  // Return the file paths as response
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<List<String>> uploadFiles(@RequestParam("files") MultipartFile[] files) throws IOException {
+        List<String> fileNames = fileStorageService.saveFiles(files);
+        return ResponseEntity.ok(fileNames);
     }
 }
