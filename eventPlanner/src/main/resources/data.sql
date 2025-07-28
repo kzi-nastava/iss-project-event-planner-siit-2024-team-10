@@ -38,7 +38,12 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
                                                                                                                                      (1,2,1,0,0,4, 2.0),
                                                                                                                                      (0,0,2,3,7,12, 4.4),
                                                                                                                                      (4,2,1,7,1,15, 3.2),
-                                                                                                                                     (4,2,1,7,1,15, 3.2);
+                                                                                                                                     (4,2,1,7,1,15, 3.2),
+                                                                                                                                     (1, 1, 2, 5, 5, 14, 4.1),
+                                                                                                                                     (0, 0, 0, 3, 12, 15, 4.8),
+                                                                                                                                     (3, 4, 2, 2, 1, 12, 2.6),
+                                                                                                                                     (0, 1, 1, 4, 8, 14, 4.3),
+                                                                                                                                     (2, 2, 3, 3, 5, 15, 3.6);
 
 
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
@@ -47,7 +52,12 @@ INSERT INTO event (organizer_id, event_type_id, name, description, max_participa
                                                                                                                                                    ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20 09:00', FALSE, 3, '2025-05-01',3),
                                                                                                                                                    ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
                                                                                                                                                    ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5),
-                                                                                                                                                   ( 2, 1, 'Some event', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', TRUE, 1, '2021-07-15',6);
+                                                                                                                                                   ( 2, 1, 'Some event', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', TRUE, 1, '2021-07-15',6),
+                                                                                                                                                   (2, 1, 'Startup Pitch', 'Pitch your startup idea to investors.', 80, TRUE, '2025-12-01 10:00', FALSE, 1, '2025-07-20', 7),
+                                                                                                                                                   (2, 2, 'Health & Wellness Fair', 'Explore health trends and free check-ups.', 120, TRUE, '2025-11-10 09:00', FALSE, 2, '2025-07-21', 8),
+                                                                                                                                                   (2, 1, 'Gaming Convention', 'Meet gamers and try new releases.', 300, TRUE, '2025-12-15 11:30', FALSE, 3, '2025-07-22', 9),
+                                                                                                                                                   (2, 2, 'Coding Bootcamp', 'Hands-on coding workshop.', 60, TRUE, '2025-08-20 08:00', FALSE, 2, '2025-07-23', 10),
+                                                                                                                                                   (2, 1, 'Photography Meetup', 'Learn and practice photography techniques.', 40, TRUE, '2025-09-12 17:00', FALSE, 1, '2025-07-24', 11);
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted, event_id) VALUES
                                                                                                       ('Opening Session', 'Kick-off of the tech workshop.', 'Main Hall', '09:00:00', '10:00:00', FALSE, 1),
                                                                                                       ('AI Trends', 'Discussion on recent advancements in AI.', 'Tech Room 1', '10:15:00', '11:15:00', FALSE, 1),
