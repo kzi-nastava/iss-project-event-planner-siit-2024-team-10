@@ -139,4 +139,10 @@ public class OfferingController {
         List<GetOfferingDTO> offerings = offeringService.findAll();
         return ResponseEntity.ok(offerings);
     }
+    @GetMapping("/{userId}/purchased/{offeringId}")
+    public ResponseEntity<Boolean> hasUserPurchasedOffering(
+            @PathVariable int userId,
+            @PathVariable int offeringId) {
+        return ResponseEntity.ok(offeringService.hasUserPurchasedOffering(userId, offeringId));
+    }
 }

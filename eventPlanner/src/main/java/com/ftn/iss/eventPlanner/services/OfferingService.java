@@ -35,6 +35,10 @@ public class OfferingService {
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private EventRepository eventRepository;
+    @Autowired
     private AccountRepository accountRepository;
     @Autowired
     private LocationService locationService;
@@ -459,5 +463,38 @@ public class OfferingService {
         offering.setCategory(newCategory);
         offering.setPending(false);
         offeringRepository.save(offering);
+    }
+    public boolean hasUserPurchasedOffering(int accountId, int offeringId) {
+        User user = userRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("User with ID " + accountId + " not found"));
+
+        Offering offering = offeringRepository.findById(offeringId)
+                .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
+
+        List<Event> userEvents = eventRepository.findByOrganizerId(accountId);
+
+        for (Event event : userEvents) {
+            if (event.isDeleted()) continue;
+
+            for (BudgetItem budgetItem : event.getBudget()) {
+                if (budgetItem.isDeleted()) continue;
+
+                if (offering instanceof com.ftn.iss.eventPlanner.model.Service service) {
+                    int currentServiceId = service.getCurrentDetails().getId();
+                    boolean found = budgetItem.getServices().stream()
+                            .anyMatch(sd -> sd.getId() == currentServiceId ||
+                                    service.getServiceDetailsHistory().stream().anyMatch(h -> h.getId() == sd.getId()));
+                    if (found) return true;
+                } else if (offering instanceof Product product) {
+                    int currentProductId = product.getCurrentDetails().getId();
+                    boolean found = budgetItem.getProducts().stream()
+                            .anyMatch(pd -> pd.getId() == currentProductId ||
+                                    product.getProductDetailsHistory().stream().anyMatch(h -> h.getId() == pd.getId()));
+                    if (found) return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
