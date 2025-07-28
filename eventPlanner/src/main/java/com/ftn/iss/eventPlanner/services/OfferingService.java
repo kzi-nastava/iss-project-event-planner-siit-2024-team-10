@@ -464,14 +464,14 @@ public class OfferingService {
         offering.setPending(false);
         offeringRepository.save(offering);
     }
-    public boolean hasUserPurchasedOffering(int accountId, int offeringId) {
-        User user = userRepository.findById(accountId)
-                .orElseThrow(() -> new NotFoundException("User with ID " + accountId + " not found"));
+    public boolean hasUserPurchasedOffering(int userId, int offeringId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with ID " + userId + " not found"));
 
         Offering offering = offeringRepository.findById(offeringId)
                 .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
 
-        List<Event> userEvents = eventRepository.findByOrganizerId(accountId);
+        List<Event> userEvents = eventRepository.findByOrganizerId(userId);
 
         for (Event event : userEvents) {
             if (event.isDeleted()) continue;
