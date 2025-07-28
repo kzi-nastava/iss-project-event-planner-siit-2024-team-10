@@ -202,6 +202,7 @@ public class EventService {
                 })
                 .sorted((e1, e2) -> e2.getDateCreated().compareTo(e1.getDateCreated()))
                 .limit(5)
+                .filter(event -> !event.isDeleted())
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
 
