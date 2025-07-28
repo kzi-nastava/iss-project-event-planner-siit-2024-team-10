@@ -100,7 +100,6 @@ public class WebSecurityConfig {
                         "/api/offerings*", "/api/offerings/*", "/api/offerings/*/comments",
                         "/api/comments*",
                         "/api/images", "/api/images/*",
-                        "/api/reservations/*",
                         "/api/offerings/provider/*",
                         "api/events/process-invitation/**",
                         "/api/events/accept-invite/**",
