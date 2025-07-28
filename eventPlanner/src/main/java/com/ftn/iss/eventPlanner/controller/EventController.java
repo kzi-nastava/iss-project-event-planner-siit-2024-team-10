@@ -212,7 +212,6 @@ public class EventController {
         double total = budgetItemService.getTotalBudgetForEvent(eventId);
         return ResponseEntity.ok(total);
     }
-
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @GetMapping(value = "/{eventId}/guests")
     public ResponseEntity<GetGuestsDTO> getGuests(@PathVariable int eventId){

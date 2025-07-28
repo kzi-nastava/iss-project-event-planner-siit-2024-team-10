@@ -170,4 +170,10 @@ public class OfferingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
+    @GetMapping("/{userId}/purchased/{offeringId}")
+    public ResponseEntity<Boolean> hasUserPurchasedOffering(
+            @PathVariable int userId,
+            @PathVariable int offeringId) {
+        return ResponseEntity.ok(offeringService.hasUserPurchasedOffering(userId, offeringId));
+    }
 }
