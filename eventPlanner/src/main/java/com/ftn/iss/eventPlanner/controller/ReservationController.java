@@ -26,36 +26,6 @@ public class ReservationController {
     @Autowired
     private ReservationService reservationService;
 
-    @GetMapping(produces = "application/json")
-    public ResponseEntity<Collection<GetReservationDTO>> getReservations() {
-        List<GetReservationDTO> reservations = reservationService.findAll();
-        return new ResponseEntity<>(reservations, HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity<GetReservationDTO> getReservation(@PathVariable("id") int id) {
-        GetReservationDTO reservation = reservationService.findById(id);
-        return new ResponseEntity<>(reservation, HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/{serviceId}", produces = "application/json")
-    public ResponseEntity<Collection<GetReservationDTO>> getReservationsByService(@PathVariable("serviceId") int serviceId) {
-        List<GetReservationDTO> reservations = reservationService.findByServiceId(serviceId);
-        return new ResponseEntity<>(reservations, HttpStatus.OK);
-    }
-
-
-    @GetMapping(value = "/{organizerId}", produces = "application/json")
-    public ResponseEntity<Collection<GetReservationDTO>> getReservationsByOrganizer(@PathVariable("organizerId") int organizerId) {
-        List<GetReservationDTO> reservations = reservationService.findByOrganizerId(organizerId);
-        return new ResponseEntity<>(reservations, HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/{providerId}", produces = "application/json")
-    public ResponseEntity<Collection<GetReservationDTO>> getReservationsByProvider(@PathVariable("providerId") int providerId) {
-        List<GetReservationDTO> reservations = reservationService.findByProviderId(providerId);
-        return new ResponseEntity<>(reservations, HttpStatus.OK);
-    }
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @GetMapping(value = "/events/{organizerId}", produces = "application/json")
     public ResponseEntity<List<GetEventDTO>> findEventsByOrganizer(@PathVariable("organizerId") int organizerId) {

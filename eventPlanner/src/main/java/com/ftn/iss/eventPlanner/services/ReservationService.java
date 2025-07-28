@@ -64,15 +64,6 @@ public class ReservationService {
         return mapToGetReservationDTO(reservation);
     }
 
-    public List<GetReservationDTO> findByServiceId(int serviceId) {
-        List<Reservation> reservations = reservationRepository.findAll();
-
-        return reservations.stream()
-                .filter(reservation -> reservation.getService().getId() == serviceId)
-                .map(this::mapToGetReservationDTO)
-                .toList();
-    }
-
     public ServiceDetails findServiceDetailsByReservationId(int id){
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("Reservation with ID " + id + " not found"));
@@ -93,15 +84,6 @@ public class ReservationService {
         return serviceDetails;
     }
 
-    public List<GetReservationDTO> findByOrganizerId(int organizerId) {
-        List<Reservation> reservations = reservationRepository.findAll();
-
-        return reservations.stream()
-                .filter(reservation -> reservation.getEvent().getOrganizer().getId() == organizerId)
-                .filter(reservation -> reservation.getStatus() != Status.CANCELED)
-                .map(this::mapToGetReservationDTO)
-                .toList();
-    }
 
     public List<GetReservationDTO> findByProviderId(int providerId) {
         List<Reservation> reservations = reservationRepository.findAll();
