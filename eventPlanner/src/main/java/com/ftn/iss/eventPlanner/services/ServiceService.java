@@ -90,9 +90,11 @@ public class ServiceService {
         serviceDetails.setSpecification(serviceDTO.getSpecification());
         serviceDetails.setPrice(serviceDTO.getPrice());
         serviceDetails.setDiscount(serviceDTO.getDiscount());
-        for(String photo : serviceDTO.getPhotos()) {
-            if(!fileService.filesExist(photo)){
-                throw new IllegalArgumentException("Invalid file name.");
+        if(serviceDTO.getPhotos()!=null){
+            for(String photo : serviceDTO.getPhotos()) {
+                if(!fileService.filesExist(photo)){
+                    throw new IllegalArgumentException("Invalid file name.");
+                }
             }
         }
         serviceDetails.setPhotos(serviceDTO.getPhotos());
@@ -167,9 +169,11 @@ public class ServiceService {
         service.getServiceDetailsHistory().add(historicalDetails);
         ServiceDetails newDetails = new ServiceDetails();
         modelMapper.map(updateServiceDTO, newDetails);
-        for(String photo : updateServiceDTO.getPhotos()) {
-            if(!fileService.filesExist(photo)){
-                throw new IllegalArgumentException("Invalid file name.");
+        if(updateServiceDTO.getPhotos()!=null){
+            for(String photo : updateServiceDTO.getPhotos()) {
+                if(!fileService.filesExist(photo)){
+                    throw new IllegalArgumentException("Invalid file name.");
+                }
             }
         }
         service.setCurrentDetails(newDetails);
