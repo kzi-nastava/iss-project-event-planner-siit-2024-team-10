@@ -223,3 +223,4 @@ INSERT INTO account_report(reportee_id, reporter_id, status, processing_timestam
                                                                                                     (1, 3, 0,  NULL, 'Inappropriate messages'),
                                                                                                     (2, 1, 0, NULL, 'False information'),
                                                                                                     (5, 1, 1, '2025-12-12 08:00:00', 'False information');
+INSERT INTO offering_details_photos(offering_details_id, photo_url) VALUES (10, '30c1f88-5e59-4f6c-991b-b5d8fbcbd4d8.png');
