@@ -6,8 +6,11 @@ import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
+import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
+import com.ftn.iss.eventPlanner.dto.product.UpdateProductDTO;
 import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
+import com.ftn.iss.eventPlanner.exception.ServiceHasReservationsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.model.specification.ServiceSpecification;
 import com.ftn.iss.eventPlanner.repositories.*;
@@ -17,11 +20,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.webjars.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,17 +66,20 @@ public class ServiceService {
             category.setName(serviceDTO.getCategoryProposalName());
             category.setDescription(serviceDTO.getCategoryProposalDescription());
             category.setPending(true);
-            category.setCreatorId(accountRepository.findByUserId(serviceDTO.getProvider()).get().getId());
+            Account creator = accountRepository.findByUserId(serviceDTO.getProvider())
+                    .orElseThrow(() -> new NotFoundException("Account with user ID " + serviceDTO.getProvider() + " not found"));
+            category.setCreatorId(creator.getId());
             category=offeringCategoryRepository.save(category);
             service.setCategory(category);
             service.setPending(true);
         }
         else{
             OfferingCategory category = offeringCategoryRepository.findById(serviceDTO.getCategoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("Category with ID " + serviceDTO.getCategoryId() + " not found"));
+                    .orElseThrow(() -> new NotFoundException("Category with ID " + serviceDTO.getCategoryId() + " not found"));
             service.setCategory(category);
         }
-        Provider provider = providerRepository.findById(serviceDTO.getProvider()).get();
+        Provider provider = providerRepository.findById(serviceDTO.getProvider())
+                .orElseThrow(() -> new NotFoundException("Provider with ID " + serviceDTO.getProvider() + " not found"));
         service.setProvider(provider);
 
         ServiceDetails serviceDetails = new ServiceDetails();
@@ -143,7 +151,7 @@ public class ServiceService {
      */
     public UpdatedServiceDTO update(int id, UpdateServiceDTO updateServiceDTO) {
         Service service = serviceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Service with ID " + id + " not found"));
 
         // Create a copy of current details before adding to history
         ServiceDetails historicalDetails = new ServiceDetails();
@@ -155,65 +163,64 @@ public class ServiceService {
         service.setCurrentDetails(newDetails);
         service.getCurrentDetails().setTimestamp(LocalDateTime.now());
 
-        return modelMapper.map(serviceRepository.save(service), UpdatedServiceDTO.class);
+        return modelMapper.map(serviceRepository.save(service).getCurrentDetails(), UpdatedServiceDTO.class);
     }
 
-    public UpdatedServiceDTO updatePrice(int id, UpdatePricelistItemDTO updateServiceDTO) {
+    public UpdatedPricelistItemDTO updatePrice(int id, UpdatePricelistItemDTO updatePricelistItemDTO) {
+        Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Service with ID " + id + " not found"));
+
+        UpdateServiceDTO serviceDTO = new UpdateServiceDTO();
+        serviceDTO.setPrice(updatePricelistItemDTO.getPrice());
+        serviceDTO.setDescription(service.getCurrentDetails().getDescription());
+        serviceDTO.setDiscount(updatePricelistItemDTO.getDiscount());
+        serviceDTO.setAvailable(service.getCurrentDetails().isAvailable());
+        serviceDTO.setName(service.getCurrentDetails().getName());
+        serviceDTO.setId(service.getId());
+        serviceDTO.setPhotos(service.getCurrentDetails().getPhotos());
+        serviceDTO.setVisible(service.getCurrentDetails().isVisible());
+        serviceDTO.setCancellationPeriod(service.getCurrentDetails().getCancellationPeriod());
+        serviceDTO.setAutoConfirm(service.getCurrentDetails().isAutoConfirm());
+        serviceDTO.setMinDuration(service.getCurrentDetails().getMinDuration());
+        serviceDTO.setMaxDuration(service.getCurrentDetails().getMaxDuration());
+        serviceDTO.setSpecification(service.getCurrentDetails().getSpecification());
+        serviceDTO.setReservationPeriod(service.getCurrentDetails().getReservationPeriod());
+
+        update(service.getId(),serviceDTO);
+
+        UpdatedPricelistItemDTO dto = new UpdatedPricelistItemDTO();
+        dto.setId(service.getId());
+        dto.setPrice(updatePricelistItemDTO.getPrice());
+        dto.setOfferingId(service.getId());
+        dto.setDiscount(updatePricelistItemDTO.getDiscount());
+        dto.setName(service.getCurrentDetails().getName());
+        return dto;
+    }
+
+    public void delete(int id) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
 
-        ServiceDetails newCurrent = new ServiceDetails();
-        newCurrent.setName(service.getCurrentDetails().getName());
-        newCurrent.setDescription(service.getCurrentDetails().getDescription());
-        newCurrent.setSpecification(service.getCurrentDetails().getSpecification());
-        newCurrent.setPrice(updateServiceDTO.getPrice());
-        newCurrent.setDiscount(updateServiceDTO.getDiscount());
+        int currentDetailsId = service.getCurrentDetails().getId();
+        Set<Integer> historyIds = service.getServiceDetailsHistory()
+                .stream()
+                .map(ServiceDetails::getId)
+                .collect(Collectors.toSet());
 
-        newCurrent.setPhotos(
-                service.getCurrentDetails().getPhotos() != null
-                        ? new ArrayList<>(service.getCurrentDetails().getPhotos())
-                        : new ArrayList<>()
+        boolean hasReservation = budgetItemRepository.findAll().stream().anyMatch(budgetItem ->
+                budgetItem.getServices().stream().anyMatch(details ->
+                        details.getId() == currentDetailsId || historyIds.contains(details.getId())
+                )
         );
 
-        newCurrent.setFixedTime(service.getCurrentDetails().isFixedTime());
-        newCurrent.setMaxDuration(service.getCurrentDetails().getMaxDuration());
-        newCurrent.setMinDuration(service.getCurrentDetails().getMinDuration());
-        newCurrent.setCancellationPeriod(service.getCurrentDetails().getCancellationPeriod());
-        newCurrent.setReservationPeriod(service.getCurrentDetails().getReservationPeriod());
-        newCurrent.setVisible(service.getCurrentDetails().isVisible());
-        newCurrent.setAvailable(service.getCurrentDetails().isAvailable());
-        newCurrent.setAutoConfirm(service.getCurrentDetails().isAutoConfirm());
-        newCurrent.setTimestamp(LocalDateTime.now());
-
-        ServiceDetails historicalDetails = service.getCurrentDetails();
-        service.getServiceDetailsHistory().add(historicalDetails);
-
-        service.setCurrentDetails(newCurrent);
-
-        Service savedService = serviceRepository.save(service);
-
-        return modelMapper.map(savedService, UpdatedServiceDTO.class);
-    }
-
-    public boolean delete(int id) {
-        Service service = (Service) serviceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
-
-        for (BudgetItem budgetItem : budgetItemRepository.findAll()) {
-            for (ServiceDetails serviceDetails : budgetItem.getServices()) {
-                if (
-                        service.getCurrentDetails().getId() == serviceDetails.getId() ||
-                                service.getServiceDetailsHistory().stream().anyMatch(sd -> sd.getId() == serviceDetails.getId())
-                ) {
-                    return false;
-                }
-            }
+        if (hasReservation) {
+            throw new ServiceHasReservationsException("Service cannot be deleted because it has active or past reservations.");
         }
 
         service.setDeleted(true);
         serviceRepository.save(service);
-        return true;
     }
+
 
     private GetServiceDTO mapToGetServiceDTO(Service service) {
         GetServiceDTO dto = new GetServiceDTO();

@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,18 +30,27 @@ public class CommentService {
     private ModelMapper modelMapper = new ModelMapper();
     @Transactional
 
-    public CreatedCommentDTO create(CreateCommentDTO commentDTO, int offeringId){
-        Offering offering = offeringRepository.findById(offeringId).get();
+    public CreatedCommentDTO create(CreateCommentDTO commentDTO, int offeringId) {
+        Offering offering = offeringRepository.findById(offeringId)
+                .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
+
+        Account account = accountRepository.findById(commentDTO.getAccount())
+                .orElseThrow(() -> new NotFoundException("Account with ID " + commentDTO.getAccount() + " not found"));
+
         Comment comment = new Comment();
+        comment.setCommenter(account);
+        comment.setStatus(Status.PENDING);
         comment.setContent(commentDTO.getContent());
         comment.setRating(commentDTO.getRating());
-        Optional<Account> accountOptional = accountRepository.findById(commentDTO.getAccount());
-        accountOptional.ifPresent(account -> comment.setCommenter(account));
-        comment.setStatus(Status.PENDING);
+
         offering.getComments().add(comment);
+
         commentRepository.save(comment);
         offeringRepository.save(offering);
-        return modelMapper.map(comment, CreatedCommentDTO.class);
+
+        CreatedCommentDTO dto = modelMapper.map(comment, CreatedCommentDTO.class);
+        dto.setAccount(account.getId());
+        return dto;
     }
 
     @Transactional(readOnly = true)

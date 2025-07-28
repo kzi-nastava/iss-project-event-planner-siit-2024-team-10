@@ -37,7 +37,7 @@ public class OfferingService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private  EventRepository eventRepository;
+    private EventRepository eventRepository;
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
@@ -314,16 +314,13 @@ public class OfferingService {
 
     @Transactional(readOnly = true)
     public List<GetCommentDTO> getComments(int offeringId) {
-        Optional<Offering> offering = offeringRepository.findById(offeringId);
+        Offering offering = offeringRepository.findById(offeringId)
+                .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
 
-        if (offering.isPresent()) {
-            return offering.get().getComments().stream()
-                    .filter(comment -> comment.getStatus() == Status.ACCEPTED)
-                    .map(this::mapToGetCommentDTO)
-                    .collect(Collectors.toList());
-        } else {
-            return Collections.emptyList();
-        }
+        return offering.getComments().stream()
+                .filter(comment -> comment.getStatus() == Status.ACCEPTED)
+                .map(this::mapToGetCommentDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -456,23 +453,25 @@ public class OfferingService {
     }
 
     public void changeCategory(int offeringId, int newCategoryId) {
-        Offering offering = offeringRepository.findById(offeringId).get();
+        Offering offering = offeringRepository.findById(offeringId)
+                .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
         // find new category
-        OfferingCategory newCategory = offeringCategoryRepository.findById(newCategoryId).get();
+        OfferingCategory newCategory = offeringCategoryRepository.findById(newCategoryId)
+                .orElseThrow(() -> new NotFoundException("Offering category with ID " + newCategoryId + " not found"));
         // notify old creator that his category is changed for another
         notificationService.sendNotification(offering.getCategory().getCreatorId(), "Category change", "Your category " + offering.getCategory().getName() + " has been changed for " + newCategory.getName() + " - your offerings have now been approved and are visible on your page under new category.");
         offering.setCategory(newCategory);
         offering.setPending(false);
         offeringRepository.save(offering);
     }
-    public boolean hasUserPurchasedOffering(int accountId, int offeringId) {
-        User user = userRepository.findById(accountId)
-                .orElseThrow(() -> new NotFoundException("User with ID " + accountId + " not found"));
+    public boolean hasUserPurchasedOffering(int userId, int offeringId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with ID " + userId + " not found"));
 
         Offering offering = offeringRepository.findById(offeringId)
                 .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
 
-        List<Event> userEvents = eventRepository.findByOrganizerId(accountId);
+        List<Event> userEvents = eventRepository.findByOrganizerId(userId);
 
         for (Event event : userEvents) {
             if (event.isDeleted()) continue;
