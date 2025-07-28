@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 
@@ -65,6 +66,7 @@ public class UserService {
     public UserService() throws SocketException {
     }
 
+    @Transactional
     public CreatedUserDTO create(CreateUserDTO userDTO, boolean roleUpgrade) {
         Account account = accountRepository.findByEmail(userDTO.getEmail());
         if(roleUpgrade){
@@ -122,12 +124,14 @@ public class UserService {
 
     private User registerProvider(CreateUserDTO userDTO, Account account){
         Provider provider = modelMapper.map(userDTO, Provider.class);
-        for(String photo : provider.getCompany().getPhotos()){
-            if(!fileService.filesExist(photo)){
-                throw new IllegalArgumentException("Invalid file name.");
+        if(provider.getCompany().getPhotos()!=null){
+            for(String photo : provider.getCompany().getPhotos()){
+                if(!fileService.filesExist(photo)){
+                    throw new IllegalArgumentException("Invalid file name.");
+                }
             }
         }
-        if(!fileService.filesExist(provider.getProfilePhoto())){
+        if(provider.getProfilePhoto()!=null && !fileService.filesExist(provider.getProfilePhoto())){
             throw new IllegalArgumentException("Invalid file name.");
         }
         provider.setAccount(account);
@@ -140,7 +144,7 @@ public class UserService {
 
     private User registerOrganizer(CreateUserDTO userDTO, Account account){
         Organizer organizer = modelMapper.map(userDTO, Organizer.class);
-        if(!fileService.filesExist(organizer.getProfilePhoto())){
+        if(organizer.getProfilePhoto()!=null && !fileService.filesExist(organizer.getProfilePhoto())){
             throw new IllegalArgumentException("Invalid file name.");
         }
         organizer.setAccount(account);

@@ -185,9 +185,11 @@ public class ProductService {
         productDetails.setDescription(productDTO.getDescription());
         productDetails.setPrice(productDTO.getPrice());
         productDetails.setDiscount(productDTO.getDiscount());
-        for(String photo : productDTO.getPhotos()) {
-            if(!fileService.filesExist(photo)){
-                throw new IllegalArgumentException("Invalid file name.");
+        if(productDTO.getPhotos()!=null){
+            for(String photo : productDTO.getPhotos()) {
+                if(!fileService.filesExist(photo)){
+                    throw new IllegalArgumentException("Invalid file name.");
+                }
             }
         }
         productDetails.setPhotos(productDTO.getPhotos());
@@ -217,9 +219,12 @@ public class ProductService {
 
         product.getProductDetailsHistory().add(historicalDetails);
         modelMapper.map(updateProductDTO, product.getCurrentDetails());
-        for(String photo : updateProductDTO.getPhotos()) {
-            if(!fileService.filesExist(photo)){
-                throw new IllegalArgumentException("Invalid file name.");
+        if(updateProductDTO.getPhotos()!=null)
+        {
+            for(String photo : updateProductDTO.getPhotos()) {
+                if(!fileService.filesExist(photo)){
+                    throw new IllegalArgumentException("Invalid file name.");
+                }
             }
         }
         product.getCurrentDetails().setTimestamp(LocalDateTime.now());
