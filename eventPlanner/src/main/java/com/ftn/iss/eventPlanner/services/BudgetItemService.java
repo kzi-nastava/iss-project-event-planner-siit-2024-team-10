@@ -107,7 +107,7 @@ public class BudgetItemService {
         return mapBudgetItemToDTO(budgetItem);
     }
 
-    public UpdatedBudgetItemDTO updateAmount(int budgetItemId, int newAmount) {
+    public UpdatedBudgetItemDTO updateAmount(int budgetItemId, UpdateBudgetItemDTO dto) {
         BudgetItem budgetItem = budgetItemRepository.findById(budgetItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemId + " not found"));
         if (budgetItem.isDeleted()) {
@@ -123,11 +123,11 @@ public class BudgetItemService {
             usedAmount += product.getPrice() * (1 - product.getDiscount() / 100.0);
         }
 
-        if (newAmount < usedAmount) {
+        if (dto.getAmount() < usedAmount) {
             throw new IllegalArgumentException("New amount cannot be less than the amount already used (" + usedAmount + ").");
         }
 
-        budgetItem.setAmount(newAmount);
+        budgetItem.setAmount(dto.getAmount());
         budgetItem = budgetItemRepository.save(budgetItem);
 
         return modelMapper.map(budgetItem, UpdatedBudgetItemDTO.class);
@@ -163,7 +163,7 @@ public class BudgetItemService {
         return remainingAmount >= 0;
     }
 
-    public boolean buy(int eventId, int offeringId, boolean pending){
+    public boolean buy(int eventId, int offeringId){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
         Offering offering = offeringRepository.findById(offeringId)
@@ -178,8 +178,7 @@ public class BudgetItemService {
                     if(!hasMoneyLeft(budgetItem, service.getCurrentDetails().getPrice(), service.getCurrentDetails().getDiscount())) {
                         throw new IllegalArgumentException("Insufficient budget for this purchase");
                     }
-                    if(!pending)
-                        budgetItem.getServices().add(service.getCurrentDetails());
+                    budgetItem.getServices().add(service.getCurrentDetails());
                 } else if ("Product".equals(offeringType)) {
                     Product product = (Product) offering;
 
@@ -195,8 +194,7 @@ public class BudgetItemService {
                     if (!hasMoneyLeft(budgetItem, product.getCurrentDetails().getPrice(), product.getCurrentDetails().getDiscount())) {
                         throw new IllegalArgumentException("Insufficient budget for this purchase");
                     }
-                    if(!pending)
-                        budgetItem.getProducts().add(product.getCurrentDetails());
+                    budgetItem.getProducts().add(product.getCurrentDetails());
                 }
                 budgetItemRepository.save(budgetItem);
                 return true;
