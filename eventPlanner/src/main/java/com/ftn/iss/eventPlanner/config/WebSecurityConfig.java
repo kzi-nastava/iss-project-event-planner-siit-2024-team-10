@@ -101,15 +101,12 @@ public class WebSecurityConfig {
                         "/api/comments*",
                         "/api/images", "/api/images/*",
                         "/api/offerings/provider/*",
-                        "api/events/process-invitation/**",
                         "/api/events/accept-invite/**",
-                        "api/auth/activate/redirect",
-                        "/api/reports/*/suspension-status"
+                        "api/auth/activate/redirect"
                 )
                 .requestMatchers(HttpMethod.POST,
                         "/api/events/*/stats/participants",
                         "/api/events/*/ratings",
-                        "/api/events/accept-invite/**",
                         "api/events/process-invitation/**",
                         "api/upload"
                 );

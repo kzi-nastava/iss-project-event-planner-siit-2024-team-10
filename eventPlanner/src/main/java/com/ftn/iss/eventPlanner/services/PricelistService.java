@@ -2,8 +2,6 @@ package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
-import com.ftn.iss.eventPlanner.dto.product.UpdatedProductDTO;
-import com.ftn.iss.eventPlanner.dto.service.UpdatedServiceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
