@@ -7,7 +7,6 @@ import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.user.BlockStatusDTO;
 import com.ftn.iss.eventPlanner.services.AccountService;
-import com.ftn.iss.eventPlanner.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -24,8 +23,6 @@ import java.util.Collection;
 public class AccountController {
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private NotificationService notificationService;
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER','PROVIDER', 'ADMIN', 'AUTHENTICATED_USER')")
     @GetMapping(value="/{accountId}/favourite-events", produces = MediaType.APPLICATION_JSON_VALUE)

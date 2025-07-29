@@ -26,28 +26,28 @@ public class AccountReportController {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetAccountReportDTO>> getAllAccountReports() throws Exception{
+    public ResponseEntity<Collection<GetAccountReportDTO>> getAllAccountReports() {
         List<GetAccountReportDTO> accountReportDTOs = accountReportService.findAllPending();
         return new ResponseEntity<>(accountReportDTOs, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('AUTHENTICATED_USER','EVENT_ORGANIZER','PROVIDER','ADMIN')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedAccountReportDTO> createAccountReport(@Valid @RequestBody CreateAccountReportDTO report) throws Exception {
+    public ResponseEntity<CreatedAccountReportDTO> createAccountReport(@Valid @RequestBody CreateAccountReportDTO report) {
         CreatedAccountReportDTO createdAccountReportDTO = accountReportService.create(report);
         return new ResponseEntity<>(createdAccountReportDTO, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value="/{reportId}/accept", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedAccountReportDTO> acceptReport(@PathVariable int reportId) throws Exception {
+    public ResponseEntity<UpdatedAccountReportDTO> acceptReport(@PathVariable int reportId) {
         UpdatedAccountReportDTO dto = accountReportService.acceptReport(reportId);
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value="/{reportId}/reject", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedAccountReportDTO> rejectReport(@PathVariable int reportId) throws Exception {
+    public ResponseEntity<UpdatedAccountReportDTO> rejectReport(@PathVariable int reportId) {
         UpdatedAccountReportDTO dto = accountReportService.rejectReport(reportId);
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }

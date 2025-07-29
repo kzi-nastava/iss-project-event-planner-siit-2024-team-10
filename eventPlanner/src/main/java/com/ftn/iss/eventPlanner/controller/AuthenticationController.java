@@ -5,7 +5,6 @@ import com.ftn.iss.eventPlanner.dto.authentication.LoginResponseDTO;
 import com.ftn.iss.eventPlanner.dto.user.CreateUserDTO;
 import com.ftn.iss.eventPlanner.dto.user.CreatedUserDTO;
 import com.ftn.iss.eventPlanner.model.Account;
-import com.ftn.iss.eventPlanner.services.AccountService;
 import com.ftn.iss.eventPlanner.services.UserService;
 import com.ftn.iss.eventPlanner.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,8 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URI;
 
 @RestController
@@ -34,9 +31,6 @@ public class AuthenticationController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private AccountService accountService;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
