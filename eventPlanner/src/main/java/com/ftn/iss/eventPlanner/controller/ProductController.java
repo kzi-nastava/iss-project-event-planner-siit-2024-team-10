@@ -20,12 +20,8 @@ public class ProductController {
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetProductDTO> getProduct(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
-        try {
-            GetProductDTO serviceDTO = productService.findById(id);
-            return new ResponseEntity<>(serviceDTO, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        GetProductDTO serviceDTO = productService.findById(id);
+        return new ResponseEntity<>(serviceDTO, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")

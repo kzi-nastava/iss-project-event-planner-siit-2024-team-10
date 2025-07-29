@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ServiceUnavailableException.class)
     public ResponseEntity<String> handleServiceUnavailableException(ServiceUnavailableException ex){
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
     @ExceptionHandler(DuplicateProductException.class)
     public ResponseEntity<String> handleProductAlreadyBoughtException(DuplicateProductException ex) {
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
     @ExceptionHandler(CategoryHasOfferingsException.class)
-    public ResponseEntity<String> handleCategoryHasOfferingsException(AuthenticationException ex) {
+    public ResponseEntity<String> handleCategoryHasOfferingsException(CategoryHasOfferingsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 }
