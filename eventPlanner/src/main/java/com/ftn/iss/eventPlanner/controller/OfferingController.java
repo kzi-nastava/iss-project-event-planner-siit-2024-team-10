@@ -4,8 +4,10 @@ import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.comment.*;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.ChangeOfferingCategoryDTO;
+import com.ftn.iss.eventPlanner.dto.pricelistitem.GetPricelistItemDTO;
 import com.ftn.iss.eventPlanner.services.CommentService;
 import com.ftn.iss.eventPlanner.services.OfferingService;
+import com.ftn.iss.eventPlanner.services.PricelistReportService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,7 +28,6 @@ public class OfferingController {
     private final OfferingService offeringService;
     @Autowired
     private CommentService commentService;
-
     public OfferingController(OfferingService offeringService) {
         this.offeringService = offeringService;
     }

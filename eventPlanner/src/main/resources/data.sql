@@ -227,4 +227,8 @@ INSERT INTO account_report(reportee_id, reporter_id, status, processing_timestam
                                                                                                     (2, 1, 0, NULL, 'False information'),
                                                                                                     (5, 1, 1, '2025-12-12 08:00:00', 'False information');
 
-INSERT INTO offering_details_photos(offering_details_id, photo_url) VALUES (10, '30c1f88-5e59-4f6c-991b-b5d8fbcbd4d8.png');
+INSERT INTO budget_item(amount,category_id,event_id,is_deleted) VALUES (2000,1,1,false),
+                                                                       (0,2,1,true);
+INSERT INTO budget_item_services(budget_item_id,services_id) VALUES (1,1);
+
+INSERT INTO reservation(end_time,event_id,service_id,start_time,status,timestamp)VALUES ('6:00:00',	1,	11,	'0:00:00',	1,	'2025-07-29 21:07:11.874136');
