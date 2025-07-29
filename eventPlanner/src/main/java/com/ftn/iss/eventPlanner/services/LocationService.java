@@ -1,0 +1,45 @@
+package com.ftn.iss.eventPlanner.services;
+
+import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
+import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.model.User;
+import com.ftn.iss.eventPlanner.model.Location;
+import com.ftn.iss.eventPlanner.repositories.LocationRepository;
+import com.ftn.iss.eventPlanner.repositories.UserRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class LocationService {
+    @Autowired
+    private LocationRepository locationRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+    ModelMapper modelMapper = new ModelMapper();
+
+    //gets location from database if it exists, otherwise creates a new location
+    public CreatedLocationDTO create(CreateLocationDTO locationDTO){
+        Location location = locationRepository.findByAllFields(locationDTO.getCountry(), locationDTO.getCity(), locationDTO.getStreet(), locationDTO.getHouseNumber())
+                .orElseGet(() -> null);
+        if(location == null){
+            location = modelMapper.map(locationDTO, Location.class);
+            location = locationRepository.save(location);
+        }
+        return modelMapper.map(location, CreatedLocationDTO.class);
+    }
+
+    public GetLocationDTO findById(int id) {
+        Location location = locationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Location with ID " + id + " not found"));
+        return modelMapper.map(location, GetLocationDTO.class);
+    }
+
+    public Location findLocationByAccountId(Integer accountId) {
+        return userRepository.findByAccountId(accountId)
+                .map(User::getLocation)
+                .orElse(null);
+    }
+}

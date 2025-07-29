@@ -1,0 +1,282 @@
+package com.ftn.iss.eventPlanner.services;
+
+import com.ftn.iss.eventPlanner.dto.company.*;
+import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
+import com.ftn.iss.eventPlanner.dto.user.*;
+import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
+import com.ftn.iss.eventPlanner.model.*;
+import com.ftn.iss.eventPlanner.repositories.*;
+import com.ftn.iss.eventPlanner.util.NetworkUtils;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
+import java.net.SocketException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class UserService {
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private LocationService locationService;
+    @Autowired
+    private CompanyRepository companyRepository;
+    @Autowired
+    private ProviderRepository providerRepository;
+    @Autowired
+    private OrganizerRepository organizerRepository;
+    @Autowired
+    private EventRepository eventRepository;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private FileService fileService;
+    @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
+    @Autowired
+    private ReservationService reservationService;
+    private ModelMapper modelMapper = new ModelMapper();
+
+    private static final int TOKEN_EXPIRATION = 24;
+
+    private final String IP_BASE_URL = "http://" + NetworkUtils.getLocalIpAddress() + ":8080/api";
+   
+    private static final String CONFIRMATION_URL = "/auth/activate/redirect?token=";
+
+    public UserService() throws SocketException {
+    }
+
+    @Transactional
+    public CreatedUserDTO create(CreateUserDTO userDTO, boolean roleUpgrade) {
+        Account account = accountRepository.findByEmail(userDTO.getEmail());
+        if(roleUpgrade){
+            if(account==null)
+                throw new IllegalArgumentException("Account with given email doesn't exist");
+        }
+        else {
+            if(account!=null)
+            {
+                VerificationToken token = verificationTokenRepository.findByAccountId(account.getId());
+                if(token!=null && token.getExpiresAt().isBefore(LocalDateTime.now())){
+                    verificationTokenRepository.delete(token);
+                    User user=account.getUser();
+                    user.setAccount(null);
+                    userRepository.save(user);
+                    account.setUser(null);
+                    accountRepository.save(account);
+                    userRepository.deleteById(user.getId());
+                    accountRepository.delete(account);
+                }
+                else
+                    throw new EmailAlreadyExistsException("Email already exists");
+            }
+            account=new Account();
+            account.setEmail(userDTO.getEmail());
+        }
+        account.setRole(userDTO.getRole());
+        account.setStatus(AccountStatus.PENDING);
+        if(!roleUpgrade){
+            if(userDTO.getPassword() == null || userDTO.getPassword().length()<8)
+                throw new IllegalArgumentException("Password must be at least 8 characters.");
+            account.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
+
+        account = accountRepository.save(account);
+
+        User user=null;
+        if(userDTO.getRole()==Role.PROVIDER) {
+            user=registerProvider(userDTO, account);
+        } else if (userDTO.getRole()==Role.EVENT_ORGANIZER) {
+            user=registerOrganizer(userDTO, account);
+        }
+
+        account.setUser(user);
+        accountRepository.save(account);
+
+        sendConfirmation(user);
+
+        CreatedUserDTO createdUserDTO = modelMapper.map(user, CreatedUserDTO.class);
+        createdUserDTO.setEmail(account.getEmail());
+        createdUserDTO.setRole(account.getRole());
+
+        return createdUserDTO;
+    }
+
+    private User registerProvider(CreateUserDTO userDTO, Account account){
+        Provider provider = modelMapper.map(userDTO, Provider.class);
+        if(provider.getCompany().getPhotos()!=null){
+            for(String photo : provider.getCompany().getPhotos()){
+                if(!fileService.filesExist(photo)){
+                    throw new IllegalArgumentException("Invalid file name.");
+                }
+            }
+        }
+        if(provider.getProfilePhoto()!=null && !fileService.filesExist(provider.getProfilePhoto())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
+        provider.setAccount(account);
+        provider.setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
+        provider.getCompany().setLocation(modelMapper.map(locationService.create(userDTO.getCompany().getLocation()), Location.class));
+        provider.setCompany(companyRepository.save(provider.getCompany()));
+        providerRepository.save(provider);
+        return provider;
+    }
+
+    private User registerOrganizer(CreateUserDTO userDTO, Account account){
+        Organizer organizer = modelMapper.map(userDTO, Organizer.class);
+        if(organizer.getProfilePhoto()!=null && !fileService.filesExist(organizer.getProfilePhoto())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
+        organizer.setAccount(account);
+        organizer.setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
+        organizerRepository.save(organizer);
+        return organizer;
+    }
+
+    private void sendConfirmation(User user){
+        VerificationToken token=new VerificationToken();
+        token.setAccount(user.getAccount());
+        token.setToken(UUID.randomUUID().toString());
+        token.setExpiresAt(LocalDateTime.now().plusHours(TOKEN_EXPIRATION));
+        token=verificationTokenRepository.save(token);
+        String confirmationLink = IP_BASE_URL + CONFIRMATION_URL + token.getToken();
+        EmailDetails emailDetails=new EmailDetails();
+        emailDetails.setRecipient(user.getAccount().getEmail());
+        emailDetails.setSubject("Account activation");
+        emailDetails.setMsgBody("To activate your account click on the following link: "+confirmationLink);
+        emailService.sendSimpleEmail(emailDetails);
+    }
+
+    public void Activate(String token){
+        VerificationToken verificationToken=verificationTokenRepository.findByToken(token);
+        if(verificationToken==null)
+            throw new IllegalArgumentException("Given verification token is not valid");
+        if(verificationToken.getExpiresAt().isBefore(LocalDateTime.now()))
+            throw new IllegalArgumentException("Verification token expired, please register again");
+        Account account=verificationToken.getAccount();
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+        verificationTokenRepository.delete(verificationToken);
+    }
+
+    public GetUserDTO getUserDetails(int accountId){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        GetUserDTO userDetails = new GetUserDTO();
+        userDetails.setAccountId(account.getId());
+        userDetails.setEmail(account.getEmail());
+        userDetails.setRole(account.getRole());
+        if(account.getRole() == Role.AUTHENTICATED_USER || account.getRole() == Role.ADMIN)
+            return userDetails;
+        User user = account.getUser();
+        userDetails.setUserId(user.getId());
+        userDetails.setFirstName(user.getFirstName());
+        userDetails.setLastName(user.getLastName());
+        userDetails.setPhoneNumber(user.getPhoneNumber());
+        userDetails.setProfilePhoto(user.getProfilePhoto());
+        userDetails.setLocation(modelMapper.map(user.getLocation(), GetLocationDTO.class));
+        if(account.getRole() == Role.PROVIDER)
+            userDetails.setCompany(modelMapper.map(((Provider) user).getCompany(), GetCompanyDTO.class));
+        return userDetails;
+    }
+    public UpdatedUserDTO updateUser(int accountId, UpdateUserDTO updateUserDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
+            throw new IllegalArgumentException("User with given account ID is not a provider or organizer");
+        User user = account.getUser();
+        user.setFirstName(updateUserDTO.getFirstName());
+        user.setLastName(updateUserDTO.getLastName());
+        user.setPhoneNumber(updateUserDTO.getPhoneNumber());
+        user.setLocation(modelMapper.map(locationService.create(updateUserDTO.getLocation()), Location.class));
+        userRepository.save(user);
+        return modelMapper.map(user, UpdatedUserDTO.class);
+    }
+
+    public UpdatedProfilePhotoDTO updateProfilePhoto(int accountId, UpdateProfilePhotoDTO updateProfilePhotoDTO) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
+            throw new IllegalArgumentException("User with given account ID is not a provider or organizer");
+        User user = account.getUser();
+        if(!fileService.filesExist(updateProfilePhotoDTO.getFilePath())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
+        user.setProfilePhoto(updateProfilePhotoDTO.getFilePath());
+        userRepository.save(user);
+        return new UpdatedProfilePhotoDTO(updateProfilePhotoDTO.getFilePath());
+    }
+
+    public UpdatedCompanyPhotosDTO updateCompanyPhotos(int accountId, UpdateCompanyPhotosDTO updateCompanyPhotosDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()!=Role.PROVIDER)
+            throw new IllegalArgumentException("User with given account ID is not a provider");
+        Provider provider = (Provider) account.getUser();
+        Company company = provider.getCompany();
+        for(String photo:updateCompanyPhotosDTO.getFilePaths()){
+            if(!fileService.filesExist(photo)) {
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+        }
+        company.setPhotos(updateCompanyPhotosDTO.getFilePaths());
+        companyRepository.save(company);
+        return new UpdatedCompanyPhotosDTO(updateCompanyPhotosDTO.getFilePaths());
+    }
+
+    public UpdatedCompanyDTO updateCompany(int accountId, UpdateCompanyDTO updateCompanyDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()!=Role.PROVIDER)
+            throw new IllegalArgumentException("User with given account ID is not a provider");
+        Provider provider = (Provider) account.getUser();
+        Company company = provider.getCompany();
+        company.setPhoneNumber(updateCompanyDTO.getPhoneNumber());
+        company.setDescription(updateCompanyDTO.getDescription());
+        company.setLocation(modelMapper.map(locationService.create(updateCompanyDTO.getLocation()), Location.class));
+        companyRepository.save(company);
+        return modelMapper.map(company, UpdatedCompanyDTO.class);
+    }
+
+    public void changePassword(int accountId, ChangePasswordDTO changePasswordDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(!passwordEncoder.matches(changePasswordDTO.getOldPassword(), account.getPassword())){
+            throw new IllegalArgumentException("Old password is incorrect");
+        }
+        account.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
+        accountRepository.save(account);
+    }
+
+    public void deactivateAccount(int accountId){
+        Account account=accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.EVENT_ORGANIZER){
+            Organizer organizer=(Organizer) account.getUser();
+            List<Event> events = eventRepository.findByOrganizerId(organizer.getId());
+            if(events.stream().anyMatch(event -> event.getDate().isAfter(LocalDate.now())))
+                throw new IllegalArgumentException("Organizer has upcoming events, can't deactivate account");
+        }
+        if(account.getRole()==Role.PROVIDER){
+            Provider provider=(Provider) account.getUser();
+            List<GetReservationDTO> reservations = reservationService.findByProviderId(provider.getId());
+            if(reservations.stream()
+                    .filter(reservation->reservation.getStatus()==Status.ACCEPTED)
+                    .anyMatch(reservation->reservation.getEvent().getDate().isAfter(LocalDate.now())))
+                throw new IllegalArgumentException("Provider has upcoming reservations, can't deactivate account");
+        }
+        account.setStatus(AccountStatus.INACTIVE);
+        accountRepository.save(account);
+    }
+}
