@@ -63,13 +63,8 @@ public class EventController {
 
     @GetMapping(value="/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<GetEventDTO>> findEventsByOrganizer(@RequestParam Integer accountId){
-        try{
-            List<GetEventDTO> events = eventService.findEventsByOrganizer(accountId);
-            return new ResponseEntity<>(events, HttpStatus.OK);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        List<GetEventDTO> events = eventService.findEventsByOrganizer(accountId);
+        return new ResponseEntity<>(events, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")

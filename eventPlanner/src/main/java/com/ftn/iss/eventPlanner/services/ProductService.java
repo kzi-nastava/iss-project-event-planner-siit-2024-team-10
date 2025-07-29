@@ -1,6 +1,5 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
@@ -9,7 +8,6 @@ import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.product.*;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
-import com.ftn.iss.eventPlanner.model.specification.ProductSpecification;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import com.ftn.iss.eventPlanner.repositories.ProductRepository;
@@ -17,15 +15,10 @@ import com.ftn.iss.eventPlanner.repositories.ProviderRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {

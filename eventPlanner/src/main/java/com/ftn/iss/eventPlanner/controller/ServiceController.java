@@ -1,13 +1,10 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
-import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.services.ServiceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,8 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 

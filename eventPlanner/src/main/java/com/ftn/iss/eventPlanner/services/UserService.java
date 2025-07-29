@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
-import java.io.IOException;
 import java.net.SocketException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

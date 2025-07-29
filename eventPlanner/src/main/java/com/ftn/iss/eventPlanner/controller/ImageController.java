@@ -1,7 +1,5 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;

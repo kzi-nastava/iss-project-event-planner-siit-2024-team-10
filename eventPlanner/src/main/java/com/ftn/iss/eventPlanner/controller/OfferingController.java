@@ -41,25 +41,6 @@ public class OfferingController {
         List<GetOfferingDTO> offerings = offeringService.findProvidersOfferings(providerId);
         return ResponseEntity.ok(offerings);
     }
-    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetOfferingDTO>> getOfferings(
-            @RequestParam(required = false) Boolean isServiceFilter,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer categoryId,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) Integer minDiscount,
-            @RequestParam(required = false) Integer serviceDuration,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) Boolean isAvailable
-    ){
-        List<GetOfferingDTO> offerings = offeringService.getAllOfferings(
-                isServiceFilter, name, categoryId, location, minPrice, maxPrice,
-                minDiscount, serviceDuration, minRating, isAvailable);
-
-        return ResponseEntity.ok(offerings);
-    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResponse<GetOfferingDTO>> getOfferings(
@@ -103,7 +84,7 @@ public class OfferingController {
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping (value = "/comments/{commentId}/reject",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> rejectComment(@PathVariable int commentId) {
-        commentService.delete(commentId);
+        commentService.reject(commentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

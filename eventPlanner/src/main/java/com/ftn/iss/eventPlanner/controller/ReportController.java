@@ -1,6 +1,5 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.GetPricelistItemDTO;
 import com.ftn.iss.eventPlanner.services.OfferingService;
 import com.ftn.iss.eventPlanner.services.PricelistReportService;
@@ -12,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @CrossOrigin

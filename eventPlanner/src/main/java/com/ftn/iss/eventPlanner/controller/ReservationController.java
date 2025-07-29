@@ -1,13 +1,10 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.CreatedEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.*;
-import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.services.ReservationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -35,14 +30,14 @@ public class ReservationController {
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedReservationDTO> createReservation(@Valid @RequestBody CreateReservationDTO reservation) throws Exception {
+    public ResponseEntity<CreatedReservationDTO> createReservation(@Valid @RequestBody CreateReservationDTO reservation) {
         CreatedReservationDTO createdReservation = reservationService.create(reservation);
         return new ResponseEntity<>(createdReservation, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
-    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> cancelReservation(@PathVariable("id") int id) throws Exception {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> cancelReservation(@PathVariable("id") int id) {
         reservationService.cancelReservation(id);
         return ResponseEntity.noContent().build();
     }
@@ -56,14 +51,14 @@ public class ReservationController {
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PutMapping(value="/{reservationId}/accept", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> acceptReservation(@PathVariable("reservationId") int reservationId) throws Exception {
+    public ResponseEntity<Void> acceptReservation(@PathVariable("reservationId") int reservationId) {
         reservationService.acceptReservation(reservationId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PutMapping(value="/{reservationId}/reject", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> rejectReservation(@PathVariable("reservationId") int reservationId) throws Exception {
+    public ResponseEntity<Void> rejectReservation(@PathVariable("reservationId") int reservationId) {
         reservationService.rejectReservation(reservationId);
         return ResponseEntity.noContent().build();
     }

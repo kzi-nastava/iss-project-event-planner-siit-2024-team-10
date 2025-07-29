@@ -1,13 +1,9 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
-import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
 import com.ftn.iss.eventPlanner.dto.message.CreateMessageDTO;
 import com.ftn.iss.eventPlanner.dto.message.CreatedMessageDTO;
 import com.ftn.iss.eventPlanner.dto.message.GetChatContact;
 import com.ftn.iss.eventPlanner.dto.message.GetMessageDTO;
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.MessageRepository;
@@ -17,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;

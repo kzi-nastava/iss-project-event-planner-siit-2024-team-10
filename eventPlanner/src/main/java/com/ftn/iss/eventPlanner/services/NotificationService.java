@@ -68,23 +68,6 @@ public class NotificationService {
         return new PageImpl<>(pageContent, pageable, sortedNotifications.size());
     }
 
-    private List<GetNotificationDTO> mapNotificationsToDTOs(List<Notification> notifications) {
-        return notifications.stream()
-                .map(this::mapToNotificationDTO)
-                .collect(Collectors.toList());
-    }
-
-    private GetNotificationDTO mapToNotificationDTO(Notification notification) {
-        GetNotificationDTO dto = new GetNotificationDTO();
-
-        dto.setId(notification.getId());
-        dto.setTitle(notification.getTitle());
-        dto.setDate(notification.getDate());
-        dto.setRead(notification.isRead());
-        dto.setContent(notification.getContent());
-        return dto;
-    }
-
     public void sendNotification(Integer recipientId, String title, String content) {
         Account recipientAccount = accountRepository.findById(recipientId)
                 .orElseThrow(() -> new NotFoundException("Recipient account not found with ID: " + recipientId));
@@ -106,11 +89,11 @@ public class NotificationService {
 
     @Transactional
     public void markAsRead(Integer notificationId) {
-        notificationRepository.findById(notificationId)
-                .ifPresent(notification -> {
-                    notification.setRead(true);
-                    notificationRepository.save(notification);
-                });
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotFoundException("Notification not found with ID: " + notificationId));
+
+        notification.setRead(true);
+        notificationRepository.save(notification);
     }
 
     public void markAllAsRead(Integer accountId){
@@ -147,6 +130,23 @@ public class NotificationService {
 
         return notifications.stream()
                 .anyMatch(notification -> !notification.isRead());
+    }
+
+    private List<GetNotificationDTO> mapNotificationsToDTOs(List<Notification> notifications) {
+        return notifications.stream()
+                .map(this::mapToNotificationDTO)
+                .collect(Collectors.toList());
+    }
+
+    private GetNotificationDTO mapToNotificationDTO(Notification notification) {
+        GetNotificationDTO dto = new GetNotificationDTO();
+
+        dto.setId(notification.getId());
+        dto.setTitle(notification.getTitle());
+        dto.setDate(notification.getDate());
+        dto.setRead(notification.isRead());
+        dto.setContent(notification.getContent());
+        return dto;
     }
 
 }

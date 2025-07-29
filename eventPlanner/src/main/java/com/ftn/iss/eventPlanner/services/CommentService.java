@@ -82,7 +82,7 @@ public class CommentService {
         notificationService.sendNotification(offering.getProvider().getAccount().getId(), "New Comment", "Your offering "+ offeringName +" has received a new comment with rating "+comment.getRating()+"/5.");
     }
 
-    public void delete(int commentId){
+    public void reject(int commentId){
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
 
