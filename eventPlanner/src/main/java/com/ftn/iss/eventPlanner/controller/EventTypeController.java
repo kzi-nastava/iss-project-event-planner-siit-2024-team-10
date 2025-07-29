@@ -47,7 +47,7 @@ public class EventTypeController {
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteEventType(@PathVariable int id) {
-        eventTypeService.delete(id);
+        eventTypeService.deactivate(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

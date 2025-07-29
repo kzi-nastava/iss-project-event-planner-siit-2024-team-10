@@ -66,7 +66,7 @@ public class EventTypeService {
         return modelMapper.map(eventType, UpdatedEventTypeDTO.class);
     }
 
-    public void delete(int id) {
+    public void deactivate(int id) {
         EventType eventType = eventTypeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Event Type with ID " + id + " not found"));
         eventType.setActive(false);

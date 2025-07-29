@@ -44,13 +44,6 @@ public class LocationService {
         return modelMapper.map(location, GetLocationDTO.class);
     }
 
-    public List<GetLocationDTO> findAll() {
-        List<Location> locations = locationRepository.findAll();
-        return locations.stream()
-                .map(location -> modelMapper.map(location, GetLocationDTO.class))
-                .collect(Collectors.toList());
-    }
-
     public Location findLocationByAccountId(Integer accountId) {
         return userRepository.findByAccountId(accountId)
                 .map(User::getLocation)

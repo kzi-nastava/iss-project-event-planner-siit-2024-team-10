@@ -1,6 +1,5 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyPhotosDTO;
 import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
@@ -16,9 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @RestController
 @CrossOrigin
