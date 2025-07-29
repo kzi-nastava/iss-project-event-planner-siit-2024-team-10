@@ -22,40 +22,6 @@ import java.util.List;
 public class ProductController {
     @Autowired
     private ProductService productService;
-    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetProductDTO>> getProducts(
-            @RequestParam(required = false) Integer providerId,
-            @RequestParam(required = false) Integer categoryId,
-            @RequestParam(required = false) Integer eventTypeId,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) Double minDiscount,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) Boolean isAvailable,
-            @RequestParam(required = false) String name
-    ) {
-        List<GetProductDTO> services = productService.findAll(name,eventTypeId,categoryId,minPrice,maxPrice,isAvailable);
-        return new ResponseEntity<>(services, HttpStatus.OK);
-    }
-
-    @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResponse<GetProductDTO>> getProductsPage(
-            Pageable page,
-            @RequestParam(required = false) Integer providerId,
-            @RequestParam(required = false) Integer categoryId,
-            @RequestParam(required = false) Integer eventTypeId,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) Double minDiscount,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) Boolean isAvailable,
-            @RequestParam(required = false) String name
-    ) {
-        PagedResponse<GetProductDTO> response = productService.findAll(page,name,eventTypeId,categoryId,minPrice,maxPrice,isAvailable);
-        return new ResponseEntity<PagedResponse<GetProductDTO>>(response, HttpStatus.OK);
-    }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetProductDTO> getProduct(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
@@ -88,8 +54,4 @@ public class ProductController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping(value = "/{id}/buy", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> buyProduct(@PathVariable("id") int productId) {
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
 }

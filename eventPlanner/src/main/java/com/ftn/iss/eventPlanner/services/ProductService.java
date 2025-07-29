@@ -42,43 +42,6 @@ public class ProductService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public List<GetProductDTO> findAll(
-            String name,
-            Integer eventTypeId,
-            Integer categoryId,
-            Double minPrice,
-            Double maxPrice,
-            Boolean searchByAvailability
-    ) {
-        Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                .and(ProductSpecification.hasCategoryId(categoryId))
-                .and(ProductSpecification.betweenPrices(minPrice, maxPrice));
-
-        return productRepository.findAll(productSpecification).stream()
-                .map(product -> modelMapper.map(product, GetProductDTO.class))
-                .collect(Collectors.toList());
-    }
-    public PagedResponse<GetProductDTO> findAll(
-            Pageable pagable,
-            String name,
-            Integer eventTypeId,
-            Integer categoryId,
-            Double minPrice,
-            Double maxPrice,
-            Boolean searchByAvailability
-    ) {
-        Specification<Product> productSpecification = Specification.where(ProductSpecification.hasName(name))
-                .and(ProductSpecification.hasCategoryId(categoryId))
-                .and(ProductSpecification.betweenPrices(minPrice, maxPrice));
-
-        Page<Product> pagedProducts = productRepository.findAll(productSpecification, pagable);
-
-        List<GetProductDTO> productDTOs = pagedProducts.getContent().stream()
-                .map(this::mapToGetProductDTO)
-                .collect(Collectors.toList());
-
-        return new PagedResponse<>(productDTOs,pagedProducts.getTotalPages(),pagedProducts.getTotalElements());
-    }
     public GetProductDTO findById(int id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));

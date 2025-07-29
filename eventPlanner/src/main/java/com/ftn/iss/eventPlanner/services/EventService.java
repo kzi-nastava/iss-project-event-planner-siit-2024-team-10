@@ -80,14 +80,6 @@ public class EventService {
     public EventService() throws SocketException {
     }
 
-    public List<GetEventDTO> findAll() {
-        List<Event> events = eventRepository.findAll();
-
-        return events.stream()
-                .map(this::mapToGetEventDTO)
-                .collect(Collectors.toList());
-    }
-
     @Transactional
     public PagedResponse<GetEventDTO> getAllEvents(
             Pageable pageable,

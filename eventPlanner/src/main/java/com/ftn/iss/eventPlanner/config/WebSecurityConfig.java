@@ -107,16 +107,11 @@ public class WebSecurityConfig {
                         "/api/reports/*/suspension-status"
                 )
                 .requestMatchers(HttpMethod.POST,
-                        "/api/accounts/*/favourite-offerings",
                         "/api/events/*/stats/participants",
                         "/api/events/*/ratings",
-                        "/api/offerings/*/change/*",
                         "/api/events/accept-invite/**",
                         "api/events/process-invitation/**",
                         "api/upload"
-                )
-                .requestMatchers(HttpMethod.DELETE,
-                        "/api/accounts/*/favourite-offerings/*"
                 );
     }
 
