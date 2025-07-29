@@ -187,8 +187,7 @@ public class EventController {
     @PutMapping(value = "/{eventId}/budget/buy/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> buyOfferingForEvent(
             @PathVariable int eventId,
-            @PathVariable int offeringId
-    ) {
+            @PathVariable int offeringId) {
         budgetItemService.buy(eventId, offeringId);
         return ResponseEntity.noContent().build();
     }

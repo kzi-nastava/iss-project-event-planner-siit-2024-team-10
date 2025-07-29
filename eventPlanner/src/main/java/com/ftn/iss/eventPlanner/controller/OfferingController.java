@@ -102,14 +102,14 @@ public class OfferingController {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping (value = "/comments/{commentId}/reject",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> rejectComment(@PathVariable int commentId) throws Exception {
+    public ResponseEntity<?> rejectComment(@PathVariable int commentId) {
         commentService.delete(commentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value="/comments/{commentId}/approve", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> approveComment(@PathVariable int commentId) throws Exception {
+    public ResponseEntity<?> approveComment(@PathVariable int commentId) {
         commentService.approve(commentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

@@ -1,11 +1,9 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.budgetitem.*;
-import com.ftn.iss.eventPlanner.dto.eventtype.*;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.product.GetProductDTO;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
-import com.ftn.iss.eventPlanner.exception.ServiceHasReservationsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
@@ -25,8 +23,6 @@ public class BudgetItemService {
     private EventRepository eventRepository;
     @Autowired
     private OfferingRepository offeringRepository;
-    @Autowired
-    private UserRepository userRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -162,7 +158,7 @@ public class BudgetItemService {
         return remainingAmount >= 0;
     }
 
-    public boolean buy(int eventId, int offeringId){
+    public void buy(int eventId, int offeringId){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
         Offering offering = offeringRepository.findById(offeringId)
@@ -196,7 +192,6 @@ public class BudgetItemService {
                     budgetItem.getProducts().add(product.getCurrentDetails());
                 }
                 budgetItemRepository.save(budgetItem);
-                return true;
             }
         }
 
@@ -204,7 +199,6 @@ public class BudgetItemService {
         createBudgetItemDTO.setAmount(0);
         createBudgetItemDTO.setCategoryId(offering.getCategory().getId());
         create(eventId, createBudgetItemDTO,offeringId);
-        return true;
     }
 
     public List<GetBudgetItemDTO> findByEventId(int eventId) {
@@ -214,7 +208,16 @@ public class BudgetItemService {
                 .map(this::mapBudgetItemToDTO)
                 .collect(Collectors.toList());
     }
+    public double getTotalBudgetForEvent(int eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
 
+        return event.getBudget()
+                .stream()
+                .filter(item -> !item.isDeleted())
+                .mapToDouble(BudgetItem::getAmount)
+                .sum();
+    }
     public GetBudgetItemDTO mapBudgetItemToDTO(BudgetItem budgetItem) {
         GetBudgetItemDTO dto = new GetBudgetItemDTO();
         dto.setId(budgetItem.getId());
@@ -245,16 +248,5 @@ public class BudgetItemService {
         dto.setProducts(products);
 
         return dto;
-    }
-
-    public double getTotalBudgetForEvent(int eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
-
-        return event.getBudget()
-                .stream()
-                .filter(item -> !item.isDeleted())
-                .mapToDouble(BudgetItem::getAmount)
-                .sum();
     }
 }

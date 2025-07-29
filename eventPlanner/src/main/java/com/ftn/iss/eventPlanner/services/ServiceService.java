@@ -3,11 +3,9 @@ package com.ftn.iss.eventPlanner.services;
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
-import com.ftn.iss.eventPlanner.dto.product.UpdateProductDTO;
 import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.exception.ServiceHasReservationsException;
@@ -21,14 +19,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.webjars.NotFoundException;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @org.springframework.stereotype.Service
 public class ServiceService {
@@ -37,7 +31,6 @@ public class ServiceService {
     private ServiceRepository serviceRepository;
     @Autowired
     private AccountRepository accountRepository;
-
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
     @Autowired
@@ -49,15 +42,6 @@ public class ServiceService {
     @Autowired
     private ModelMapper modelMapper;
 
-
-    /**
-     * Creates a new service based on the provided DTO.
-     * - If the category exists, the service is created and associated with it.
-     * - If the category is proposed, the service is set to a pending state.
-     *
-     * @param serviceDTO Data for creating the service.
-     * @return A DTO representing the created service.
-     */
     public CreatedServiceDTO create(CreateServiceDTO serviceDTO) {
         Service service = new Service();
         service.setPending(false);
@@ -153,9 +137,7 @@ public class ServiceService {
                 .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
         return mapToGetServiceDTO(service);
     }
-    /*
-    add current details to history and set new current
-     */
+
     public UpdatedServiceDTO update(int id, UpdateServiceDTO updateServiceDTO) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Service with ID " + id + " not found"));

@@ -1,7 +1,6 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.company.*;
-import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
@@ -11,12 +10,9 @@ import com.ftn.iss.eventPlanner.repositories.*;
 import com.ftn.iss.eventPlanner.util.NetworkUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
-
-
 import java.io.IOException;
 import java.net.SocketException;
 import java.time.LocalDate;
@@ -50,10 +46,6 @@ public class UserService {
     private VerificationTokenRepository verificationTokenRepository;
     @Autowired
     private ReservationService reservationService;
-    @Autowired
-    private ReservationRepository reservationRepository;
-
-
     private ModelMapper modelMapper = new ModelMapper();
 
     private static final int TOKEN_EXPIRATION = 24;
@@ -209,7 +201,7 @@ public class UserService {
         return modelMapper.map(user, UpdatedUserDTO.class);
     }
 
-    public UpdatedProfilePhotoDTO updateProfilePhoto(int accountId, UpdateProfilePhotoDTO updateProfilePhotoDTO) throws IOException {
+    public UpdatedProfilePhotoDTO updateProfilePhoto(int accountId, UpdateProfilePhotoDTO updateProfilePhotoDTO) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
         if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
@@ -223,7 +215,7 @@ public class UserService {
         return new UpdatedProfilePhotoDTO(updateProfilePhotoDTO.getFilePath());
     }
 
-    public UpdatedCompanyPhotosDTO updateCompanyPhotos(int accountId, UpdateCompanyPhotosDTO updateCompanyPhotosDTO) throws IOException {
+    public UpdatedCompanyPhotosDTO updateCompanyPhotos(int accountId, UpdateCompanyPhotosDTO updateCompanyPhotosDTO){
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
         if(account.getRole()!=Role.PROVIDER)

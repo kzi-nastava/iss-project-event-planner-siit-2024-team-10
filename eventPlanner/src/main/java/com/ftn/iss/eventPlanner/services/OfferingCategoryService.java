@@ -1,8 +1,7 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.eventtype.*;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.*;
-import com.ftn.iss.eventPlanner.model.EventType;
+import com.ftn.iss.eventPlanner.exception.CategoryHasOfferingsException;
 import com.ftn.iss.eventPlanner.model.Offering;
 import com.ftn.iss.eventPlanner.model.OfferingCategory;
 import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
@@ -65,15 +64,14 @@ public class OfferingCategoryService {
     }
 
 
-    public boolean delete(int id) {
+    public void delete(int id) {
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category with ID " + id + " not found"));
         if (!hasOfferings(id)){
             offeringCategory.setDeleted(true);
             offeringCategoryRepository.save(offeringCategory);
-            return true;
         }
-        return false;
+        throw new CategoryHasOfferingsException("Offering category cannot be deleted as it has offerings.");
     }
     public void approve(int id, String title){
         OfferingCategory offeringCategory = offeringCategoryRepository.findById(id)

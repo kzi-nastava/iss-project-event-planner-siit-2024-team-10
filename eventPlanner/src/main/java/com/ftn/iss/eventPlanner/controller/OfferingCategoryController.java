@@ -1,19 +1,14 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.*;
 import com.ftn.iss.eventPlanner.services.OfferingCategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 @CrossOrigin
@@ -48,9 +43,9 @@ public class OfferingCategoryController {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Boolean> delete(@PathVariable("id") int id) {
-        boolean deleted = offeringCategoryService.delete(id);
-        return new ResponseEntity<>(deleted, HttpStatus.OK);
+    public ResponseEntity<Void> delete(@PathVariable("id") int id) {
+        offeringCategoryService.delete(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
