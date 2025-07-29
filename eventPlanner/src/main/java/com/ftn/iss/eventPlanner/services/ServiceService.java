@@ -174,7 +174,6 @@ public class ServiceService {
         serviceDTO.setDiscount(updatePricelistItemDTO.getDiscount());
         serviceDTO.setAvailable(service.getCurrentDetails().isAvailable());
         serviceDTO.setName(service.getCurrentDetails().getName());
-        serviceDTO.setId(service.getId());
         serviceDTO.setPhotos(service.getCurrentDetails().getPhotos());
         serviceDTO.setVisible(service.getCurrentDetails().isVisible());
         serviceDTO.setCancellationPeriod(service.getCurrentDetails().getCancellationPeriod());
