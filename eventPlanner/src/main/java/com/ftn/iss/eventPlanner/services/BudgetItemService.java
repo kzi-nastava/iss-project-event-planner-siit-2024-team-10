@@ -9,6 +9,7 @@ import com.ftn.iss.eventPlanner.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,7 +30,7 @@ public class BudgetItemService {
     public CreatedBudgetItemDTO create(int eventId, CreateBudgetItemDTO budgetItemDTO, int offeringId) {
         // Find event and check if it exists
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
 
         // Check if event is deleted
         if (event.isDeleted()) {
@@ -38,13 +39,15 @@ public class BudgetItemService {
 
         // Find category and check if it exists
         OfferingCategory category = offeringCategoryRepository.findById(budgetItemDTO.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Offering category with ID " + budgetItemDTO.getCategoryId() + " not found"));
+                .orElseThrow(() -> new NotFoundException("Offering category with ID " + budgetItemDTO.getCategoryId() + " not found"));
 
         // Check if category is deleted
         if (category.isDeleted()) {
             throw new IllegalArgumentException("Offering category with ID " + budgetItemDTO.getCategoryId() + " is deleted and cannot be used");
         }
-
+        if (category.isPending()) {
+            throw new IllegalArgumentException("Offering category with ID " + budgetItemDTO.getCategoryId() + " is pending and cannot be used");
+        }
         // Check if amount is negative
         if (budgetItemDTO.getAmount()<0) {
             throw new IllegalArgumentException("Amount cannot be negative");
@@ -61,7 +64,7 @@ public class BudgetItemService {
         if (offeringId != 0) {
             // Find offering and check if it exists
             Offering offering = offeringRepository.findById(offeringId)
-                    .orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
+                    .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
 
             // Check if offering is deleted
             if (offering.isDeleted()) {
@@ -100,13 +103,13 @@ public class BudgetItemService {
 
     public GetBudgetItemDTO findById(int id) {
         BudgetItem budgetItem = budgetItemRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Budget item with ID " + id + " not found"));
         return mapBudgetItemToDTO(budgetItem);
     }
 
     public UpdatedBudgetItemDTO updateAmount(int budgetItemId, UpdateBudgetItemDTO dto) {
         BudgetItem budgetItem = budgetItemRepository.findById(budgetItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Budget item with ID " + budgetItemId + " not found"));
         if (budgetItem.isDeleted()) {
             throw new IllegalArgumentException("Cannot update deleted budget item");
         }
@@ -131,12 +134,12 @@ public class BudgetItemService {
     }
     public void delete(int eventId, int budgetItemId) {
         BudgetItem budgetItem = budgetItemRepository.findById(budgetItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Budget item with ID " + budgetItemId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Budget item with ID " + budgetItemId + " not found"));
         if(budgetItem.isDeleted())
             throw new IllegalArgumentException("Budget item with ID " + budgetItemId + " is deleted");
         if(budgetItem.getServices().size() + budgetItem.getProducts().size() != 0)
             throw new IllegalArgumentException("Budget item cannot be deleted because it has offerings");
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         event.getBudget().remove(budgetItem);
         budgetItem.setEvent(null);
         eventRepository.save(event);
@@ -160,9 +163,9 @@ public class BudgetItemService {
 
     public void buy(int eventId, int offeringId){
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         Offering offering = offeringRepository.findById(offeringId)
-                .orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
 
         for(BudgetItem budgetItem : event.getBudget()){
             if(budgetItem.getCategory().getId() == offering.getCategory().getId()){
@@ -202,6 +205,8 @@ public class BudgetItemService {
     }
 
     public List<GetBudgetItemDTO> findByEventId(int eventId) {
+        eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         return budgetItemRepository.findByEventId(eventId)
                 .stream()
                 .filter(item -> !item.isDeleted())
@@ -210,7 +215,7 @@ public class BudgetItemService {
     }
     public double getTotalBudgetForEvent(int eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event with ID " + eventId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
 
         return event.getBudget()
                 .stream()

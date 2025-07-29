@@ -136,7 +136,7 @@ public class ServiceService {
     }
     public GetServiceDTO findById(int id) {
         Service service = serviceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Service with ID " + id + " not found"));
         return mapToGetServiceDTO(service);
     }
 
@@ -174,7 +174,6 @@ public class ServiceService {
         serviceDTO.setDiscount(updatePricelistItemDTO.getDiscount());
         serviceDTO.setAvailable(service.getCurrentDetails().isAvailable());
         serviceDTO.setName(service.getCurrentDetails().getName());
-        serviceDTO.setId(service.getId());
         serviceDTO.setPhotos(service.getCurrentDetails().getPhotos());
         serviceDTO.setVisible(service.getCurrentDetails().isVisible());
         serviceDTO.setCancellationPeriod(service.getCurrentDetails().getCancellationPeriod());
@@ -197,7 +196,7 @@ public class ServiceService {
 
     public void delete(int id) {
         Service service = serviceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Service with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Service with ID " + id + " not found"));
 
         int currentDetailsId = service.getCurrentDetails().getId();
         Set<Integer> historyIds = service.getServiceDetailsHistory()

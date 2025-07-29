@@ -10,9 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateServiceDTO {
+    @NotNull
     private int categoryId;
-    private String categoryProposalName;
-    private String categoryProposalDescription;
 
     @NotNull
     private boolean pending;
@@ -55,6 +54,8 @@ public class CreateServiceDTO {
     private int reservationPeriod;
     @NotNull
     private boolean autoConfirm;
+    private String categoryProposalName;
+    private String categoryProposalDescription;
 
     public CreateServiceDTO() {
     }

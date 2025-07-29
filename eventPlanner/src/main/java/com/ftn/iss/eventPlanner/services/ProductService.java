@@ -177,6 +177,7 @@ public class ProductService {
                 }
             }
         }
+        product.getCurrentDetails().setPhotos(updateProductDTO.getPhotos());
         product.getCurrentDetails().setTimestamp(LocalDateTime.now());
         product.getCurrentDetails().setId(0);
 

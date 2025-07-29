@@ -5,6 +5,7 @@ import com.ftn.iss.eventPlanner.dto.pricelistitem.GetPricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatePricelistItemDTO;
 import com.ftn.iss.eventPlanner.dto.pricelistitem.UpdatedPricelistItemDTO;
 import com.ftn.iss.eventPlanner.services.OfferingService;
+import com.ftn.iss.eventPlanner.services.PricelistReportService;
 import com.ftn.iss.eventPlanner.services.PricelistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -25,6 +26,8 @@ public class PricelistController {
     private OfferingService offeringService;
     @Autowired
     private PricelistService pricelistService;
+    @Autowired
+    private PricelistReportService reportService;
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetPricelistItemDTO>> getPricelist() {
@@ -49,5 +52,19 @@ public class PricelistController {
     public ResponseEntity<UpdatedPricelistItemDTO> updatePricing(@PathVariable int offeringId, @RequestBody UpdatePricelistItemDTO updatePricingDTO) {
         UpdatedPricelistItemDTO response = pricelistService.updatePricing(offeringId, updatePricingDTO);
         return ResponseEntity.ok(response);
+    }
+    @PreAuthorize("hasAnyAuthority('PROVIDER')")
+    @GetMapping(value = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> generateReport() {
+        try {
+            List<GetPricelistItemDTO> pricelist = reportService.getPricelist();
+            byte[] pdfReport = reportService.generateReport(pricelist);
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "inline; filename=pricelist_report.pdf")
+                    .body(pdfReport);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 }
