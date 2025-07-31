@@ -2,6 +2,7 @@ package com.ftn.iss.eventPlanner.dto.user;
 
 import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
 import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,7 @@ public class UpdateUserDTO {
     private String phoneNumber;
 
     @NotNull(message = "Location must not be null")
+    @Valid
     private CreateLocationDTO location;
 
     public UpdateUserDTO() {}

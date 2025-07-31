@@ -1,13 +1,9 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
-import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
-import com.ftn.iss.eventPlanner.dto.location.CreatedLocationDTO;
 import com.ftn.iss.eventPlanner.dto.message.CreateMessageDTO;
 import com.ftn.iss.eventPlanner.dto.message.CreatedMessageDTO;
 import com.ftn.iss.eventPlanner.dto.message.GetChatContact;
 import com.ftn.iss.eventPlanner.dto.message.GetMessageDTO;
-import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
 import com.ftn.iss.eventPlanner.repositories.MessageRepository;
@@ -15,8 +11,8 @@ import com.ftn.iss.eventPlanner.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -92,20 +88,16 @@ public class MessageService {
 
         return contacts;
     }
-    public CreatedMessageDTO create(CreateMessageDTO messageDTO){
-        try{
+    public CreatedMessageDTO create(CreateMessageDTO messageDTO) {
+        Account sender = accountRepository.findById(messageDTO.getSender()).orElseThrow(() -> new NotFoundException("Account with ID " + messageDTO.getSender() + " not found"));
+        Account receiver = accountRepository.findById(messageDTO.getReceiver()).orElseThrow(() -> new NotFoundException("Account with ID " + messageDTO.getReceiver() + " not found"));
         Message message = new Message();
         message.setContent(messageDTO.getContent());
-        message.setSender(accountRepository.findById(messageDTO.getSender())
-                .orElseThrow(() -> new AccountNotFoundException("Account not found")));
-        message.setReceiver(accountRepository.findById(messageDTO.getReceiver())
-                .orElseThrow(() -> new AccountNotFoundException("Account not found")));
+        message.setSender(sender);
+        message.setReceiver(receiver);
         message.setTimestamp(LocalDateTime.now());
         message = messageRepository.save(message);
-            return mapToCreatedMessageDTO(message);
-        }catch (AccountNotFoundException exception){
-            return null;
-        }
+        return mapToCreatedMessageDTO(message);
     }
     public CreatedMessageDTO mapToCreatedMessageDTO(Message message){
         CreatedMessageDTO dto = new CreatedMessageDTO();

@@ -8,6 +8,7 @@ import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
+import com.ftn.iss.eventPlanner.exception.EventFullException;
 import com.ftn.iss.eventPlanner.model.Event;
 import com.ftn.iss.eventPlanner.model.EventType;
 import com.ftn.iss.eventPlanner.model.Location;
@@ -57,8 +58,6 @@ public class EventService {
     private AccountService accountService;
     @Autowired
     private NotificationService notificationService;
-
-    private ModelMapper modelMapper = new ModelMapper();
     @Autowired
     private AgendaItemRepository agendaItemRepository;
     @Autowired
@@ -71,6 +70,7 @@ public class EventService {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Value("${app.base-url}") private String baseUrl;
+    private ModelMapper modelMapper = new ModelMapper();
 
     private static final int TOKEN_EXPIRATION = 7;
     private final String IP_BASE_URL = "http://" + NetworkUtils.getLocalIpAddress() + ":8080/api";
@@ -80,13 +80,7 @@ public class EventService {
     public EventService() throws SocketException {
     }
 
-    public List<GetEventDTO> findAll() {
-        List<Event> events = eventRepository.findAll();
-
-        return events.stream()
-                .map(this::mapToGetEventDTO)
-                .collect(Collectors.toList());
-    }
+    @Transactional
     public PagedResponse<GetEventDTO> getAllEvents(
             Pageable pageable,
             Integer eventTypeId,
@@ -98,9 +92,10 @@ public class EventService {
             String name,
             String sortBy,
             String sortDirection,
-            Integer accountId
+            Integer accountId,
+            Boolean initLoad
     ) {
-        if (accountId != null && (location == null || location.isEmpty())) {
+        if (accountId != null && (location == null || location.isEmpty()) && initLoad != null) {
             Location userLocation = accountService.findUserLocation(accountId);
             if (userLocation != null) {
                 location = userLocation.getCity();
@@ -133,7 +128,9 @@ public class EventService {
                 .and(EventSpecification.minAverageRating(minRating))
                 .and(EventSpecification.hasName(name))
                 .and(EventSpecification.isOpen())
-                .and(EventSpecification.isNotDeleted());
+                .and(EventSpecification.isNotDeleted())
+                .and(EventSpecification.organizerHasNotBlockedAccount(accountId))
+                .and(EventSpecification.accountHasNotBlockedOrganizer(accountId));
 
         Page<Event> pagedEvents = eventRepository.findAll(specification, pageable);
 
@@ -156,6 +153,7 @@ public class EventService {
         return eventDTOs;
     }
 
+    @Transactional
     public List<GetEventDTO> findTopEvents(Integer accountId) {
         List<Event> events = eventRepository.findAll();
 
@@ -173,10 +171,33 @@ public class EventService {
 
         return events.stream()
                 .filter(Event::isOpen)
+                .filter(event -> {
+                    if (accountId == null) {
+                        return true;
+                    }
+                    return event.getOrganizer().getAccount().getBlockedAccounts()
+                            .stream()
+                            .noneMatch(blockedAcc -> blockedAcc.getId() == accountId);
+                })
+                .filter(event -> {
+                    if (accountId == null) {
+                        return true;
+                    }
+                    Optional<Account> currentUserOpt = accountRepository.findById(accountId);
+                    if (currentUserOpt.isEmpty()) {
+                        return true;
+                    }
+                    Account currentUser = currentUserOpt.get();
+                    return currentUser.getBlockedAccounts()
+                            .stream()
+                            .noneMatch(blocked -> blocked.getId() == event.getOrganizer().getAccount().getId());
+                })
                 .sorted((e1, e2) -> e2.getDateCreated().compareTo(e1.getDateCreated()))
                 .limit(5)
+                .filter(event -> !event.isDeleted())
                 .map(this::mapToGetEventDTO)
                 .collect(Collectors.toList());
+
     }
 
     public CreatedEventDTO create (CreateEventDTO createEventDTO){
@@ -212,9 +233,6 @@ public class EventService {
         event.setDescription(updateEventDTO.getDescription());
         if(updateEventDTO.getMaxParticipants() < event.getStats().getParticipantsCount()) {
             throw new IllegalArgumentException("Max participants cannot be less than current participants count");
-        }
-        if(updateEventDTO.getMaxParticipants() < event.getGuestList().size()) {
-            throw new IllegalArgumentException("Max participants cannot be less than current guest list size");
         }
         event.setMaxParticipants(updateEventDTO.getMaxParticipants());
         checkDateUpdate(event, updateEventDTO.getDate());
@@ -333,6 +351,9 @@ public class EventService {
                 throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
         eventStatsRepository.save(stats);
+        notificationService.sendNotification(event.getOrganizer().getAccount().getId(),
+                "Event Rated",
+                "Your event " + event.getName() + " has been rated with " + rating + " stars.");
         return new CreatedEventRatingDTO(stats.getAverageRating());
     }
 
@@ -343,6 +364,7 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         AgendaItem agendaItem = modelMapper.map(agendaItemDto, AgendaItem.class);
+        agendaItem.setEvent(event);
         agendaItemRepository.save(agendaItem);
         event.getAgenda().add(agendaItem);
         eventRepository.save(event);
@@ -393,6 +415,9 @@ public class EventService {
     public GetGuestsDTO getGuestList(int eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        if(event.isOpen()){
+            throw new IllegalArgumentException("Event with ID " + eventId + " is open");
+        }
         GetGuestsDTO dto = new GetGuestsDTO();
         dto.setGuests(event.getGuestList());
         return dto;
@@ -458,7 +483,7 @@ public class EventService {
         HashMap<String, Object> data = new HashMap<>();
 
         data.put("eventName", event.getName());
-        data.put("eventType", event.getEventType().getName());
+        data.put("eventType", event.getEventType()==null?"":event.getEventType().getName());
         data.put("description", event.getDescription());
         data.put("location", event.getLocation().toString());
         data.put("eventDate", event.getDate().toString());
@@ -549,17 +574,18 @@ public class EventService {
     }
 
     public void sendInvitations(int eventId, CreateGuestListDTO emails){
-        for (String email : emails.getGuests()) {
-            inviteGuest(eventId, email);
-        }
-
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found."));
 
         EventStats stats = event.getStats();
-        if(stats.getParticipantsCount()>=event.getMaxParticipants()){
-            throw new IllegalArgumentException("Event is full");
+        if(stats.getParticipantsCount()+emails.getGuests().toArray().length>=event.getMaxParticipants()){
+            throw new EventFullException("Event is full");
         }
+
+        for (String email : emails.getGuests()) {
+            inviteGuest(eventId, email);
+        }
+
         stats.setParticipantsCount(event.getGuestList().size());
         eventStatsRepository.save(stats);
     }
@@ -591,18 +617,20 @@ public class EventService {
 
         String inviteLink = IP_BASE_URL + CONFIRMATION_URL + token.getToken();
 
-        String message = "You're invited to the event: " + event.getName() +
-                "\n\n📅 Date: " + event.getDate() +
-                "\n📍 Location: " + event.getLocation().getStreet() + " " + event.getLocation().getHouseNumber() + ", " +
-                event.getLocation().getCity() + ", " + event.getLocation().getCountry() +
-                "\n\n📝 Description: " + event.getDescription() +
-                "\n\n👉 Click here to participate: " + inviteLink;
+        String message = "<p>You're invited to the event: <strong>" + event.getName() + "</strong></p>" +
+                "<p>📅 <strong>Date:</strong> " + event.getDate() + "<br>" +
+                "📍 <strong>Location:</strong> " + event.getLocation().getStreet() + " " +
+                event.getLocation().getHouseNumber() + ", " +
+                event.getLocation().getCity() + ", " +
+                event.getLocation().getCountry() + "</p>" +
+                "<p>📝 <strong>Description:</strong> " + event.getDescription() + "</p>" +
+                "<p>👉 <a href=\"" + inviteLink + "\">Click here to participate</a></p>";
 
         if (password != null) {
-            message += "\n\n🔑 Your generated password: " + password;
+            message += "<p>🔑 <strong>Your generated password:</strong> " + password + "</p>";
         }
 
-        emailService.sendSimpleEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
+        emailService.sendHtmlEmail(new EmailDetails(guestEmail, message, "Event Invitation", ""));
 
         if (!event.getGuestList().contains(account.getEmail())) {
             event.getGuestList().add(account.getEmail());
@@ -687,27 +715,4 @@ public class EventService {
         organizerDTO.setAccountId(event.getOrganizer().getAccount().getId());
         return organizerDTO;
     }
-
-
-    private Comparator<Event> getEventComparator(String sortBy, String sortDirection) {
-        if (sortBy == null || "none".equalsIgnoreCase(sortBy)) {
-            return null;
-        }
-
-        Comparator<Event> comparator = switch (sortBy.toLowerCase()) {
-            case "name" -> Comparator.comparing(Event::getName, String.CASE_INSENSITIVE_ORDER);
-            case "date" -> Comparator.comparing(Event::getDate);
-            case "averagerating" -> Comparator.comparing(event -> event.getStats() != null
-                    ? event.getStats().getAverageRating() : 0.0);
-            case "location.city" -> Comparator.comparing(event -> event.getLocation().getCity(), String.CASE_INSENSITIVE_ORDER);
-            default -> null;
-        };
-
-        if (comparator != null && "desc".equalsIgnoreCase(sortDirection)) {
-            comparator = comparator.reversed();
-        }
-
-        return comparator;
-    }
-
 }

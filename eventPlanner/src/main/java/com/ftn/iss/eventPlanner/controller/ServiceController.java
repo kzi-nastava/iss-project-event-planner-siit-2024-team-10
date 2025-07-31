@@ -1,13 +1,10 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.*;
-import com.ftn.iss.eventPlanner.dto.event.CreatedEventDTO;
-import com.ftn.iss.eventPlanner.dto.eventtype.GetEventTypeDTO;
 import com.ftn.iss.eventPlanner.dto.service.*;
 import com.ftn.iss.eventPlanner.services.ServiceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,8 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -57,51 +52,28 @@ public class ServiceController {
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetServiceDTO> getService(@PathVariable("id") int id, @RequestParam(required = false) LocalDateTime historyTimestamp) {
-        try {
-            GetServiceDTO serviceDTO = serviceService.findById(id);
-            return new ResponseEntity<>(serviceDTO, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        GetServiceDTO serviceDTO = serviceService.findById(id);
+        return new ResponseEntity<>(serviceDTO, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedServiceDTO> createService(@RequestBody CreateServiceDTO service) throws Exception {
-        try {
-            CreatedServiceDTO createdServiceDTO = serviceService.create(service);
-            return new ResponseEntity<>(createdServiceDTO, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<CreatedServiceDTO> createService(@Valid @RequestBody CreateServiceDTO service) {
+        CreatedServiceDTO createdServiceDTO = serviceService.create(service);
+        return new ResponseEntity<>(createdServiceDTO, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedServiceDTO> updateService(@RequestBody UpdateServiceDTO service, @PathVariable int id)
-            throws Exception {
-        try {
-            UpdatedServiceDTO updatedServiceDTO = serviceService.update(id, service);
-            return new ResponseEntity<>(updatedServiceDTO, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    @PutMapping(value = "/{offeringId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedServiceDTO> updateService(@Valid @RequestBody UpdateServiceDTO service, @PathVariable int offeringId) {
+        UpdatedServiceDTO updatedServiceDTO = serviceService.update(offeringId, service);
+        return new ResponseEntity<>(updatedServiceDTO, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") int id) {
-        try {
-            boolean deleted = serviceService.delete(id);
-            if (deleted) {
-                return ResponseEntity.noContent().build(); // 204
-            } else {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("Service cannot be deleted because it has reservations."); // 409
-            }
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Service not found.");
-        }
+    @DeleteMapping("/{offeringId}")
+    public ResponseEntity<?> delete(@PathVariable("offeringId") int offeringId) {
+        serviceService.delete(offeringId);
+        return ResponseEntity.noContent().build();
     }
 }

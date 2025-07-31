@@ -11,6 +11,7 @@ import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.service.GetServiceDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetOrganizerDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
+import com.ftn.iss.eventPlanner.exception.ServiceUnavailableException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.EventRepository;
 import com.ftn.iss.eventPlanner.repositories.ReservationRepository;
@@ -46,6 +47,8 @@ public class ReservationService {
     private ScheduledNotificationService scheduledNotificationService;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private BudgetItemService budgetItemService;
 
 
     public List<GetReservationDTO> findAll(){
@@ -58,15 +61,6 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("Reservation with ID " + id + " not found"));
         return mapToGetReservationDTO(reservation);
-    }
-
-    public List<GetReservationDTO> findByServiceId(int serviceId) {
-        List<Reservation> reservations = reservationRepository.findAll();
-
-        return reservations.stream()
-                .filter(reservation -> reservation.getService().getId() == serviceId)
-                .map(this::mapToGetReservationDTO)
-                .toList();
     }
 
     public ServiceDetails findServiceDetailsByReservationId(int id){
@@ -89,15 +83,6 @@ public class ReservationService {
         return serviceDetails;
     }
 
-    public List<GetReservationDTO> findByOrganizerId(int organizerId) {
-        List<Reservation> reservations = reservationRepository.findAll();
-
-        return reservations.stream()
-                .filter(reservation -> reservation.getEvent().getOrganizer().getId() == organizerId)
-                .filter(reservation -> reservation.getStatus() != Status.CANCELED)
-                .map(this::mapToGetReservationDTO)
-                .toList();
-    }
 
     public List<GetReservationDTO> findByProviderId(int providerId) {
         List<Reservation> reservations = reservationRepository.findAll();
@@ -264,7 +249,8 @@ public class ReservationService {
             LocalDateTime reservationStartDateTime = LocalDateTime.of(date, reservation.getStartTime());
             LocalDateTime reservationEndDateTime = LocalDateTime.of(date, reservation.getEndTime());
 
-            if ((providedStart.isBefore(reservationEndDateTime) && providedStart.isAfter(reservationStartDateTime)) ||
+            if ((providedStart.isBefore(reservationStartDateTime) && providedEnd.isAfter(reservationEndDateTime)) ||
+                    (providedStart.isBefore(reservationEndDateTime) && providedStart.isAfter(reservationStartDateTime)) ||
                     (providedEnd.isBefore(reservationEndDateTime) && providedEnd.isAfter(reservationStartDateTime)) ||
                     (providedStart.isEqual(reservationStartDateTime) || providedEnd.isEqual(reservationEndDateTime))) {
                 throw new IllegalArgumentException("Service not available at selected time.");
@@ -292,9 +278,12 @@ public class ReservationService {
         LocalTime startTime = reservation.getStartTime();
         LocalTime endTime = reservation.getEndTime();
 
+        if(!service.getCurrentDetails().isAvailable()){
+            throw new ServiceUnavailableException("Service is not available at selected time.");
+        }
         isServiceReservedForEvent(event, service);
-        isDateWithinReservationPeriod(startTime, event, service.getCurrentDetails());
         validateReservationTime(startTime, endTime, service.getCurrentDetails());
+        isDateWithinReservationPeriod(startTime, event, service.getCurrentDetails());
         checkServiceAvailability(event.getDate(), startTime, endTime, service);
 
         createdReservation.setService(service);
@@ -304,6 +293,7 @@ public class ReservationService {
         createdReservation.setTimestamp(LocalDateTime.now());
         if (service.getCurrentDetails().isAutoConfirm()) {
             createdReservation.setStatus(Status.ACCEPTED);
+            budgetItemService.buy(event.getId(),service.getId());
         } else {
             createdReservation.setStatus(Status.PENDING);
         }
@@ -381,6 +371,7 @@ public class ReservationService {
     public void acceptReservation(int reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
+        budgetItemService.buy(reservation.getEvent().getId(),reservation.getService().getId());
         reservation.setStatus(Status.ACCEPTED);
         reservationRepository.save(reservation);
         notificationService.sendNotification(reservation.getEvent().getOrganizer().getAccount().getId(),"Reservation Accepted",

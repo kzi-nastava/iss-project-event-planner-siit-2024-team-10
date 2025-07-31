@@ -1,19 +1,14 @@
 package com.ftn.iss.eventPlanner.controller;
 
-import com.ftn.iss.eventPlanner.dto.PagedResponse;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.*;
 import com.ftn.iss.eventPlanner.services.OfferingCategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 @CrossOrigin
@@ -29,56 +24,34 @@ public class OfferingCategoryController {
     }
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetOfferingCategoryDTO> getCategory(@PathVariable("id") int id) {
-        try {
-            GetOfferingCategoryDTO offeringCategoryDTO = offeringCategoryService.findById(id);
-            return new ResponseEntity<>(offeringCategoryDTO, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        GetOfferingCategoryDTO offeringCategoryDTO = offeringCategoryService.findById(id);
+        return new ResponseEntity<>(offeringCategoryDTO, HttpStatus.OK);
     }
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedOfferingCategoryDTO> createCategory(@Valid @RequestBody CreateOfferingCategoryDTO category) throws Exception {
-        try{
-            CreatedOfferingCategoryDTO createdOfferingCategoryDTO = offeringCategoryService.create(category);
-            return new ResponseEntity<>(createdOfferingCategoryDTO, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        CreatedOfferingCategoryDTO createdOfferingCategoryDTO = offeringCategoryService.create(category);
+        return new ResponseEntity<>(createdOfferingCategoryDTO, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedOfferingCategoryDTO> updateCategory(@RequestBody UpdateOfferingCategoryDTO category, @PathVariable int id)
-            throws Exception {
-        try{
-            UpdatedOfferingCategoryDTO updatedOfferingCategoryDTO = offeringCategoryService.update(id,category);
-            return new ResponseEntity<>(updatedOfferingCategoryDTO, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }}
+    public ResponseEntity<UpdatedOfferingCategoryDTO> updateCategory(@Valid @RequestBody UpdateOfferingCategoryDTO category, @PathVariable int id) {
+        UpdatedOfferingCategoryDTO updatedOfferingCategoryDTO = offeringCategoryService.update(id, category);
+        return new ResponseEntity<>(updatedOfferingCategoryDTO, HttpStatus.OK);
+    }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Boolean> delete(@PathVariable("id") int id) {
-        try {
-            boolean deleted = offeringCategoryService.delete(id);
-            return new ResponseEntity<>(deleted, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Void> delete(@PathVariable("id") int id) {
+        offeringCategoryService.delete(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PutMapping(value = "/{id}/approve")
     public ResponseEntity<Void> approve(@PathVariable int id) {
-        try {
-            offeringCategoryService.approve(id, "Your category has been approved");
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        offeringCategoryService.approve(id, "Your category has been approved");
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

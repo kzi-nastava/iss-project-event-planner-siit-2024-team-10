@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.config;
 
+import com.ftn.iss.eventPlanner.security.auth.CustomAccountStatusChecker;
 import com.ftn.iss.eventPlanner.security.auth.RestAuthenticationEntryPoint;
 import com.ftn.iss.eventPlanner.security.auth.TokenAuthenticationFilter;
 import com.ftn.iss.eventPlanner.services.AccountService;
@@ -37,6 +38,8 @@ public class WebSecurityConfig {
 
     @Autowired
     private TokenUtils tokenUtils;
+    @Autowired
+    private CustomAccountStatusChecker customAccountStatusChecker;
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -53,6 +56,7 @@ public class WebSecurityConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPreAuthenticationChecks(customAccountStatusChecker);
         return authProvider;
     }
 
@@ -72,6 +76,8 @@ public class WebSecurityConfig {
                     .requestMatchers(new AntPathRequestMatcher("/api/auth/register")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/api/auth/activate")).permitAll()
                     .requestMatchers(new AntPathRequestMatcher("/api/error")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/images/**")).permitAll()
+
                     .anyRequest().authenticated();
         });
         http.addFilterBefore(new TokenAuthenticationFilter(tokenUtils, userDetailsService()), UsernamePasswordAuthenticationFilter.class);
@@ -92,30 +98,17 @@ public class WebSecurityConfig {
                         "/api/products*", "/api/products/*",
                         "/api/categories*", "/api/categories/*",
                         "/api/offerings*", "/api/offerings/*", "/api/offerings/*/comments",
-                        "/api/accounts/*/favourite-events", "/api/accounts/*/favourite-events/*",
-                        "/api/accounts/*/favourite-offerings", "/api/accounts/*/favourite-offerings/*",
-                        "/api/messages/*/*",
                         "/api/comments*",
                         "/api/images", "/api/images/*",
-                        "/api/reservations/*",
                         "/api/offerings/provider/*",
-                        "/api/users/*",
-                        "api/events/process-invitation/**",
-                        "/api/events/accept-invite/**"
+                        "/api/events/accept-invite/**",
+                        "api/auth/activate/redirect"
                 )
                 .requestMatchers(HttpMethod.POST,
-                        "/api/accounts/*/favourite-events",
-                        "/api/accounts/*/favourite-offerings",
                         "/api/events/*/stats/participants",
                         "/api/events/*/ratings",
-                        "/api/messages/**",
-                        "/api/offerings/*/change/*",
-                        "/api/events/accept-invite/**",
-                        "api/events/process-invitation/**"
-                )
-                .requestMatchers(HttpMethod.DELETE,
-                        "/api/accounts/*/favourite-events/*",
-                        "/api/accounts/*/favourite-offerings/*"
+                        "api/events/process-invitation/**",
+                        "api/upload"
                 );
     }
 

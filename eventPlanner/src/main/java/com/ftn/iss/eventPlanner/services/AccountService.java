@@ -1,7 +1,6 @@
 package com.ftn.iss.eventPlanner.services;
 
 import com.ftn.iss.eventPlanner.dto.PagedResponse;
-import com.ftn.iss.eventPlanner.dto.agendaitem.GetAgendaItemDTO;
 import com.ftn.iss.eventPlanner.dto.calendaritem.GetCalendarItemDTO;
 import com.ftn.iss.eventPlanner.dto.comment.GetCommentDTO;
 import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
@@ -10,6 +9,7 @@ import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
 import com.ftn.iss.eventPlanner.dto.offering.GetOfferingDTO;
 import com.ftn.iss.eventPlanner.dto.offeringcategory.GetOfferingCategoryDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
+import com.ftn.iss.eventPlanner.dto.user.BlockStatusDTO;
 import com.ftn.iss.eventPlanner.dto.user.GetProviderDTO;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.AccountRepository;
@@ -24,12 +24,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -156,6 +154,20 @@ public class AccountService implements UserDetailsService {
     }
 
     @Transactional
+    public void suspendAccount(int accountId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        account.setStatus(AccountStatus.SUSPENDED);
+        accountRepository.save(account);
+    }
+
+    @Transactional
+    public void endAccountSuspension(int accountId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException("Account not found"));
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+    }
+
+    @Transactional
     public Collection<GetCalendarItemDTO> getCalendar(int accountId){
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account not found"));
@@ -203,6 +215,47 @@ public class AccountService implements UserDetailsService {
 
         return calendarItems;
     }
+
+    public void blockAccount(int loggedInId, int accountToBlockId) {
+        if (loggedInId == accountToBlockId) {
+            throw new IllegalArgumentException("Cannot block yourself");
+        }
+
+        Account account = accountRepository.findByIdWithBlockedAccounts(loggedInId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+
+        Account blockedAccount = accountRepository.findById(accountToBlockId)
+                .orElseThrow(() -> new NotFoundException("Account to block not found"));
+
+        if (!account.getBlockedAccounts().contains(blockedAccount)) {
+            account.getBlockedAccounts().add(blockedAccount);
+            accountRepository.save(account);
+        }
+    }
+
+    public void unblockAccount(int loggedInId, int accountToUnblockId) {
+        Account account = accountRepository.findByIdWithBlockedAccounts(loggedInId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+
+        Account accountToUnblock = accountRepository.findById(accountToUnblockId)
+                .orElseThrow(() -> new NotFoundException("Account to unblock not found"));
+
+        if (account.getBlockedAccounts().contains(accountToUnblock)) {
+            account.getBlockedAccounts().remove(accountToUnblock);
+            accountRepository.save(account);
+        }
+    }
+
+    public BlockStatusDTO isAccountBlocked(int loggedInId, int accountToBlockId) {
+        accountRepository.findByIdWithBlockedAccounts(loggedInId)
+                .orElseThrow(() -> new NotFoundException("Account not found"));
+
+        accountRepository.findById(accountToBlockId)
+                .orElseThrow(() -> new NotFoundException("Account to block not found"));
+        boolean blocked = accountRepository.isBlocked(loggedInId, accountToBlockId);
+        return new BlockStatusDTO(blocked);
+    }
+
 
     private GetOfferingDTO mapToGetOfferingDTO(Offering offering) {
         GetOfferingDTO dto = new GetOfferingDTO();

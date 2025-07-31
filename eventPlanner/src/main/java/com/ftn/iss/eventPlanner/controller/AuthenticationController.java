@@ -5,11 +5,12 @@ import com.ftn.iss.eventPlanner.dto.authentication.LoginResponseDTO;
 import com.ftn.iss.eventPlanner.dto.user.CreateUserDTO;
 import com.ftn.iss.eventPlanner.dto.user.CreatedUserDTO;
 import com.ftn.iss.eventPlanner.model.Account;
-import com.ftn.iss.eventPlanner.services.AccountService;
 import com.ftn.iss.eventPlanner.services.UserService;
 import com.ftn.iss.eventPlanner.util.TokenUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
+import java.net.URI;
 
 @RestController
 @RequestMapping(value = "api/auth")
@@ -30,9 +31,6 @@ public class AuthenticationController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private AccountService accountService;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -56,14 +54,28 @@ public class AuthenticationController {
     }
 
     @PostMapping(value="/register",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedUserDTO> createUser(@RequestBody CreateUserDTO user, @RequestParam boolean roleUpgrade) {
+    public ResponseEntity<CreatedUserDTO> createUser(@Valid @RequestBody CreateUserDTO user, @RequestParam boolean roleUpgrade) {
         CreatedUserDTO savedUser = userService.create(user, roleUpgrade);
-        return new ResponseEntity<CreatedUserDTO>(savedUser, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/activate")
     public ResponseEntity<String> activateAccount(@RequestParam String token) {
         userService.Activate(token);
         return new ResponseEntity<>("Account activated", HttpStatus.OK);
+    }
+
+    @GetMapping("/activate/redirect")
+    public ResponseEntity<Void> redirectToClient(@RequestParam String token, @RequestHeader("User-Agent") String userAgent) {
+        String redirectUrl;
+        if (userAgent.toLowerCase().contains("android")) {
+            redirectUrl = "m3.eventplanner://activate-account?token=" + token;
+        } else {
+            redirectUrl = "http://localhost:4200/activate?token=" + token;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create(redirectUrl));
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 }

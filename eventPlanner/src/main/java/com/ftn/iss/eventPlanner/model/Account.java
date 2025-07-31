@@ -46,7 +46,7 @@ public class Account implements UserDetails {
     private Set<Offering> favouriteOfferings = new HashSet<>();;
     @OneToMany
     private Set<Notification> notifications = new HashSet<>();;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private Set<Account> blockedAccounts = new HashSet<>();;
 
     public Account() {
@@ -94,4 +94,17 @@ public class Account implements UserDetails {
     public boolean isEnabled() {
         return status == AccountStatus.ACTIVE;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Account that)) return false;
+        return  this.id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
 }

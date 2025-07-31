@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
 
 import java.util.*;
@@ -34,7 +35,13 @@ public class OfferingService {
     @Autowired
     private OfferingCategoryRepository offeringCategoryRepository;
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private EventRepository eventRepository;
+    @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private LocationService locationService;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -108,9 +115,10 @@ public class OfferingService {
             String sortBy,
             String sortDirection,
             Integer accountId,
-            Integer providerId
+            Integer providerId,
+            Boolean initLoad
     ) {
-        if (accountId != null && (location == null || location.isEmpty())) {
+        if (accountId != null && (location == null || location.isEmpty()) && initLoad != null) {
             Account account = accountRepository.findById(accountId).orElse(null);
             if (account != null && account.getUser() != null){
                 Location userLocation = account.getUser().getLocation();
@@ -150,7 +158,9 @@ public class OfferingService {
                     .and(ServiceSpecification.hasServiceDuration(serviceDuration))
                     .and(ServiceSpecification.isAvailable(searchByAvailability))
                     .and(ServiceSpecification.hasProviderId(providerId))
-                    .and(ServiceSpecification.isNotDeleted());
+                    .and(ServiceSpecification.isNotDeleted())
+                    .and(ServiceSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ServiceSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 serviceSpecification = serviceSpecification.and(ServiceSpecification.isVisible())
@@ -168,7 +178,9 @@ public class OfferingService {
                     .and(ProductSpecification.minRating(minRating))
                     .and(ProductSpecification.isAvailable(searchByAvailability))
                     .and(ProductSpecification.hasProviderId(providerId))
-                    .and(ProductSpecification.isNotDeleted());
+                    .and(ProductSpecification.isNotDeleted())
+                    .and(ProductSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ProductSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 productSpecification = productSpecification.and(ProductSpecification.isVisible())
@@ -180,11 +192,15 @@ public class OfferingService {
         } else {
             Specification<Service> serviceSpecification = Specification.where(ServiceSpecification.hasProviderId(providerId))
                     .and(ServiceSpecification.isNotDeleted())
-                    .and(ServiceSpecification.hasLocation(location, providerId));
+                    .and(ServiceSpecification.hasLocation(location, providerId))
+                    .and(ServiceSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ServiceSpecification.accountHasNotBlockedProvider(accountId));
 
             Specification<Product> productSpecification = Specification.where(ProductSpecification.hasProviderId(providerId))
                     .and(ProductSpecification.isNotDeleted())
-                    .and(ProductSpecification.hasLocation(location, providerId));
+                    .and(ProductSpecification.hasLocation(location, providerId))
+                    .and(ProductSpecification.providerHasNotBlockedAccount(accountId))
+                    .and(ProductSpecification.accountHasNotBlockedProvider(accountId));
 
             if(providerId == null){
                 serviceSpecification = serviceSpecification.and(ServiceSpecification.isVisible())
@@ -228,10 +244,46 @@ public class OfferingService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetOfferingDTO> findTopOfferings() {
+    public List<GetOfferingDTO> findTopOfferings(Integer accountId) {
         List<Offering> offerings = offeringRepository.findAll();
 
+        if (accountId != null) {
+            Location userLocation = locationService.findLocationByAccountId(accountId);
+
+            if (userLocation != null) {
+                offerings = offerings.stream()
+                        .filter(offering -> offering.getProvider().getCompany().getLocation() != null &&
+                                offering.getProvider().getCompany().getLocation().getCity().equalsIgnoreCase(userLocation.getCity()))
+                        .collect(Collectors.toList());
+            }
+        }
+
         return offerings.stream()
+
+                .filter(offering -> {
+                    if (accountId == null) {
+                        return true;
+                    }
+                    return offering.getProvider().getAccount().getBlockedAccounts()
+                            .stream()
+                            .noneMatch(blockedAcc -> blockedAcc.getId() == accountId);
+                })
+                .filter(offering -> {
+                    if (accountId == null) {
+                        return true;
+                    }
+
+
+                    Optional<Account> currentUserOpt = accountRepository.findById(accountId);
+                    if (currentUserOpt.isEmpty()) {
+                        return true;
+                    }
+                    Account currentUser = currentUserOpt.get();
+
+                    return currentUser.getBlockedAccounts()
+                            .stream()
+                            .noneMatch(blocked -> blocked.getId() == offering.getProvider().getAccount().getId());
+                })
                 .filter(offering -> {
                     if (offering instanceof Product p) {
                         return p.getCurrentDetails().isVisible()
@@ -262,16 +314,13 @@ public class OfferingService {
 
     @Transactional(readOnly = true)
     public List<GetCommentDTO> getComments(int offeringId) {
-        Optional<Offering> offering = offeringRepository.findById(offeringId);
+        Offering offering = offeringRepository.findById(offeringId)
+                .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
 
-        if (offering.isPresent()) {
-            return offering.get().getComments().stream()
-                    .filter(comment -> comment.getStatus() != Status.PENDING)
-                    .map(this::mapToGetCommentDTO)
-                    .collect(Collectors.toList());
-        } else {
-            return Collections.emptyList();
-        }
+        return offering.getComments().stream()
+                .filter(comment -> comment.getStatus() == Status.ACCEPTED)
+                .map(this::mapToGetCommentDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -404,13 +453,48 @@ public class OfferingService {
     }
 
     public void changeCategory(int offeringId, int newCategoryId) {
-        Offering offering = offeringRepository.findById(offeringId).get();
+        Offering offering = offeringRepository.findById(offeringId)
+                .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
         // find new category
-        OfferingCategory newCategory = offeringCategoryRepository.findById(newCategoryId).get();
+        OfferingCategory newCategory = offeringCategoryRepository.findById(newCategoryId)
+                .orElseThrow(() -> new NotFoundException("Offering category with ID " + newCategoryId + " not found"));
         // notify old creator that his category is changed for another
         notificationService.sendNotification(offering.getCategory().getCreatorId(), "Category change", "Your category " + offering.getCategory().getName() + " has been changed for " + newCategory.getName() + " - your offerings have now been approved and are visible on your page under new category.");
         offering.setCategory(newCategory);
         offering.setPending(false);
         offeringRepository.save(offering);
+    }
+    public boolean hasUserPurchasedOffering(int userId, int offeringId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with ID " + userId + " not found"));
+
+        Offering offering = offeringRepository.findById(offeringId)
+                .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
+
+        List<Event> userEvents = eventRepository.findByOrganizerId(userId);
+
+        for (Event event : userEvents) {
+            if (event.isDeleted()) continue;
+
+            for (BudgetItem budgetItem : event.getBudget()) {
+                if (budgetItem.isDeleted()) continue;
+
+                if (offering instanceof com.ftn.iss.eventPlanner.model.Service service) {
+                    int currentServiceId = service.getCurrentDetails().getId();
+                    boolean found = budgetItem.getServices().stream()
+                            .anyMatch(sd -> sd.getId() == currentServiceId ||
+                                    service.getServiceDetailsHistory().stream().anyMatch(h -> h.getId() == sd.getId()));
+                    if (found) return true;
+                } else if (offering instanceof Product product) {
+                    int currentProductId = product.getCurrentDetails().getId();
+                    boolean found = budgetItem.getProducts().stream()
+                            .anyMatch(pd -> pd.getId() == currentProductId ||
+                                    product.getProductDetailsHistory().stream().anyMatch(h -> h.getId() == pd.getId()));
+                    if (found) return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

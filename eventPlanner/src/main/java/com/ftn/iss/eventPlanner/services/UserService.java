@@ -1,20 +1,20 @@
 package com.ftn.iss.eventPlanner.services;
 
-import com.ftn.iss.eventPlanner.dto.company.GetCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.company.UpdateCompanyDTO;
-import com.ftn.iss.eventPlanner.dto.company.UpdatedCompanyDTO;
+import com.ftn.iss.eventPlanner.dto.company.*;
 import com.ftn.iss.eventPlanner.dto.location.GetLocationDTO;
+import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.dto.user.*;
 import com.ftn.iss.eventPlanner.exception.EmailAlreadyExistsException;
 import com.ftn.iss.eventPlanner.model.*;
 import com.ftn.iss.eventPlanner.repositories.*;
+import com.ftn.iss.eventPlanner.util.NetworkUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
-
+import java.net.SocketException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,17 +41,23 @@ public class UserService {
     @Autowired
     private EmailService emailService;
     @Autowired
+    private FileService fileService;
+    @Autowired
     private VerificationTokenRepository verificationTokenRepository;
-
-
+    @Autowired
+    private ReservationService reservationService;
     private ModelMapper modelMapper = new ModelMapper();
 
     private static final int TOKEN_EXPIRATION = 24;
 
-    @Value("${app.frontend-base-url}") private String baseUrl;
+    private final String IP_BASE_URL = "http://" + NetworkUtils.getLocalIpAddress() + ":8080/api";
+   
+    private static final String CONFIRMATION_URL = "/auth/activate/redirect?token=";
 
-    private static final String CONFIRMATION_URL = "/activate?token=";
+    public UserService() throws SocketException {
+    }
 
+    @Transactional
     public CreatedUserDTO create(CreateUserDTO userDTO, boolean roleUpgrade) {
         Account account = accountRepository.findByEmail(userDTO.getEmail());
         if(roleUpgrade){
@@ -80,8 +86,11 @@ public class UserService {
         }
         account.setRole(userDTO.getRole());
         account.setStatus(AccountStatus.PENDING);
-        if(!roleUpgrade)
+        if(!roleUpgrade){
+            if(userDTO.getPassword() == null || userDTO.getPassword().length()<8)
+                throw new IllegalArgumentException("Password must be at least 8 characters.");
             account.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
 
         account = accountRepository.save(account);
 
@@ -96,14 +105,29 @@ public class UserService {
         accountRepository.save(account);
 
         sendConfirmation(user);
-        return modelMapper.map(user, CreatedUserDTO.class);
+
+        CreatedUserDTO createdUserDTO = modelMapper.map(user, CreatedUserDTO.class);
+        createdUserDTO.setEmail(account.getEmail());
+        createdUserDTO.setRole(account.getRole());
+
+        return createdUserDTO;
     }
 
     private User registerProvider(CreateUserDTO userDTO, Account account){
         Provider provider = modelMapper.map(userDTO, Provider.class);
+        if(provider.getCompany().getPhotos()!=null){
+            for(String photo : provider.getCompany().getPhotos()){
+                if(!fileService.filesExist(photo)){
+                    throw new IllegalArgumentException("Invalid file name.");
+                }
+            }
+        }
+        if(provider.getProfilePhoto()!=null && !fileService.filesExist(provider.getProfilePhoto())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
         provider.setAccount(account);
         provider.setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
-        provider.getCompany().setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
+        provider.getCompany().setLocation(modelMapper.map(locationService.create(userDTO.getCompany().getLocation()), Location.class));
         provider.setCompany(companyRepository.save(provider.getCompany()));
         providerRepository.save(provider);
         return provider;
@@ -111,6 +135,9 @@ public class UserService {
 
     private User registerOrganizer(CreateUserDTO userDTO, Account account){
         Organizer organizer = modelMapper.map(userDTO, Organizer.class);
+        if(organizer.getProfilePhoto()!=null && !fileService.filesExist(organizer.getProfilePhoto())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
         organizer.setAccount(account);
         organizer.setLocation(modelMapper.map(locationService.create(userDTO.getLocation()), Location.class));
         organizerRepository.save(organizer);
@@ -123,10 +150,11 @@ public class UserService {
         token.setToken(UUID.randomUUID().toString());
         token.setExpiresAt(LocalDateTime.now().plusHours(TOKEN_EXPIRATION));
         token=verificationTokenRepository.save(token);
+        String confirmationLink = IP_BASE_URL + CONFIRMATION_URL + token.getToken();
         EmailDetails emailDetails=new EmailDetails();
         emailDetails.setRecipient(user.getAccount().getEmail());
         emailDetails.setSubject("Account activation");
-        emailDetails.setMsgBody("To activate your account click on the following link: "+baseUrl+CONFIRMATION_URL+token.getToken());
+        emailDetails.setMsgBody("To activate your account click on the following link: "+confirmationLink);
         emailService.sendSimpleEmail(emailDetails);
     }
 
@@ -176,6 +204,37 @@ public class UserService {
         return modelMapper.map(user, UpdatedUserDTO.class);
     }
 
+    public UpdatedProfilePhotoDTO updateProfilePhoto(int accountId, UpdateProfilePhotoDTO updateProfilePhotoDTO) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()==Role.AUTHENTICATED_USER || account.getRole()==Role.ADMIN)
+            throw new IllegalArgumentException("User with given account ID is not a provider or organizer");
+        User user = account.getUser();
+        if(!fileService.filesExist(updateProfilePhotoDTO.getFilePath())){
+            throw new IllegalArgumentException("Invalid file name.");
+        }
+        user.setProfilePhoto(updateProfilePhotoDTO.getFilePath());
+        userRepository.save(user);
+        return new UpdatedProfilePhotoDTO(updateProfilePhotoDTO.getFilePath());
+    }
+
+    public UpdatedCompanyPhotosDTO updateCompanyPhotos(int accountId, UpdateCompanyPhotosDTO updateCompanyPhotosDTO){
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
+        if(account.getRole()!=Role.PROVIDER)
+            throw new IllegalArgumentException("User with given account ID is not a provider");
+        Provider provider = (Provider) account.getUser();
+        Company company = provider.getCompany();
+        for(String photo:updateCompanyPhotosDTO.getFilePaths()){
+            if(!fileService.filesExist(photo)) {
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+        }
+        company.setPhotos(updateCompanyPhotosDTO.getFilePaths());
+        companyRepository.save(company);
+        return new UpdatedCompanyPhotosDTO(updateCompanyPhotosDTO.getFilePaths());
+    }
+
     public UpdatedCompanyDTO updateCompany(int accountId, UpdateCompanyDTO updateCompanyDTO){
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NotFoundException("Account with ID " + accountId + " not found"));
@@ -209,7 +268,14 @@ public class UserService {
             if(events.stream().anyMatch(event -> event.getDate().isAfter(LocalDate.now())))
                 throw new IllegalArgumentException("Organizer has upcoming events, can't deactivate account");
         }
-        //TODO if provider check upcoming reservations
+        if(account.getRole()==Role.PROVIDER){
+            Provider provider=(Provider) account.getUser();
+            List<GetReservationDTO> reservations = reservationService.findByProviderId(provider.getId());
+            if(reservations.stream()
+                    .filter(reservation->reservation.getStatus()==Status.ACCEPTED)
+                    .anyMatch(reservation->reservation.getEvent().getDate().isAfter(LocalDate.now())))
+                throw new IllegalArgumentException("Provider has upcoming reservations, can't deactivate account");
+        }
         account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
     }

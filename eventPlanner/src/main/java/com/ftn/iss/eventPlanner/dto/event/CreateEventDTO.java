@@ -32,6 +32,7 @@ public class CreateEventDTO {
     private boolean isOpen;
     @NotNull
     private LocalDate date;
+    @Valid
     @NotNull
     private CreateLocationDTO location;
 }

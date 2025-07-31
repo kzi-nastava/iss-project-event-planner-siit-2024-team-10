@@ -3,8 +3,6 @@ package com.ftn.iss.eventPlanner.controller;
 import com.ftn.iss.eventPlanner.dto.*;
 import com.ftn.iss.eventPlanner.dto.agendaitem.*;
 import com.ftn.iss.eventPlanner.dto.budgetitem.*;
-import com.ftn.iss.eventPlanner.dto.comment.UpdateCommentDTO;
-import com.ftn.iss.eventPlanner.dto.comment.UpdatedCommentDTO;
 import com.ftn.iss.eventPlanner.dto.event.*;
 import com.ftn.iss.eventPlanner.dto.eventstats.GetEventStatsDTO;
 import com.ftn.iss.eventPlanner.services.BudgetItemService;
@@ -24,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,15 +36,9 @@ public class EventController {
 
     @GetMapping(value="/top", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetEventDTO>> getTopEvents(
-            @RequestParam(required = false) Integer accountId
-            ) {
-        try {
-            List<GetEventDTO> events = eventService.findTopEvents(accountId);
-
-            return ResponseEntity.ok(events);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
-        }
+            @RequestParam(required = false) Integer accountId) {
+        List<GetEventDTO> events = eventService.findTopEvents(accountId);
+        return new ResponseEntity<>(events, HttpStatus.OK);
     }
     @GetMapping
     public ResponseEntity<PagedResponse<GetEventDTO>> getEvents(
@@ -61,76 +52,46 @@ public class EventController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection,
-            @RequestParam(required = false) Integer accountId
+            @RequestParam(required = false) Integer accountId,
+            @RequestParam(required = false) Boolean initLoad
     ) {
-        try {
-            PagedResponse<GetEventDTO> response = eventService.getAllEvents(
-                    pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection, accountId);
+        PagedResponse<GetEventDTO> response = eventService.getAllEvents(
+                pageable, eventTypeId, location, maxParticipants, minRating, startDate, endDate, name, sortBy, sortDirection, accountId, initLoad);
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new PagedResponse<>(List.of(), 0, 0));
-        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping(value="/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<GetEventDTO>> findEventsByOrganizer(@RequestParam Integer accountId){
-        try{
-            List<GetEventDTO> events = eventService.findEventsByOrganizer(accountId);
-            return new ResponseEntity<>(events, HttpStatus.OK);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        List<GetEventDTO> events = eventService.findEventsByOrganizer(accountId);
+        return new ResponseEntity<>(events, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedEventDTO> createEvent(@Valid @RequestBody CreateEventDTO event) {
-        try{
-            CreatedEventDTO createdEventType = eventService.create(event);
-            return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
-        }
-        catch (IllegalArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        CreatedEventDTO createdEventType = eventService.create(event);
+        return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value = "/{eventId}", consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedEventDTO> updateEvent(@Valid @RequestBody UpdateEventDTO event, @PathVariable int eventId) throws Exception {
+    public ResponseEntity<UpdatedEventDTO> updateEvent(@Valid @RequestBody UpdateEventDTO event, @PathVariable int eventId) {
         UpdatedEventDTO createdEventType = eventService.update(eventId, event);
         return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @DeleteMapping(value = "/{eventId}")
-    public ResponseEntity<?> deleteEvent(@PathVariable int eventId) throws Exception {
+    public ResponseEntity<?> deleteEvent(@PathVariable int eventId) {
         eventService.delete(eventId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @PutMapping(value = "/{eventId}/comments/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedCommentDTO> updateComment(@RequestBody UpdateCommentDTO comment, @PathVariable int eventId, @PathVariable int commentId)
-            throws Exception {
-        UpdatedCommentDTO updatedComment = new UpdatedCommentDTO();
-
-        updatedComment.setId(commentId);
-        updatedComment.setContent(comment.getContent());
-
-        return new ResponseEntity<UpdatedCommentDTO>(updatedComment, HttpStatus.OK);
-    }
-
-    @DeleteMapping(value = "/{eventId}/comments/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable int eventId, @PathVariable int commentId) throws Exception {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping(value = "/{eventId}/agenda", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetAgendaItemDTO>> getEventAgenda(@PathVariable int eventId) {
         Collection<GetAgendaItemDTO> agendaItems = eventService.getAgenda(eventId);
-        return ResponseEntity.ok(agendaItems);
+        return new ResponseEntity<>(agendaItems,HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -140,7 +101,7 @@ public class EventController {
     }
 
     @PostMapping(value="/{eventId}/ratings", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatedEventRatingDTO> rateEvent(@PathVariable int eventId, @RequestBody CreateEventRatingDTO rating) {
+    public ResponseEntity<CreatedEventRatingDTO> rateEvent(@PathVariable int eventId, @Valid @RequestBody CreateEventRatingDTO rating) {
         CreatedEventRatingDTO ratedEvent = eventService.rateEvent(eventId, rating.getRating());
         return ResponseEntity.ok(ratedEvent);
     }
@@ -154,14 +115,14 @@ public class EventController {
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value="/{eventId}/agenda/{agendaItemId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedAgendaItemDTO> updateAgendaItem(@PathVariable int eventId, @PathVariable int agendaItemId, @RequestBody UpdateAgendaItemDTO agendaItemDto) {
+    public ResponseEntity<UpdatedAgendaItemDTO> updateAgendaItem(@PathVariable int eventId, @PathVariable int agendaItemId, @Valid @RequestBody UpdateAgendaItemDTO agendaItemDto) {
         UpdatedAgendaItemDTO updatedAgendaItemDTO = eventService.updateAgendaItem(eventId, agendaItemId, agendaItemDto);
         return ResponseEntity.ok(updatedAgendaItemDTO);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @DeleteMapping(value="/{eventId}/agenda/{agendaItemId}")
-    public ResponseEntity<Void> deleteAgendaItem(@PathVariable int eventId, @Valid @PathVariable int agendaItemId) {
+    public ResponseEntity<Void> deleteAgendaItem(@PathVariable int eventId, @PathVariable int agendaItemId) {
         eventService.deleteAgendaItem(eventId, agendaItemId);
         return ResponseEntity.noContent().build();
     }
@@ -207,31 +168,30 @@ public class EventController {
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PostMapping(value="/{eventId}/budget", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedBudgetItemDTO> createBudgetItem(@PathVariable int eventId, @Valid @RequestBody CreateBudgetItemDTO createBudgetItemDTO) {
-        CreatedBudgetItemDTO createdBudgetItemDTO = budgetItemService.create(eventId, createBudgetItemDTO, 0);
-        return ResponseEntity.ok(createdBudgetItemDTO);
+        CreatedBudgetItemDTO createdBudgetItemDTO = budgetItemService.create(eventId, createBudgetItemDTO,0);
+        return new ResponseEntity<>(createdBudgetItemDTO, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @PutMapping(value="/{eventId}/budget/{budgetItemId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedBudgetItemDTO> updateBudgetItemAmount(@PathVariable int eventId, @PathVariable int budgetItemId, @RequestBody int amount) {
+    public ResponseEntity<UpdatedBudgetItemDTO> updateBudgetItemAmount(@PathVariable int eventId, @PathVariable int budgetItemId, @RequestBody UpdateBudgetItemDTO amount) {
         UpdatedBudgetItemDTO updatedBudgetItemDTO = budgetItemService.updateAmount(budgetItemId, amount);
         return ResponseEntity.ok(updatedBudgetItemDTO);
     }
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
-    @PutMapping(value="/{eventId}/budget/buy/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Boolean> buy(
+    @PutMapping(value = "/{eventId}/budget/buy/{offeringId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> buyOfferingForEvent(
             @PathVariable int eventId,
-            @PathVariable int offeringId,
-            @RequestBody boolean pending) {
-        boolean success = budgetItemService.buy(eventId, offeringId, pending);
-        return ResponseEntity.ok(success);
+            @PathVariable int offeringId) {
+        budgetItemService.buy(eventId, offeringId);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @DeleteMapping(value="/{eventId}/budget/{budgetItemId}")
-    public ResponseEntity<Boolean> deleteBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId) {
-        boolean deleted = budgetItemService.delete(eventId, budgetItemId);
-        return new ResponseEntity<>(deleted, HttpStatus.OK);
+    public ResponseEntity<Void> deleteBudgetItem(@PathVariable int eventId, @PathVariable int budgetItemId) {
+        budgetItemService.delete(eventId, budgetItemId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
@@ -246,7 +206,6 @@ public class EventController {
         double total = budgetItemService.getTotalBudgetForEvent(eventId);
         return ResponseEntity.ok(total);
     }
-
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
     @GetMapping(value = "/{eventId}/guests")
     public ResponseEntity<GetGuestsDTO> getGuests(@PathVariable int eventId){

@@ -8,6 +8,7 @@ import com.ftn.iss.eventPlanner.repositories.OfferingCategoryRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,16 +66,16 @@ public class EventTypeService {
         return modelMapper.map(eventType, UpdatedEventTypeDTO.class);
     }
 
-    public void delete(int id) {
+    public void deactivate(int id) {
         EventType eventType = eventTypeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Event Type with ID " + id + " not found"));
         eventType.setActive(false);
         eventTypeRepository.save(eventType);
     }
 
     public void activate(int id){
         EventType eventType = eventTypeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Event Type with ID " + id + " not found"));
         eventType.setActive(true);
         eventTypeRepository.save(eventType);
     }
