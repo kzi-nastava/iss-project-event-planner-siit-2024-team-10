@@ -9,5 +9,7 @@ import lombok.Setter;
 public class UpdateBudgetItemDTO {
     @NotNull
     private int amount;
-
+    public UpdateBudgetItemDTO(int amount){
+        this.amount=amount;
+    }
 }
