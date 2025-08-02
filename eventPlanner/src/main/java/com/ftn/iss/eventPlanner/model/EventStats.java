@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Entity
 public class EventStats {
+    @Setter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
