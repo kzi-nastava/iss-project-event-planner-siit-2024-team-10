@@ -95,7 +95,7 @@ public class EventService {
             Integer accountId,
             Boolean initLoad
     ) {
-        if (accountId != null && (location == null || location.isEmpty()) && initLoad != null) {
+        if (accountId != null && (location == null || location.isEmpty()) && (initLoad != null && initLoad)){
             Location userLocation = accountService.findUserLocation(accountId);
             if (userLocation != null) {
                 location = userLocation.getCity();
