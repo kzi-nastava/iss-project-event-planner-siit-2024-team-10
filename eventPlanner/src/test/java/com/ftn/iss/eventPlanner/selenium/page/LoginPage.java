@@ -9,12 +9,14 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 public class LoginPage {
     private WebDriver driver;
-    private static final String PAGE_URL = "http://localhost:4200/login";
+    private WebDriverWait wait;
 
     @FindBy(css = "input[formcontrolname='email']")
     private WebElement emailInput;
@@ -27,7 +29,7 @@ public class LoginPage {
 
     public LoginPage(WebDriver driver) {
         this.driver = driver;
-        driver.get(PAGE_URL);
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         PageFactory.initElements(driver, this);
     }
 
@@ -37,5 +39,6 @@ public class LoginPage {
         passwordInput.clear();
         passwordInput.sendKeys(password);
         loginButton.click();
+        wait.until(ExpectedConditions.urlContains("/home"));
     }
 }
