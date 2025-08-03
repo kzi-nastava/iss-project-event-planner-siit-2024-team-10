@@ -118,7 +118,7 @@ public class OfferingService {
             Integer providerId,
             Boolean initLoad
     ) {
-        if (accountId != null && (location == null || location.isEmpty()) && initLoad != null) {
+        if (accountId != null && (location == null || location.isEmpty()) && (initLoad != null && initLoad)) {
             Account account = accountRepository.findById(accountId).orElse(null);
             if (account != null && account.getUser() != null){
                 Location userLocation = account.getUser().getLocation();
