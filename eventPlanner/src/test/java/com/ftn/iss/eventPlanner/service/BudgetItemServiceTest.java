@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.webjars.NotFoundException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -55,18 +56,18 @@ class BudgetItemServiceTest {
     private static final int INVALID_CATEGORY_ID = 999;
     private static final int INVALID_OFFERING_ID = 999;
     private static final int INVALID_BUDGET_ITEM_ID = 999;
-
-    private Event event;
-    private OfferingCategory category;
-    private CreateBudgetItemDTO createBudgetItemDTO;
-    private BudgetItem budgetItem;
-    private CreatedBudgetItemDTO createdBudgetItemDTO;
-    private UpdatedBudgetItemDTO updatedBudgetItemDTO;
     private Service service;
     private Product product;
+    private Event event;
+    private BudgetItem budgetItem;
+    private OfferingCategory category;
     private ServiceDetails serviceDetails;
     private ProductDetails productDetails;
     private ProductDetails historicalProductDetails;
+    private CreateBudgetItemDTO createBudgetItemDTO;
+    private CreatedBudgetItemDTO createdBudgetItemDTO;
+    private UpdatedBudgetItemDTO updatedBudgetItemDTO;
+
 
     @BeforeEach
     void setUp() {
@@ -133,16 +134,40 @@ class BudgetItemServiceTest {
         product.setCurrentDetails(productDetails);
         product.setProductDetailsHistory(new HashSet<>());
         product.getProductDetailsHistory().add(historicalProductDetails);
-    }
+        }
+    /*
+    Positive scenarios (everything is OK)
+    When the event, category, and offering are valid and none of them are marked as deleted or pending.
 
+    When offeringId == 0, i.e., no offering is provided.
+
+    When the offering is a Product or a Service (both types should be tested).
+
+    Negative scenarios
+    Event does not exist → should throw NotFoundException
+
+    Event is marked as deleted → should throw IllegalArgumentException
+
+    Category does not exist → should throw NotFoundException
+
+    Category is marked as deleted → should throw IllegalArgumentException
+
+    Category is marked as pending → should throw IllegalArgumentException
+
+    Amount is less than 0 → should throw IllegalArgumentException
+
+    Offering does not exist → should throw IllegalArgumentException
+
+    Offering is marked as deleted → should throw IllegalArgumentException
+     */
     @Test
-    void create_WhenEventNotFound_ThrowsIllegalArgumentException() {
+    void create_WhenEventNotFound_ThrowsNotFoundException() {
         // Arrange
         when(eventRepository.findById(INVALID_EVENT_ID)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThatThrownBy(() -> budgetItemService.create(INVALID_EVENT_ID, createBudgetItemDTO, 0))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Event with ID " + INVALID_EVENT_ID + " not found");
 
         // Verify
@@ -160,7 +185,7 @@ class BudgetItemServiceTest {
 
         // Act & Assert
         assertThatThrownBy(() -> budgetItemService.create(VALID_EVENT_ID, createBudgetItemDTO, 0))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Offering category with ID " + INVALID_CATEGORY_ID + " not found");
 
         // Verify
@@ -502,6 +527,7 @@ class BudgetItemServiceTest {
         when(budgetItemService.hasMoneyLeft(budgetItem, 500.0, 0.0)).thenReturn(true);
 
         // Act
+
         budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID);
 
         // Assert
