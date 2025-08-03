@@ -578,7 +578,7 @@ public class EventService {
                 .orElseThrow(() -> new NotFoundException("Event not found."));
 
         EventStats stats = event.getStats();
-        if(stats.getParticipantsCount()+emails.getGuests().toArray().length>=event.getMaxParticipants()){
+        if(stats.getParticipantsCount()+emails.getGuests().toArray().length>event.getMaxParticipants()){
             throw new EventFullException("Event is full");
         }
 
