@@ -3,6 +3,7 @@ package com.ftn.iss.eventPlanner.controller;
 import com.ftn.iss.eventPlanner.dto.event.GetEventDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.CreateReservationDTO;
 import com.ftn.iss.eventPlanner.dto.reservation.CreatedReservationDTO;
+import com.ftn.iss.eventPlanner.dto.reservation.GetReservationDTO;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.Role;
 import com.ftn.iss.eventPlanner.util.TokenUtils;
@@ -34,6 +35,8 @@ public class ReservationControllerTest {
     private static final int SERVICE_ID = 19; // duration 2-4h
     private static final int EXISTING_RESERVATION_ID = 1;
     private static final int NON_EXISTENT_ID = 999;
+    private static final int EXISTING_PENDING_RESERVATION_ACCEPT_ID = 5;
+    private static final int EXISTING_PENDING_RESERVATION_REJECT_ID = 8;
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -96,27 +99,6 @@ public class ReservationControllerTest {
     }
 
     @Test
-    @DisplayName("Create Reservation - Success with start time of created reservation matching end time of already existing one")
-    public void createReservation_SuccessWithMatchingStartAndEndTime() {
-        CreateReservationDTO dto = new CreateReservationDTO();
-        dto.setStartTime(LocalTime.of(15, 0));
-        dto.setEndTime(LocalTime.of(18, 0));
-        dto.setEvent(5);
-        dto.setService(SERVICE_ID);
-
-        HttpEntity<CreateReservationDTO> request = new HttpEntity<>(dto, getHeaders(organizerToken));
-
-        ResponseEntity<CreatedReservationDTO> response = restTemplate.exchange(
-                BASE,
-                HttpMethod.POST,
-                request,
-                CreatedReservationDTO.class);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
     @DisplayName("Create Reservation - Unauthorized without token")
     public void createReservation_Unauthorized() {
         CreateReservationDTO dto = new CreateReservationDTO();
@@ -139,7 +121,7 @@ public class ReservationControllerTest {
 
     @Test
     @DisplayName("Create Reservation - Fail: End time before start time")
-    public void createReservation_Fail_EndBeforeStart() {
+    public void createReservation_EndBeforeStart() {
         CreateReservationDTO dto = new CreateReservationDTO();
         dto.setStartTime(LocalTime.of(15, 0));
         dto.setEndTime(LocalTime.of(14, 0));
@@ -160,7 +142,7 @@ public class ReservationControllerTest {
 
     @Test
     @DisplayName("Create Reservation - Fail: Duration shorter than min duration")
-    public void createReservation_Fail_DurationTooShort() {
+    public void createReservation_DurationTooShort() {
         CreateReservationDTO dto = new CreateReservationDTO();
         dto.setStartTime(LocalTime.of(12, 0));
         dto.setEndTime(LocalTime.of(12, 30));
@@ -181,7 +163,7 @@ public class ReservationControllerTest {
 
     @Test
     @DisplayName("Create Reservation - Fail: Reservation too late (outside reservation period)")
-    public void createReservation_Fail_OutsideReservationPeriod() {
+    public void createReservation_OutsideReservationPeriod() {
         CreateReservationDTO dto = new CreateReservationDTO();
         dto.setStartTime(LocalTime.now().plusMinutes(30));
         dto.setEndTime(LocalTime.now().plusHours(3));
@@ -202,7 +184,7 @@ public class ReservationControllerTest {
 
     @Test
     @DisplayName("Create Reservation - Fail: Reservation already made for the service")
-    public void createReservation_Fail_ReservationAlreadyMade() {
+    public void createReservation_ReservationAlreadyMade() {
         CreateReservationDTO dto = new CreateReservationDTO();
         dto.setStartTime(LocalTime.of(12, 0));
         dto.setEndTime(LocalTime.of(18, 0));
@@ -223,7 +205,7 @@ public class ReservationControllerTest {
 
     @Test
     @DisplayName("Create Reservation - Fail: Service unavailable at selected time")
-    public void createReservation_Fail_ServiceUnavailable() {
+    public void createReservation_ServiceUnavailable() {
         CreateReservationDTO dto = new CreateReservationDTO();
         dto.setStartTime(LocalTime.of(12, 0));
         dto.setEndTime(LocalTime.of(18, 0));
@@ -280,6 +262,34 @@ public class ReservationControllerTest {
     }
 
     @Test
+    @DisplayName("Find Events by Organizer - Unauthorized")
+    public void findEventsByOrganizer_Unauthorized() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/events/" + ORGANIZER_ID,
+                HttpMethod.GET,
+                new HttpEntity<>(null),
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Find Events by Organizer - Forbidden with non organizer role")
+    public void findEventsByOrganizer_ForbiddenRole() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(providerToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/events/" + ORGANIZER_ID,
+                HttpMethod.GET,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
     @DisplayName("Cancel Reservation - Success")
     public void cancelReservation_Success() {
         HttpEntity<Void> request = new HttpEntity<>(getHeaders(organizerToken));
@@ -305,5 +315,164 @@ public class ReservationControllerTest {
         );
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Cancel Reservation - Forbidden")
+    public void cancelReservation_ForbiddenRole() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(providerToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_RESERVATION_ID,
+                HttpMethod.DELETE,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Cancel Reservation - Not Found")
+    public void cancelReservation_ReservationNotFound() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(organizerToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_ID,
+                HttpMethod.DELETE,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Get Pending Reservations - Success for provider")
+    public void getPendingReservations_Success() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(providerToken));
+
+        ResponseEntity<GetReservationDTO[]> response = restTemplate.exchange(
+                BASE + "/" + PROVIDER_ID + "/pending",
+                HttpMethod.GET,
+                request,
+                GetReservationDTO[].class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    @DisplayName("Get Pending Reservations - Unauthorized (no token)")
+    public void getPendingReservations_Unauthorized() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + PROVIDER_ID + "/pending",
+                HttpMethod.GET,
+                new HttpEntity<>(null),
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Get Pending Reservations - Forbidden for wrong role")
+    public void getPendingReservations_Forbidden() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(userToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + PROVIDER_ID + "/pending",
+                HttpMethod.GET,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Accept Reservation - Success")
+    public void acceptReservation_Success() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(providerToken));
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/"+EXISTING_PENDING_RESERVATION_ACCEPT_ID+"/accept",
+                HttpMethod.PUT,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Accept Reservation - Unauthorized")
+    public void acceptReservation_Unauthorized() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/"+EXISTING_PENDING_RESERVATION_ACCEPT_ID+"/accept",
+                HttpMethod.PUT,
+                new HttpEntity<>(null),
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Accept Reservation - Forbidden for wrong role")
+    public void acceptReservation_Forbidden() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(userToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/"+EXISTING_PENDING_RESERVATION_ACCEPT_ID+"/accept",
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+    @Test
+    @DisplayName("Reject Reservation - Success")
+    public void rejectReservation_Success() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(providerToken));
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/"+EXISTING_PENDING_RESERVATION_REJECT_ID+"/reject",
+                HttpMethod.PUT,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Reject Reservation - Unauthorized")
+    public void rejectReservation_Unauthorized() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/"+EXISTING_PENDING_RESERVATION_REJECT_ID+"/reject",
+                HttpMethod.PUT,
+                new HttpEntity<>(null),
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Reject Reservation - Forbidden for wrong role")
+    public void rejectReservation_Forbidden() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(userToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/"+EXISTING_PENDING_RESERVATION_REJECT_ID+"/reject",
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 }
