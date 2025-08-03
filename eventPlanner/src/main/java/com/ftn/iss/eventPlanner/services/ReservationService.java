@@ -361,6 +361,11 @@ public class ReservationService {
     public void cancelReservation(int id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + id + " not found"));
+        if (reservation.getStatus().equals(Status.CANCELED) || reservation.getStatus().equals(Status.DENIED)){
+            throw new IllegalArgumentException("Reservation with ID " + id + " is already cancelled or unavailable");
+        } else if(reservation.getStatus().equals(Status.PENDING)){
+            throw new IllegalArgumentException("Cannot cancel a pending reservation with id  " + id);
+        }
         ServiceDetails reservationServiceDetails = findServiceDetailsByReservationId(id);
 
         isDateWithinCancellationPeriod(reservation.getEvent(), reservationServiceDetails);
@@ -371,6 +376,11 @@ public class ReservationService {
     public void acceptReservation(int reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
+        if (reservation.getStatus().equals(Status.CANCELED) || reservation.getStatus().equals(Status.DENIED)){
+            throw new IllegalArgumentException("Reservation with ID " + reservationId + " is already cancelled or unavailable");
+        } else if(reservation.getStatus().equals(Status.ACCEPTED)){
+            throw new IllegalArgumentException("Cannot accept a reservation that's already been accepted");
+        }
         budgetItemService.buy(reservation.getEvent().getId(),reservation.getService().getId());
         reservation.setStatus(Status.ACCEPTED);
         reservationRepository.save(reservation);
@@ -381,6 +391,11 @@ public class ReservationService {
     public void rejectReservation(int reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
+        if (reservation.getStatus().equals(Status.CANCELED) || reservation.getStatus().equals(Status.DENIED)){
+            throw new IllegalArgumentException("Reservation with ID " + reservationId + " is already cancelled or unavailable");
+        } else if(reservation.getStatus().equals(Status.ACCEPTED)){
+            throw new IllegalArgumentException("Cannot reject a reservation that's already been accepted");
+        }
         reservation.setStatus(Status.DENIED);
         reservationRepository.save(reservation);
         notificationService.sendNotification(reservation.getEvent().getOrganizer().getAccount().getId(),"Reservation Denied",
