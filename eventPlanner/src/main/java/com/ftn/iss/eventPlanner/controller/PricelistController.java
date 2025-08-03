@@ -29,21 +29,23 @@ public class PricelistController {
     @Autowired
     private PricelistReportService reportService;
     @PreAuthorize("hasAnyAuthority('PROVIDER')")
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Collection<GetPricelistItemDTO>> getPricelist() {
+    @GetMapping(value="/provider/{providerId}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetPricelistItemDTO>> getPricelist(@PathVariable int providerId) {
         List<GetOfferingDTO> offerings = offeringService.findAll();
         Collection<GetPricelistItemDTO> pricelist = new ArrayList<>();
 
         for (GetOfferingDTO offering : offerings) {
-            GetPricelistItemDTO item = new GetPricelistItemDTO();
-            item.setId(offering.getId());
-            item.setOfferingId(offering.getId());
-            item.setName(offering.getName());
-            item.setPrice(offering.getPrice());
-            item.setDiscount(offering.getDiscount());
-            double priceWithDiscount = offering.getPrice() * (1 - offering.getDiscount()/100);
-            item.setPriceWithDiscount(priceWithDiscount);
-            pricelist.add(item);
+            if(offering.getProvider().getId()==providerId){
+                GetPricelistItemDTO item = new GetPricelistItemDTO();
+                item.setId(offering.getId());
+                item.setOfferingId(offering.getId());
+                item.setName(offering.getName());
+                item.setPrice(offering.getPrice());
+                item.setDiscount(offering.getDiscount());
+                double priceWithDiscount = offering.getPrice() * (1 - offering.getDiscount()/100);
+                item.setPriceWithDiscount(priceWithDiscount);
+                pricelist.add(item);
+            }
         }
         return ResponseEntity.ok(pricelist);
     }
