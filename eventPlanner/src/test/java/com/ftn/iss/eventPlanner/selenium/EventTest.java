@@ -714,4 +714,53 @@ public class EventTest {
         assertEquals(expectedLocation, eventDetailsPage.getFirstAgendaItemLocation(),
                 "Agenda item location should match");
     }
+
+    private void createEventWithAgendaItem(){
+        createEvent();
+        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+        eventDetailsPage.clickAddAgendaItemButton();
+        AgendaDialogPage agendaDialogPage = new AgendaDialogPage(driver);
+
+        agendaDialogPage.fillForm(
+                "Opening Ceremony", // name
+                "Welcome speech and introduction to the conference.", // description
+                "09:00AM", // start time
+                "10:00AM", // end time
+                "Main Hall" // location
+        );
+
+        agendaDialogPage.clickSave();
+        eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+    }
+
+    @Test
+    public void editAgendaItem_WithValidData_UpdatesAgendaItem() {
+        createEventWithAgendaItem();
+        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+        eventDetailsPage.clickFirstAgendaItemEditButton();
+        AgendaDialogPage agendaDialogPage = new AgendaDialogPage(driver);
+
+        agendaDialogPage.fillForm(
+                "Opening Ceremony Updated", // name
+                "Updated welcome speech and introduction to the conference.", // description
+                "09:30AM", // start time
+                "10:30AM", // end time
+                "Main Hall Updated" // location
+        );
+
+        agendaDialogPage.clickSave();
+        eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+
+        verifyAgendaItem(eventDetailsPage,
+                "Opening Ceremony Updated", // expected name
+                "Updated welcome speech and introduction to the conference.", // expected description
+                "09:30:00", // expected start time
+                "10:30:00", // expected end time
+                "Main Hall Updated" // expected location
+        );
+    }
 }

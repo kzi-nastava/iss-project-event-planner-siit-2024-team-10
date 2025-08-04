@@ -72,10 +72,15 @@ public class AgendaDialogPage {
     }
 
     public void fillForm(String name, String desc, String start, String end, String location) {
+        nameInput.clear();
         nameInput.sendKeys(name);
+        descriptionInput.clear();
         descriptionInput.sendKeys(desc);
+        clearTimeInput(startTimeInput);
         startTimeInput.sendKeys(start);
+        clearTimeInput(endTimeInput);
         endTimeInput.sendKeys(end);
+        locationInput.clear();
         locationInput.sendKeys(location);
     }
 

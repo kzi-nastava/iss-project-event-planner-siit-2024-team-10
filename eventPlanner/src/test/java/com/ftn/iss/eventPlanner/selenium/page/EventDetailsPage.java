@@ -180,4 +180,17 @@ public class EventDetailsPage {
                 .getText().trim();
     }
 
+    public void clickFirstAgendaItemEditButton() {
+        if (!agendaItems.isEmpty()) {
+            WebElement firstAgendaItem = agendaItems.get(0);
+            WebElement editButton = firstAgendaItem.findElement(By.xpath(".//button[mat-icon[text()='create']]"));
+            editButton.click();
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector("input[formcontrolname='startTime']")
+            ));
+        } else {
+            throw new IllegalStateException("No agenda items to edit");
+        }
+    }
+
 }
