@@ -181,4 +181,8 @@ INSERT INTO budget_item (amount, is_deleted, category_id, event_id) VALUES
                                                                         (2000.0, false, 2, 1),
                                                                         (5000.0, false, 3, 3);
 
-INSERT INTO budget_item_services(budget_item_id,services_id) VALUES  (1,1);
+INSERT INTO account_report(reportee_id, reporter_id, status, processing_timestamp, description) VALUES
+                                                                                                    (1, 2, 0, NULL, 'Spam behavior'),
+                                                                                                    (1, 3, 0,  NULL, 'Inappropriate messages'),
+                                                                                                    (2, 1, 0, NULL, 'False information'),
+                                                                                                    (5, 1, 1, '2025-12-12 08:00:00', 'False information');
