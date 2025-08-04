@@ -525,4 +525,38 @@ public class EventTest {
         Assertions.assertFalse(editEventPage.submitButton.isEnabled(),
                 "Submit button should be disabled when date is set to a past date.");
     }
+
+    @Test
+    public void delete_Confirmed_DeletesEvent(){
+        createEvent();
+        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+
+        // Click the delete button
+        eventDetailsPage.clickDeleteEventButton();
+        eventDetailsPage.confirmDialog();
+
+        // Wait for the page to redirect after deletion
+        wait.until(ExpectedConditions.urlContains("/home"));
+
+        // Verify we are back on the events list page
+        String currentUrl = driver.getCurrentUrl();
+        Assertions.assertTrue(currentUrl.contains("/home"),
+                "Expected to be redirected to /home after deletion, but URL was: " + currentUrl);
+    }
+
+    @Test
+    public void delete_Canceled_DoesntDeleteEvent(){
+        createEvent();
+        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+
+        // Click the delete button
+        eventDetailsPage.clickDeleteEventButton();
+        eventDetailsPage.cancelDialog();
+
+        String currentUrl = driver.getCurrentUrl();
+        Assertions.assertTrue(currentUrl.contains("/event"),
+                "Expected to remain on the event details page after cancellation, but URL was: " + currentUrl);
+    }
 }

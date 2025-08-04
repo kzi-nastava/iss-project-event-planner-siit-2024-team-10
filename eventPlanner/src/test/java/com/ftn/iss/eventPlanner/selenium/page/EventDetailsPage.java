@@ -1,5 +1,6 @@
 package com.ftn.iss.eventPlanner.selenium.page;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -117,5 +118,23 @@ public class EventDetailsPage {
 
     public boolean isPublic() {
         return participantsSection.isDisplayed();
+    }
+
+    public void clickDeleteEventButton(){
+        deleteEventButton.click();
+    }
+
+    public void confirmDialog(){
+        WebElement okButton = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//button/span[contains(text(), 'Confirm')]")
+        ));
+        okButton.click();
+    }
+
+    public void cancelDialog(){
+        WebElement cancelButton = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//button/span[contains(text(), 'Cancel')]")
+        ));
+        cancelButton.click();
     }
 }
