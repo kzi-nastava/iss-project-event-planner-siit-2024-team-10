@@ -1,9 +1,6 @@
 package com.ftn.iss.eventPlanner.selenium.page;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -11,11 +8,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
-public class CreateEventPage {
+public class EditEventPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    public CreateEventPage(WebDriver driver) {
+    public EditEventPage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         PageFactory.initElements(driver, this);
@@ -133,7 +130,26 @@ public class CreateEventPage {
     }
 
     public void submitForm() {
+        dismissSnackbarIfPresent();
         submitButton.click();
+    }
+
+    public void dismissSnackbarIfPresent() {
+        try {
+            WebElement okButton = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//div[contains(@class, 'mat-mdc-snack-bar-action')]//button[normalize-space()='OK']")
+            ));
+
+            // Click the OK button
+            okButton.click();
+
+            // Optionally wait for snackbar label to disappear
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(
+                    By.cssSelector("div[matSnackbarLabel]")));
+
+        } catch (TimeoutException e) {
+            // Snackbar not present or no action button – nothing to dismiss
+        }
     }
 
     public void fillForm(String name, String description, int maxParticipants, String country,
@@ -146,6 +162,7 @@ public class CreateEventPage {
         setCity(city);
         setStreet(street);
         setHouseNumber(houseNumber);
+        clearInput(dateInput);
         setDate(date);
 
         if (isOpen) {
