@@ -559,4 +559,159 @@ public class EventTest {
         Assertions.assertTrue(currentUrl.contains("/event"),
                 "Expected to remain on the event details page after cancellation, but URL was: " + currentUrl);
     }
+
+    @Test
+    public void createAgendaItem_WithValidData_CreatesAgendaItem() {
+        createEvent();
+        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+        eventDetailsPage.clickAddAgendaItemButton();
+        AgendaDialogPage agendaDialogPage = new AgendaDialogPage(driver);
+
+        agendaDialogPage.fillForm(
+                "Opening Ceremony", // name
+                "Welcome speech and introduction to the conference.", // description
+                "09:00AM", // start time
+                "10:00AM", // end time
+                "Main Hall" // location
+        );
+
+        agendaDialogPage.clickSave();
+        eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+
+        verifyAgendaItem(eventDetailsPage,
+                "Opening Ceremony", // expected name
+                "Welcome speech and introduction to the conference.", // expected description
+                "09:00:00", // expected start time
+                "10:00:00", // expected end time
+                "Main Hall" // expected location
+        );
+    }
+
+    @Test
+    public void createAgendaItem_EmptyFields_DisablesSubmit() {
+        createEvent();
+        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+        eventDetailsPage.clickAddAgendaItemButton();
+        AgendaDialogPage agendaDialogPage = new AgendaDialogPage(driver);
+
+        // Fill with valid data
+        agendaDialogPage.fillForm(
+                "Opening Ceremony",
+                "Welcome speech and introduction to the conference.",
+                "09:00AM",
+                "10:00AM",
+                "Main Hall"
+        );
+
+        // Wait until save button enabled
+        agendaDialogPage.waitForSaveButtonEnabled(true);
+        Assertions.assertTrue(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should be enabled when all required fields are filled.");
+
+        // Clear name field and check save button disabled
+        agendaDialogPage.clearInput(agendaDialogPage.nameInput);
+        agendaDialogPage.waitForSaveButtonEnabled(false);
+        Assertions.assertFalse(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should become disabled after clearing name field.");
+
+        // Restore name and clear description
+        agendaDialogPage.setName("Opening Ceremony");
+        agendaDialogPage.waitForSaveButtonEnabled(true);
+        Assertions.assertTrue(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should be enabled again after restoring name.");
+
+        agendaDialogPage.clearInput(agendaDialogPage.descriptionInput);
+        agendaDialogPage.waitForSaveButtonEnabled(false);
+        Assertions.assertFalse(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should become disabled after clearing description field.");
+
+        // Restore description and clear start time
+        agendaDialogPage.setDescription("Welcome speech and introduction to the conference.");
+        agendaDialogPage.waitForSaveButtonEnabled(true);
+        Assertions.assertTrue(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should be enabled again after restoring description.");
+
+        agendaDialogPage.clearTimeInput(agendaDialogPage.startTimeInput);
+        agendaDialogPage.waitForSaveButtonEnabled(false);
+        Assertions.assertFalse(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should become disabled after clearing start time field.");
+
+        // Restore start time and clear end time
+        agendaDialogPage.setStartTime("09:00AM");
+        agendaDialogPage.waitForSaveButtonEnabled(true);
+        Assertions.assertTrue(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should be enabled again after restoring start time.");
+
+        agendaDialogPage.clearTimeInput(agendaDialogPage.endTimeInput);
+        agendaDialogPage.waitForSaveButtonEnabled(false);
+        Assertions.assertFalse(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should become disabled after clearing end time field.");
+
+        // Restore end time and clear location
+        agendaDialogPage.setEndTime("10:00AM");
+        agendaDialogPage.waitForSaveButtonEnabled(true);
+        Assertions.assertTrue(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should be enabled again after restoring end time.");
+
+        agendaDialogPage.clearInput(agendaDialogPage.locationInput);
+        agendaDialogPage.waitForSaveButtonEnabled(false);
+        Assertions.assertFalse(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should become disabled after clearing location field.");
+
+        // Restore location
+        agendaDialogPage.setLocation("Main Hall");
+        agendaDialogPage.waitForSaveButtonEnabled(true);
+        Assertions.assertTrue(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should be enabled again after restoring location.");
+    }
+
+    @Test
+    public void createAgendaItem_StartTimeAfterEndTime_DisablesSubmit() {
+        createEvent();
+        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+        eventDetailsPage.clickAddAgendaItemButton();
+        AgendaDialogPage agendaDialogPage = new AgendaDialogPage(driver);
+
+        // Fill with valid data
+        agendaDialogPage.fillForm(
+                "Opening Ceremony",
+                "Welcome speech and introduction to the conference.",
+                "09:00AM",
+                "10:00AM",
+                "Main Hall"
+        );
+
+        // Verify save button is enabled
+        agendaDialogPage.waitForSaveButtonEnabled(true);
+        Assertions.assertTrue(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should be enabled when all required fields are filled.");
+
+        agendaDialogPage.clearTimeInput(agendaDialogPage.startTimeInput);
+        agendaDialogPage.setStartTime("11:00AM");
+        agendaDialogPage.waitForSaveButtonEnabled(false);
+        Assertions.assertFalse(agendaDialogPage.saveButton.isEnabled(),
+                "Save button should be disabled when start time is after end time.");
+    }
+
+    public void verifyAgendaItem(EventDetailsPage eventDetailsPage,
+                                  String expectedName,
+                                  String expectedDescription,
+                                  String expectedStartTime,
+                                  String expectedEndTime,
+                                  String expectedLocation) {
+        assertEquals(expectedName, eventDetailsPage.getFirstAgendaItemName(),
+                "Agenda item name should match");
+        assertEquals(expectedDescription, eventDetailsPage.getFirstAgendaItemDescription(),
+                "Agenda item description should match");
+        assertEquals(expectedStartTime, eventDetailsPage.getFirstAgendaItemStartTime(),
+                "Agenda item start time should match");
+        assertEquals(expectedEndTime, eventDetailsPage.getFirstAgendaItemEndTime(),
+                "Agenda item end time should match");
+        assertEquals(expectedLocation, eventDetailsPage.getFirstAgendaItemLocation(),
+                "Agenda item location should match");
+    }
 }

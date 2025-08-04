@@ -137,4 +137,47 @@ public class EventDetailsPage {
         ));
         cancelButton.click();
     }
+
+    public void clickAddAgendaItemButton() {
+        addAgendaItemButton.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("input[formcontrolname='startTime']")
+        ));
+    }
+
+    public String getFirstAgendaItemName() {
+        if (agendaItems.isEmpty()) return null;
+        WebElement agendaItem = agendaItems.getFirst();
+        return agendaItem.findElement(By.xpath(".//span[contains(@class,'agenda-label') and text()='Name: ']/following-sibling::span[contains(@class,'agenda-value')]"))
+                .getText().trim();
+    }
+
+    public String getFirstAgendaItemDescription() {
+        if (agendaItems.isEmpty()) return null;
+        WebElement agendaItem = agendaItems.getFirst();
+        return agendaItem.findElement(By.xpath(".//span[contains(@class,'agenda-label') and text()='Description: ']/following-sibling::span[contains(@class,'agenda-value')]"))
+                .getText().trim();
+    }
+
+    public String getFirstAgendaItemStartTime() {
+        if (agendaItems.isEmpty()) return null;
+        WebElement agendaItem = agendaItems.getFirst();
+        return agendaItem.findElement(By.xpath(".//span[contains(@class,'agenda-label') and text()='Start: ']/following-sibling::span[contains(@class,'agenda-value')]"))
+                .getText().trim();
+    }
+
+    public String getFirstAgendaItemEndTime() {
+        if (agendaItems.isEmpty()) return null;
+        WebElement agendaItem = agendaItems.getFirst();
+        return agendaItem.findElement(By.xpath(".//span[contains(@class,'agenda-label') and text()='End: ']/following-sibling::span[contains(@class,'agenda-value')]"))
+                .getText().trim();
+    }
+
+    public String getFirstAgendaItemLocation() {
+        if (agendaItems.isEmpty()) return null;
+        WebElement agendaItem = agendaItems.getFirst();
+        return agendaItem.findElement(By.xpath(".//span[contains(@class,'agenda-label') and text()='Location: ']/following-sibling::span[contains(@class,'agenda-value')]"))
+                .getText().trim();
+    }
+
 }
