@@ -11,8 +11,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EventTest {
     private WebDriver driver;
@@ -762,5 +761,19 @@ public class EventTest {
                 "10:30:00", // expected end time
                 "Main Hall Updated" // expected location
         );
+    }
+
+    @Test
+    public void deleteAgendaItem(){
+        createEventWithAgendaItem();
+        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+        eventDetailsPage.clickFirstAgendaItemDeleteButton();
+        eventDetailsPage.confirmDialog();
+
+        eventDetailsPage=new EventDetailsPage(driver);
+        eventDetailsPage.waitForFetch();
+        assertTrue(eventDetailsPage.isAgendaEmpty(),
+                "Agenda should be empty after deleting the only agenda item.");
     }
 }

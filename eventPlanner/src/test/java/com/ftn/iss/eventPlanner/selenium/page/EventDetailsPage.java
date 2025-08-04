@@ -193,4 +193,21 @@ public class EventDetailsPage {
         }
     }
 
+    public void clickFirstAgendaItemDeleteButton() {
+        if (!agendaItems.isEmpty()) {
+            WebElement firstAgendaItem = agendaItems.get(0);
+            WebElement editButton = firstAgendaItem.findElement(By.xpath(".//button[mat-icon[text()='delete']]"));
+            editButton.click();
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//button/span[contains(text(), 'Confirm')]")
+            ));
+        } else {
+            throw new IllegalStateException("No agenda items to edit");
+        }
+    }
+
+    public boolean isAgendaEmpty(){
+        return agendaItems.isEmpty();
+    }
+
 }
