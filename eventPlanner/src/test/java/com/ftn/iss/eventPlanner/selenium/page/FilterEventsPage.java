@@ -101,8 +101,4 @@ public class FilterEventsPage {
     public void clickApply() {
         applyButton.click();
     }
-
-    public void clickCancel() {
-        cancelButton.click();
-    }
 }
