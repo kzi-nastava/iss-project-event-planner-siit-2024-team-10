@@ -62,6 +62,7 @@ public class EventSearchAndFilterTest {
     public void filterEventsByLocation_ShouldDisplayOnlyLondonEvents() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.waitForLoad();
 
         filterEventsPage.setLocation("London");
         int previousCount = homePage.getAllEventCards().size();
@@ -83,6 +84,7 @@ public class EventSearchAndFilterTest {
     public void filterEventsByType_ShouldDisplayOnlyConferenceEvents() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.waitForLoad();
 
         filterEventsPage.selectEventType("Conference");
         int previousCount = homePage.getAllEventCards().size();
@@ -104,6 +106,7 @@ public class EventSearchAndFilterTest {
     public void filterByDateRange_ShouldDisplayOnlyEventsInRange() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.waitForLoad();
 
         filterEventsPage.setDateRange("10/01/2025", "12/31/2025");
         int previousCount = homePage.getAllEventCards().size();
@@ -127,6 +130,7 @@ public class EventSearchAndFilterTest {
     public void filterByMinRating_ShouldDisplayHighRatedEvents() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.waitForLoad();
 
         filterEventsPage.setMinRating(3.5);
         int previousCount = homePage.getAllEventCards().size();
@@ -161,6 +165,7 @@ public class EventSearchAndFilterTest {
     public void filterEvents_NoResults() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.waitForLoad();
 
         filterEventsPage.selectEventType("Conference");
         filterEventsPage.setLocation("Mars");
@@ -178,6 +183,7 @@ public class EventSearchAndFilterTest {
     public void filterThenSearch_CombinedResults() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.waitForLoad();
 
         filterEventsPage.selectEventType("Workshop");
         filterEventsPage.setDateRange("09/01/2025", "09/31/2025");
@@ -217,6 +223,7 @@ public class EventSearchAndFilterTest {
     public void filterWithAllCriteria_ShouldReturnValidEvents() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.waitForLoad();
 
         filterEventsPage.selectEventType("Conference");
         filterEventsPage.setLocation("London");
@@ -260,6 +267,8 @@ public class EventSearchAndFilterTest {
     public void clearFilters_ShouldDisplayAllEventsAgain() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.waitForLoad();
+
         filterEventsPage.selectEventType("Conference");
         filterEventsPage.setLocation("London");
         int previousCount = homePage.getAllEventCards().size();

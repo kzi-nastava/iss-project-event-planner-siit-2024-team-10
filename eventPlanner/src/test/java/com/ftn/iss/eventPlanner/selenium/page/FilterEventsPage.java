@@ -101,4 +101,15 @@ public class FilterEventsPage {
     public void clickApply() {
         applyButton.click();
     }
+
+    public void waitForLoad() {
+        wait.until(ExpectedConditions.visibilityOf(eventTypeDropdown));
+        wait.until(ExpectedConditions.visibilityOf(locationInput));
+        wait.until(ExpectedConditions.visibilityOf(maxParticipantsInput));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".rating-section")));
+        wait.until(ExpectedConditions.visibilityOf(startDateInput));
+        wait.until(ExpectedConditions.visibilityOf(endDateInput));
+        wait.until(ExpectedConditions.visibilityOf(applyButton));
+        wait.until(ExpectedConditions.visibilityOf(cancelButton));
+    }
 }
