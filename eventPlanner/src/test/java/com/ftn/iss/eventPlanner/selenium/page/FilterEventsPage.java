@@ -74,9 +74,8 @@ public class FilterEventsPage {
     }
 
     public void setMinRating(double rating) {
-        WebElement sliderInput = ratingInput; // već nađen element inputa u slideru
+        WebElement sliderInput = ratingInput;
 
-        // Postavi vrednost slidera programatski
         String script = "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('input')); arguments[0].dispatchEvent(new Event('change'));";
         ((JavascriptExecutor) driver).executeScript(script, sliderInput, String.valueOf(rating));
     }
