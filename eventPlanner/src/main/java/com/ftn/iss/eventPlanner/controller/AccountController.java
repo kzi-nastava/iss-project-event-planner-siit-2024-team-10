@@ -67,7 +67,7 @@ public class AccountController {
         return ResponseEntity.ok(favouriteOffering);
     }
 
-    @PostMapping(value="/{accountId}/favourite-offerings/{offeringId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value="/{accountId}/favourite-offerings/{offeringId}")
     public ResponseEntity<?> addOfferingToFavourites(@PathVariable int accountId, @PathVariable int offeringId) {
         accountService.addOfferingToFavourites(accountId, offeringId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
