@@ -59,7 +59,7 @@ public class EventControllerTest {
     private static final int NON_EXISTENT_ORGANIZER_ID=999;
     private static final int UPDATABLE_EVENT_ID=3;
     private static final int NON_EXISTENT_EVENT_TYPE_ID=999;
-    private static final int DELETABLE_EVENT_ID=3;
+    private static final int DELETABLE_EVENT_ID=4;
     private static final int EXISTING_AGENDA_ITEM_ID = 1;
     private static final int NON_EXISTENT_AGENDA_ITEM_ID = 999;
 
@@ -1285,7 +1285,7 @@ public class EventControllerTest {
     @DisplayName("Should return 400 when creating event with non-existent organizer")
     void createEvent_WithNonExistentOrganizer_ReturnsBadRequest() {
         CreateEventDTO createEventDTO = createValidEventDTO();
-        createEventDTO.setOrganizerId(999);
+        createEventDTO.setOrganizerId(NON_EXISTENT_ORGANIZER_ID);
 
         HttpEntity<CreateEventDTO> request = new HttpEntity<>(createEventDTO, getHeadersWithAuth());
 
@@ -1297,7 +1297,7 @@ public class EventControllerTest {
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().contains("Organizer with ID 999 not found"));
+        assertTrue(response.getBody().contains("Organizer with ID " + NON_EXISTENT_ORGANIZER_ID + " not found"));
     }
 
 
