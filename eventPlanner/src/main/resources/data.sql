@@ -39,7 +39,7 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
                                                                                                                                      (0,0,2,3,7,12, 4.4),
                                                                                                                                      (4,2,1,7,1,15, 3.2),
                                                                                                                                      (4,2,1,7,1,15, 3.2),
-                                                                                                                                     (1, 1, 2, 5, 5, 14, 4.1),
+                                                                                                                                     (1, 1, 2, 5, 5, 0, 4.1),
                                                                                                                                      (0, 0, 0, 3, 12, 15, 4.8),
                                                                                                                                      (3, 4, 2, 2, 1, 12, 2.6),
                                                                                                                                      (0, 1, 1, 4, 8, 14, 4.3),
@@ -226,9 +226,3 @@ INSERT INTO account_report(reportee_id, reporter_id, status, processing_timestam
                                                                                                     (1, 3, 0,  NULL, 'Inappropriate messages'),
                                                                                                     (2, 1, 0, NULL, 'False information'),
                                                                                                     (5, 1, 1, '2025-12-12 08:00:00', 'False information');
-
-INSERT INTO budget_item(amount,category_id,event_id,is_deleted) VALUES (2000,1,1,false),
-                                                                       (0,2,1,true);
-INSERT INTO budget_item_services(budget_item_id,services_id) VALUES (1,1);
-
-INSERT INTO reservation(end_time,event_id,service_id,start_time,status,timestamp)VALUES ('6:00:00',	1,	11,	'0:00:00',	1,	'2025-07-29 21:07:11.874136');

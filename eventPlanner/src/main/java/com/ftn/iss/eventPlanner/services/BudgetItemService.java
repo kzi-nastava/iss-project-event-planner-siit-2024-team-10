@@ -160,26 +160,28 @@ public class BudgetItemService {
         remainingAmount -= price * (1 - discount / 100.0);
         return remainingAmount >= 0;
     }
-
-    public void buy(int eventId, int offeringId){
+    public void buy(int eventId, int offeringId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
         Offering offering = offeringRepository.findById(offeringId)
                 .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
 
-        for(BudgetItem budgetItem : event.getBudget()){
-            if(budgetItem.getCategory().getId() == offering.getCategory().getId()){
+        boolean addedToExistingBudgetItem = false;
+
+        for (BudgetItem budgetItem : event.getBudget()) {
+            if (budgetItem.getCategory().getId() == offering.getCategory().getId()) {
                 String offeringType = offering.getClass().getSimpleName();
 
                 if ("Service".equals(offeringType)) {
                     com.ftn.iss.eventPlanner.model.Service service = (com.ftn.iss.eventPlanner.model.Service) offering;
-                    if(!hasMoneyLeft(budgetItem, service.getCurrentDetails().getPrice(), service.getCurrentDetails().getDiscount())) {
+                    if (!hasMoneyLeft(budgetItem, service.getCurrentDetails().getPrice(), service.getCurrentDetails().getDiscount())) {
                         throw new IllegalArgumentException("Insufficient budget for this purchase");
                     }
                     budgetItem.getServices().add(service.getCurrentDetails());
+                    addedToExistingBudgetItem = true;
+
                 } else if ("Product".equals(offeringType)) {
                     Product product = (Product) offering;
-
                     int currentProductDetailsId = product.getCurrentDetails().getId();
 
                     boolean alreadyAdded = budgetItem.getProducts().stream()
@@ -189,20 +191,28 @@ public class BudgetItemService {
                     if (alreadyAdded) {
                         throw new IllegalArgumentException("Product already purchased");
                     }
+
                     if (!hasMoneyLeft(budgetItem, product.getCurrentDetails().getPrice(), product.getCurrentDetails().getDiscount())) {
                         throw new IllegalArgumentException("Insufficient budget for this purchase");
                     }
+
                     budgetItem.getProducts().add(product.getCurrentDetails());
+                    addedToExistingBudgetItem = true;
                 }
+
                 budgetItemRepository.save(budgetItem);
+                break;
             }
         }
 
-        CreateBudgetItemDTO createBudgetItemDTO = new CreateBudgetItemDTO();
-        createBudgetItemDTO.setAmount(0);
-        createBudgetItemDTO.setCategoryId(offering.getCategory().getId());
-        create(eventId, createBudgetItemDTO,offeringId);
+        if (!addedToExistingBudgetItem) {
+            CreateBudgetItemDTO createBudgetItemDTO = new CreateBudgetItemDTO();
+            createBudgetItemDTO.setAmount(0);
+            createBudgetItemDTO.setCategoryId(offering.getCategory().getId());
+            create(eventId, createBudgetItemDTO, offeringId);
+        }
     }
+
 
     public List<GetBudgetItemDTO> findByEventId(int eventId) {
         eventRepository.findById(eventId)
