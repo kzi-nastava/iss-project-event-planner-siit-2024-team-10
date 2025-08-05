@@ -36,7 +36,7 @@ public class BudgetItemService {
 
         // Check if event is deleted
         if (event.isDeleted()) {
-            throw new IllegalArgumentException("Event with ID " + eventId + " is deleted and cannot be modified");
+            throw new IllegalArgumentException("Event with ID " + eventId + " is deleted");
         }
 
         // Find category and check if it exists
@@ -59,7 +59,7 @@ public class BudgetItemService {
         BudgetItem budgetItem = new BudgetItem();
         budgetItem.setAmount(budgetItemDTO.getAmount());
         budgetItem.setDeleted(false);
-        budgetItem.setEvent(eventRepository.findById(eventId).get());
+        budgetItem.setEvent(event);
         budgetItem.setCategory(category);
 
         // Handle offering if provided
@@ -160,8 +160,10 @@ public class BudgetItemService {
     public void buy(int eventId, int offeringId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        if(event.isDeleted()) throw new IllegalArgumentException("Event with ID "+" is deleted");
         Offering offering = offeringRepository.findById(offeringId)
                 .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
+        if(offering.isDeleted()) throw new IllegalArgumentException("Offering with ID "+" is deleted");
 
         boolean addedToExistingBudgetItem = false;
 
