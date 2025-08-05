@@ -718,6 +718,7 @@ public class EventTest {
         createEvent();
         EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
         eventDetailsPage.waitForFetch();
+        eventDetailsPage.dismissSnackbarIfPresent();
         eventDetailsPage.clickAddAgendaItemButton();
         AgendaDialogPage agendaDialogPage = new AgendaDialogPage(driver);
 
@@ -730,6 +731,7 @@ public class EventTest {
         );
 
         agendaDialogPage.clickSave();
+        agendaDialogPage.dismissSnackbarIfPresent();
         eventDetailsPage = new EventDetailsPage(driver);
         eventDetailsPage.waitForFetch();
     }

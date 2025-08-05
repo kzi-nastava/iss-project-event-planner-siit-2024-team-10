@@ -1,6 +1,7 @@
 package com.ftn.iss.eventPlanner.selenium.page;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -203,6 +204,24 @@ public class EventDetailsPage {
             ));
         } else {
             throw new IllegalStateException("No agenda items to edit");
+        }
+    }
+
+    public void dismissSnackbarIfPresent() {
+        try {
+            WebElement okButton = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//div[contains(@class, 'mat-mdc-snack-bar-action')]//button[normalize-space()='OK']")
+            ));
+
+            // Click the OK button
+            okButton.click();
+
+            // Optionally wait for snackbar label to disappear
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(
+                    By.cssSelector("div[matSnackbarLabel]")));
+
+        } catch (TimeoutException e) {
+            // Snackbar not present or no action button – nothing to dismiss
         }
     }
 

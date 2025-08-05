@@ -1,9 +1,6 @@
 package com.ftn.iss.eventPlanner.selenium.page;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -87,9 +84,26 @@ public class AgendaDialogPage {
     public void clickSave() {
         wait.until(ExpectedConditions.elementToBeClickable(saveButton));
         saveButton.click();
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(
-                By.cssSelector("input[formcontrolname='startTime']")
-        ));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("div[matSnackbarLabel]")));
+    }
+
+    public void dismissSnackbarIfPresent() {
+        try {
+            WebElement okButton = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.xpath("//div[contains(@class, 'mat-mdc-snack-bar-action')]//button[normalize-space()='OK']")
+            ));
+
+            // Click the OK button
+            okButton.click();
+
+            // Optionally wait for snackbar label to disappear
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(
+                    By.cssSelector("div[matSnackbarLabel]")));
+
+        } catch (TimeoutException e) {
+            // Snackbar not present or no action button – nothing to dismiss
+        }
     }
 
     public void clickCancel() {
