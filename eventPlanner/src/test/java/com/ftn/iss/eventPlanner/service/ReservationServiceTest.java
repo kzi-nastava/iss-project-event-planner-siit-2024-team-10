@@ -10,6 +10,7 @@ import com.ftn.iss.eventPlanner.repositories.ReservationRepository;
 import com.ftn.iss.eventPlanner.repositories.ServiceRepository;
 import com.ftn.iss.eventPlanner.services.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -136,6 +137,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should create reservation successfully when data is valid")
     void create_WithValidInput_SavesReservation() {
         setupAvailableService(true);
 
@@ -156,6 +158,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should create reservation successfully when event is within a day and within reservation period")
     void create_WithValidInputWhenEventIsWithinADay_SavesReservation() {
         ServiceDetails details = new ServiceDetails();
         details.setAvailable(true);
@@ -181,6 +184,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should set reservation to accepted and add it to budget when service is auto confirm")
     void create_WhenAutoConfirmIsTrue_SetsStatusToAcceptedAndBuysBudget() {
         setupAvailableService(true);
 
@@ -199,6 +203,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should make reservation pending when service is not auto confirm")
     void create_WhenAutoConfirmIsFalse_SetsStatusToPending() {
         setupAvailableService(false);
 
@@ -217,12 +222,13 @@ class ReservationServiceTest {
     }
 
     @Test
-    void create_WhenEventNotFound_ThrowsIllegalArgumentException() {
+    @DisplayName("Should throw NotFoundException when event is not found")
+    void create_WhenEventNotFound_ThrowsNotFoundException() {
         createReservationDTO.setEvent(INVALID_EVENT_ID);
         when(eventRepository.findById(INVALID_EVENT_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationService.create(createReservationDTO))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Event with ID "+ INVALID_EVENT_ID +" not found");
 
         verify(eventRepository).findById(INVALID_EVENT_ID);
@@ -230,13 +236,14 @@ class ReservationServiceTest {
     }
 
     @Test
-    void create_WhenServiceNotFound_ThrowsIllegalArgumentException() {
+    @DisplayName("Should throw NotFoundException when service is not found")
+    void create_WhenServiceNotFound_ThrowsNotFoundException() {
         createReservationDTO.setService(INVALID_SERVICE_ID);
         when(eventRepository.findById(VALID_EVENT_ID)).thenReturn(Optional.of(event));
         when(serviceRepository.findById(INVALID_SERVICE_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationService.create(createReservationDTO))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Service with ID "+ INVALID_SERVICE_ID+ "not found");
 
         verify(eventRepository).findById(VALID_EVENT_ID);
@@ -245,6 +252,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw ServiceUnavailableException when service is not available")
     void create_WhenServiceNotAvailable_ThrowsServiceUnavailableException() {
         service.setCurrentDetails(new ServiceDetails());
         service.getCurrentDetails().setAvailable(false);
@@ -256,6 +264,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when service is already reserved for that event")
     void create_WhenServiceAlreadyReservedForEvent_ThrowsIllegalArgumentException() {
         Reservation existingReservation = new Reservation();
         existingReservation.setEvent(event);
@@ -270,6 +279,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when event date is not within the reservation period")
     void create_WhenDateIsNotWithinReservationPeriod_ThrowsIllegalArgumentException() {
         event.setDate(LocalDate.now().plusDays(2));
         setupAvailableService(true);
@@ -283,6 +293,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when event date is in the past")
     void create_WhenEventHasPassed_ThrowsIllegalArgumentException() {
         event.setDate(LocalDate.now().minusDays(2));
         setupAvailableService(true);
@@ -295,6 +306,7 @@ class ReservationServiceTest {
 
     @ParameterizedTest
     @MethodSource("invalidTimes")
+    @DisplayName("Should throw IllegalArgumentException when selected times are invalid")
     void create_WithInvalidTime_ThrowsException(LocalTime start, LocalTime end, String expectedMessage) {
         createReservationDTO.setStartTime(start);
         createReservationDTO.setEndTime(end);
@@ -317,6 +329,7 @@ class ReservationServiceTest {
 
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when the selected duration is too short")
     void create_WhenDurationTooShort_ThrowsIllegalArgumentException() {
         service.getCurrentDetails().setMinDuration(2);
         service.getCurrentDetails().setMaxDuration(4);
@@ -330,6 +343,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when the selected duration is too long")
     void create_WhenDurationTooLong_ThrowsIllegalArgumentException() {
         service.getCurrentDetails().setMinDuration(1);
         service.getCurrentDetails().setMaxDuration(2);
@@ -343,6 +357,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when the selected duration is a minute too short")
     void create_WhenDurationMinuteTooShort_ThrowsIllegalArgumentException() {
         service.getCurrentDetails().setMinDuration(1);
         service.getCurrentDetails().setMaxDuration(2);
@@ -356,6 +371,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should create reservation when the selected start time matches end time of a different reservation")
     void create_WhenNewReservationStartsExactlyWhenExistingEnds_ShouldNotOverlap() {
         Reservation existingReservation = new Reservation();
         Event event2 = new Event();
@@ -386,6 +402,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should send emails with correct text when service is auto confirm")
     void create_WhenAutoConfirmIsTrue_SendsCorrectEmails() {
         setupAvailableService(true);
 
@@ -417,6 +434,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should send emails with correct text when service is not auto confirm")
     void create_WhenAutoConfirmIsFalse_SendsCorrectEmails() {
         setupAvailableService(false);
 
@@ -447,6 +465,7 @@ class ReservationServiceTest {
         ));
     }
     @Test
+    @DisplayName("Should schedule reservation reminder when creation is successful")
     void create_WhenReservationIsSuccessful_SchedulesReminder() {
         setupAvailableService(true);
 
@@ -462,6 +481,7 @@ class ReservationServiceTest {
 
     @ParameterizedTest
     @MethodSource("overlappingTimeScenarios")
+    @DisplayName("Should throw IllegalArgumentException when reservation times overlap with existing reservations")
     void create_WhenNewReservationOverlapsWithExisting_ThrowsIllegalArgumentException(LocalTime newStart, LocalTime newEnd) {
         Reservation existingReservation = new Reservation();
         Event event2 = new Event();
@@ -487,6 +507,7 @@ class ReservationServiceTest {
 
     @Test
     @MockitoSettings(strictness = Strictness.LENIENT)
+    @DisplayName("Should find pending reservations when reservation is by the sent provider and pending")
     void findPendingReservations_WithMatchingProviderAndPendingStatus_ReturnsMappedList() {
         Reservation pendingReservation = new Reservation();
         pendingReservation.setStatus(Status.PENDING);
@@ -504,6 +525,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should send empty list when provider's services have no reservations")
     void findPendingReservations_WithNoReservations_ReturnsEmptyList() {
         when(reservationRepository.findAll()).thenReturn(Collections.emptyList());
 
@@ -514,6 +536,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should send empty list when provider's services have no pending reservations")
     void findPendingReservations_WithNoPendingStatus_ReturnsEmptyList() {
         Account providerAccount = new Account();
         providerAccount.setId(VALID_PROVIDER_ID);
@@ -536,6 +559,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should set status to canceled and save when reservation gets canceled")
     void cancelReservation_WithValidId_ChangesStatusToCanceledAndSaves() {
         reservation.setStatus(Status.ACCEPTED);
         when(reservationRepository.findById(1)).thenReturn(Optional.of(reservation));
@@ -548,6 +572,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw NotFoundException when reservation id does not exist")
     void cancelReservation_WithInvalidId_ThrowsNotFoundException() {
         when(reservationRepository.findById(INVALID_RESERVATION_ID)).thenReturn(Optional.empty());
 
@@ -559,6 +584,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when reservation status is canceled or denied")
     void cancelReservation_ThrowsIllegalArgumentException_WhenStatusCanceledOrDenied() {
         reservation.setStatus(Status.CANCELED);
         when(reservationRepository.findById(VALID_RESERVATION_ID)).thenReturn(Optional.of(reservation));
@@ -569,6 +595,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw NotFoundException when reservation status is pending")
     void cancelReservation_ThrowsIllegalArgumentException_WhenStatusPending() {
         reservation.setStatus(Status.PENDING);
         when(reservationRepository.findById(VALID_RESERVATION_ID)).thenReturn(Optional.of(reservation));
@@ -579,6 +606,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should change status to accepted when reservation is pending")
     void acceptReservation_WithValidId_ChangesStatusToAcceptedAndSaves() {
         reservation.setStatus(Status.PENDING);
         when(reservationRepository.findById(VALID_RESERVATION_ID)).thenReturn(Optional.of(reservation));
@@ -596,6 +624,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw NotFoundException when reservation id does not exist")
     void acceptReservation_ThrowsNotFoundException_WhenIdNotFound() {
         when(reservationRepository.findById(INVALID_RESERVATION_ID)).thenReturn(Optional.empty());
 
@@ -610,6 +639,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when reservation status is canceled or denied")
     void acceptReservation_ThrowsIllegalArgumentException_WhenStatusCanceledOrDenied() {
         reservation.setStatus(Status.DENIED);
         when(reservationRepository.findById(VALID_RESERVATION_ID)).thenReturn(Optional.of(reservation));
@@ -620,6 +650,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when reservation status is accepted")
     void acceptReservation_ThrowsIllegalArgumentException_WhenStatusAccepted() {
         reservation.setStatus(Status.ACCEPTED);
         when(reservationRepository.findById(VALID_RESERVATION_ID)).thenReturn(Optional.of(reservation));
@@ -630,6 +661,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should change status to denied when reservation status is pending")
     void rejectReservation_WithValidId_ChangesStatusToDeniedAndSaves() {
         reservation.setStatus(Status.PENDING);
         when(reservationRepository.findById(VALID_RESERVATION_ID)).thenReturn(Optional.of(reservation));
@@ -647,6 +679,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw NotFoundException when reservation id does not exist")
     void rejectReservation_ThrowsNotFoundException_WhenIdNotFound() {
         when(reservationRepository.findById(INVALID_RESERVATION_ID)).thenReturn(Optional.empty());
 
@@ -660,6 +693,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when reservation status is canceled or denied")
     void rejectReservation_ThrowsIllegalArgumentException_WhenStatusCanceledOrDenied() {
         reservation.setStatus(Status.DENIED);
         when(reservationRepository.findById(VALID_RESERVATION_ID)).thenReturn(Optional.of(reservation));
@@ -670,6 +704,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw IllegalArgumentException when reservation status is accepted")
     void rejectReservation_ThrowsIllegalArgumentException_WhenStatusAccepted() {
         reservation.setStatus(Status.ACCEPTED);
         when(reservationRepository.findById(VALID_RESERVATION_ID)).thenReturn(Optional.of(reservation));
