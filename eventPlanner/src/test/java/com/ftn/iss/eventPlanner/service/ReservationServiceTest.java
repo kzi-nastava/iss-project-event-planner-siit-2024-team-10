@@ -244,7 +244,7 @@ class ReservationServiceTest {
 
         assertThatThrownBy(() -> reservationService.create(createReservationDTO))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessage("Service with ID "+ INVALID_SERVICE_ID+ "not found");
+                .hasMessage("Service with ID "+ INVALID_SERVICE_ID+ " not found");
 
         verify(eventRepository).findById(VALID_EVENT_ID);
         verify(serviceRepository).findById(INVALID_SERVICE_ID);
