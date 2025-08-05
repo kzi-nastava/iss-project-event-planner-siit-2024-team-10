@@ -1,12 +1,16 @@
 package com.ftn.iss.eventPlanner.controller;
 
+import com.ftn.iss.eventPlanner.dto.agendaitem.*;
 import com.ftn.iss.eventPlanner.dto.budgetitem.CreateBudgetItemDTO;
 import com.ftn.iss.eventPlanner.dto.budgetitem.CreatedBudgetItemDTO;
 import com.ftn.iss.eventPlanner.dto.budgetitem.GetBudgetItemDTO;
 import com.ftn.iss.eventPlanner.dto.budgetitem.UpdatedBudgetItemDTO;
+import com.ftn.iss.eventPlanner.dto.event.*;
+import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.Role;
 import com.ftn.iss.eventPlanner.util.TokenUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +21,10 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +56,12 @@ public class EventControllerTest {
     private static final int DELETED_CATEGORY_ID = 3;
     private static final int EVENT_WITH_BUDGET_ITEM = 3;
     private static final int BUDGET_ITEM_TO_DELETE = 3;
+    private static final int NON_EXISTENT_ORGANIZER_ID=999;
+    private static final int UPDATABLE_EVENT_ID=3;
+    private static final int NON_EXISTENT_EVENT_TYPE_ID=999;
+    private static final int DELETABLE_EVENT_ID=4;
+    private static final int EXISTING_AGENDA_ITEM_ID = 1;
+    private static final int NON_EXISTENT_AGENDA_ITEM_ID = 999;
 
     private static final int EVENT_WITHOUT_BUDGET_ITEM = 2;
     private static final int BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS = 4; // Budget item with services and products
@@ -72,7 +85,7 @@ public class EventControllerTest {
         // USER token
         Account userAccount = new Account();
         userAccount.setId(3);
-        userAccount.setEmail("user@mail.com");
+        userAccount.setEmail("auth@mail.com");
         userAccount.setRole(Role.AUTHENTICATED_USER);
         userToken = tokenUtils.generateToken(userAccount);
     }
@@ -1145,5 +1158,723 @@ public class EventControllerTest {
         );
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    // Helper method to create a valid CreateEventDTO with existing test data
+    private CreateEventDTO createValidEventDTO() {
+        CreateEventDTO createEventDTO = new CreateEventDTO();
+        createEventDTO.setEventTypeId(1);
+        createEventDTO.setOrganizerId(2);
+        createEventDTO.setName("Test Event");
+        createEventDTO.setDescription("Test description");
+        createEventDTO.setMaxParticipants(100);
+        createEventDTO.setOpen(true);
+        createEventDTO.setDate(LocalDate.now().plusDays(5));
+
+        CreateLocationDTO locationDTO = new CreateLocationDTO();
+        locationDTO.setStreet("123 Street");
+        locationDTO.setHouseNumber("456");
+        locationDTO.setCity("Testville");
+        locationDTO.setCountry("Testland");
+        createEventDTO.setLocation(locationDTO);
+
+        return createEventDTO;
+    }
+
+    // Event Creation Tests
+    @Test
+    @DisplayName("Should create event successfully with valid data and EVENT_ORGANIZER role")
+    void createEvent_WithValidDataAndOrganizerRole_ReturnsCreated() {
+        CreateEventDTO createEventDTO = createValidEventDTO();
+
+        HttpEntity<CreateEventDTO> request = new HttpEntity<>(createEventDTO, getHeadersWithAuth());
+
+        ResponseEntity<CreatedEventDTO> response = restTemplate.exchange(
+                BASE,
+                HttpMethod.POST,
+                request,
+                CreatedEventDTO.class
+        );
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Test Event", response.getBody().getName());
+        assertEquals("Test description", response.getBody().getDescription());
+        assertEquals(100, response.getBody().getMaxParticipants());
+        assertTrue(response.getBody().isOpen());
+        assertFalse(response.getBody().isDeleted());
+    }
+
+    @Test
+    @DisplayName("Should return 401 when creating event without authentication")
+    void createEvent_WithoutAuthentication_ReturnsUnauthorized() {
+        CreateEventDTO createEventDTO = createValidEventDTO();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<CreateEventDTO> request = new HttpEntity<>(createEventDTO, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE,
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 403 when creating event with USER role")
+    void createEvent_WithUserRole_ReturnsForbidden() {
+        CreateEventDTO createEventDTO = createValidEventDTO();
+
+        HttpEntity<CreateEventDTO> request = new HttpEntity<>(createEventDTO, getHeadersWithAuth(userToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE,
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when creating event with date in the past")
+    void createEvent_WithPastDate_ReturnsBadRequest() {
+        CreateEventDTO createEventDTO = createValidEventDTO();
+        createEventDTO.setDate(LocalDate.now().minusDays(1)); // Past date
+
+        HttpEntity<CreateEventDTO> request = new HttpEntity<>(createEventDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE,
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Event date must be in the future"));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when creating event with non-existent event type")
+    void createEvent_WithNonExistentEventType_ReturnsBadRequest() {
+        CreateEventDTO createEventDTO = createValidEventDTO();
+        createEventDTO.setEventTypeId(999);
+
+        HttpEntity<CreateEventDTO> request = new HttpEntity<>(createEventDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE,
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Event Type with ID 999 not found"));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when creating event with non-existent organizer")
+    void createEvent_WithNonExistentOrganizer_ReturnsBadRequest() {
+        CreateEventDTO createEventDTO = createValidEventDTO();
+        createEventDTO.setOrganizerId(NON_EXISTENT_ORGANIZER_ID);
+
+        HttpEntity<CreateEventDTO> request = new HttpEntity<>(createEventDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE,
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Organizer with ID " + NON_EXISTENT_ORGANIZER_ID + " not found"));
+    }
+
+
+    //helper method to create a valid UpdateEventDTO with existing test data
+    private static UpdateEventDTO createValidUpdateEventDTO() {
+        UpdateEventDTO updateEventDTO = new UpdateEventDTO();
+        updateEventDTO.setName("Updated Test Event");
+        updateEventDTO.setDescription("Updated Test description");
+        updateEventDTO.setMaxParticipants(150);
+        updateEventDTO.setOpen(false);
+        updateEventDTO.setDate(LocalDate.now().plusDays(10));
+        updateEventDTO.setEventTypeId(2);
+
+        CreateLocationDTO locationDTO = new CreateLocationDTO();
+        locationDTO.setCity("Novi Sad");
+        locationDTO.setCountry("Serbia");
+        locationDTO.setStreet("Bulevar Oslobodjenja");
+        locationDTO.setHouseNumber("125");
+        updateEventDTO.setLocation(locationDTO);
+        return updateEventDTO;
+    }
+
+    // Event Update Tests
+    @Test
+    @DisplayName("Should update event successfully with valid data")
+    void updateEvent_WithValidData_ReturnsUpdated() {
+        UpdateEventDTO updateEventDTO = createValidUpdateEventDTO();
+
+        HttpEntity<UpdateEventDTO> request = new HttpEntity<>(updateEventDTO, getHeadersWithAuth());
+
+        ResponseEntity<UpdatedEventDTO> response = restTemplate.exchange(
+                BASE + "/"+ UPDATABLE_EVENT_ID,
+                HttpMethod.PUT,
+                request,
+                UpdatedEventDTO.class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Updated Test Event", response.getBody().getName());
+        assertEquals("Updated Test description", response.getBody().getDescription());
+        assertEquals(150, response.getBody().getMaxParticipants());
+        assertFalse(response.getBody().isOpen());
+    }
+
+    @Test
+    @DisplayName("Should return 401 when updating event without authentication")
+    void updateEvent_WithoutAuthentication_ReturnsUnauthorized() {
+        UpdateEventDTO updateEventDTO = createValidUpdateEventDTO();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<UpdateEventDTO> request = new HttpEntity<>(updateEventDTO, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/"+ UPDATABLE_EVENT_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 403 when updating event with USER role")
+    void updateEvent_WithUserRole_ReturnsForbidden() {
+        UpdateEventDTO updateEventDTO = createValidUpdateEventDTO();
+
+        HttpEntity<UpdateEventDTO> request = new HttpEntity<>(updateEventDTO, getHeadersWithAuth(userToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/"+ UPDATABLE_EVENT_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when updating event with past date")
+    void updateEvent_WithPastDate_ReturnsBadRequest() {
+        UpdateEventDTO updateEventDTO = createValidUpdateEventDTO();
+
+        updateEventDTO.setDate(LocalDate.now().minusDays(1));
+
+        HttpEntity<UpdateEventDTO> request = new HttpEntity<>(updateEventDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/"+ UPDATABLE_EVENT_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Event date must be in the future"));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when updating non-existent event")
+    void updateEvent_WithNonExistentEvent_ReturnsNotFound() {
+        UpdateEventDTO updateEventDTO = createValidUpdateEventDTO();
+
+        HttpEntity<UpdateEventDTO> request = new HttpEntity<>(updateEventDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_EVENT_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Event with ID " + NON_EXISTENT_EVENT_ID + " not found"));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when updating event with non-existent event type")
+    void updateEvent_WithNonExistentEventType_ReturnsBadRequest() {
+        UpdateEventDTO updateEventDTO = createValidUpdateEventDTO();
+        updateEventDTO.setEventTypeId(NON_EXISTENT_EVENT_TYPE_ID);
+
+        HttpEntity<UpdateEventDTO> request = new HttpEntity<>(updateEventDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE+"/3",
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Event Type with ID " + NON_EXISTENT_EVENT_TYPE_ID + " not found"));
+    }
+
+    // Event Delete Tests
+    @Test
+    @DisplayName("Should delete event successfully")
+    void deleteEvent_WithValidId_ReturnsNoContent() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/"+ DELETABLE_EVENT_ID,
+                HttpMethod.DELETE,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 404 when deleting non-existent event")
+    void deleteEvent_NonExistent_ReturnsNotFound() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_EVENT_ID,
+                HttpMethod.DELETE,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 401 when deleting event without authentication")
+    void deleteEvent_WithoutAuthentication_ReturnsUnauthorized() {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/"+ DELETABLE_EVENT_ID,
+                HttpMethod.DELETE,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 403 when deleting event with USER role")
+    void deleteEvent_WithUserRole_ReturnsForbidden() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth(userToken));
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/" + DELETABLE_EVENT_ID,
+                HttpMethod.DELETE,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    //helper method to create a valid CreateAgendaItemDTO with existing test data
+    private static @NotNull CreateAgendaItemDTO createValidCreateAgendaItemDTO() {
+        CreateAgendaItemDTO createAgendaItemDTO = new CreateAgendaItemDTO();
+        createAgendaItemDTO.setName("Opening Ceremony");
+        createAgendaItemDTO.setDescription("Welcome speech and overview of the event.");
+        createAgendaItemDTO.setLocation("Main Hall");
+        createAgendaItemDTO.setStartTime(LocalTime.of(9, 0));
+        createAgendaItemDTO.setEndTime(LocalTime.of(10, 0));
+        return createAgendaItemDTO;
+    }
+
+    // Agenda Item Tests
+    @Test
+    @DisplayName("Should create agenda item successfully")
+    void createAgendaItem_WithValidData_ReturnsCreated() {
+        CreateAgendaItemDTO createAgendaItemDTO = createValidCreateAgendaItemDTO();
+
+        HttpEntity<CreateAgendaItemDTO> request = new HttpEntity<>(createAgendaItemDTO, getHeadersWithAuth());
+
+        ResponseEntity<CreatedAgendaItemDTO> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda",
+                HttpMethod.POST,
+                request,
+                CreatedAgendaItemDTO.class
+        );
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Opening Ceremony", response.getBody().getName());
+        assertEquals("Welcome speech and overview of the event.", response.getBody().getDescription());
+        assertEquals("Main Hall", response.getBody().getLocation());
+    }
+
+    @Test
+    @DisplayName("Should return 401 when creating agenda item without authentication")
+    void createAgendaItem_WithoutAuth_ReturnsUnauthorized() {
+        CreateAgendaItemDTO createAgendaItemDTO = createValidCreateAgendaItemDTO();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<CreateAgendaItemDTO> request = new HttpEntity<>(createAgendaItemDTO, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda",
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 403 when creating agenda item with USER role")
+    void createAgendaItem_WithUserRole_ReturnsForbidden() {
+        CreateAgendaItemDTO createAgendaItemDTO = createValidCreateAgendaItemDTO();
+
+        HttpEntity<CreateAgendaItemDTO> request = new HttpEntity<>(createAgendaItemDTO, getHeadersWithAuth(userToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda",
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when creating agenda item with start time after end time")
+    void createAgendaItem_WithStartTimeAfterEndTime_ReturnsBadRequest() {
+        CreateAgendaItemDTO createAgendaItemDTO = createValidCreateAgendaItemDTO();
+        createAgendaItemDTO.setStartTime(LocalTime.of(12, 0));
+        createAgendaItemDTO.setEndTime(LocalTime.of(10, 0));
+
+        HttpEntity<CreateAgendaItemDTO> request = new HttpEntity<>(createAgendaItemDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda",
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Start time must be before end time"));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when creating agenda item for non-existent event")
+    void createAgendaItem_WithNonExistentEvent_ReturnsNotFound() {
+        CreateAgendaItemDTO createAgendaItemDTO = createValidCreateAgendaItemDTO();
+
+        HttpEntity<CreateAgendaItemDTO> request = new HttpEntity<>(createAgendaItemDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_EVENT_ID + "/agenda",
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Event with ID " + NON_EXISTENT_EVENT_ID + " not found"));
+    }
+
+    private static UpdateAgendaItemDTO createValidUpdateAgendaItemDTO() {
+        UpdateAgendaItemDTO updateAgendaItemDTO = new UpdateAgendaItemDTO();
+        updateAgendaItemDTO.setName("Keynote Speech");
+        updateAgendaItemDTO.setDescription("An inspiring opening speech by the keynote speaker.");
+        updateAgendaItemDTO.setLocation("Auditorium A");
+        updateAgendaItemDTO.setStartTime(LocalTime.of(10, 0));
+        updateAgendaItemDTO.setEndTime(LocalTime.of(11, 0));
+        return updateAgendaItemDTO;
+    }
+
+    @Test
+    @DisplayName("Should update agenda item successfully")
+    @Transactional
+    void updateAgendaItem_WithValidData_ReturnsUpdated() {
+        UpdateAgendaItemDTO updateAgendaItemDTO = createValidUpdateAgendaItemDTO();
+
+        HttpEntity<UpdateAgendaItemDTO> request = new HttpEntity<>(updateAgendaItemDTO, getHeadersWithAuth());
+
+        ResponseEntity<UpdatedAgendaItemDTO> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/" + EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.PUT,
+                request,
+                UpdatedAgendaItemDTO.class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Keynote Speech", response.getBody().getName());
+        assertEquals("An inspiring opening speech by the keynote speaker.", response.getBody().getDescription());
+        assertEquals("Auditorium A", response.getBody().getLocation());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when updating agenda item with start time after end time")
+    void updateAgendaItem_WithStartTimeAfterEndTime_ReturnsBadRequest() {
+        UpdateAgendaItemDTO updateAgendaItemDTO = createValidUpdateAgendaItemDTO();
+        updateAgendaItemDTO.setStartTime(LocalTime.of(12, 0));
+        updateAgendaItemDTO.setEndTime(LocalTime.of(11, 0));
+
+        HttpEntity<UpdateAgendaItemDTO> request = new HttpEntity<>(updateAgendaItemDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/" + EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Start time must be before end time"));
+    }
+
+    @Test
+    @DisplayName("Should return 401 when updating agenda item without authentication")
+    void updateAgendaItem_WithoutAuth_ReturnsUnauthorized() {
+        UpdateAgendaItemDTO updateAgendaItemDTO = createValidUpdateAgendaItemDTO();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<UpdateAgendaItemDTO> request = new HttpEntity<>(updateAgendaItemDTO, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/" + EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 403 when updating agenda item with USER role")
+    void updateAgendaItem_WithUserRole_ReturnsForbidden() {
+        UpdateAgendaItemDTO updateAgendaItemDTO = createValidUpdateAgendaItemDTO();
+
+        HttpEntity<UpdateAgendaItemDTO> request = new HttpEntity<>(updateAgendaItemDTO, getHeadersWithAuth(userToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/" + EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 404 when updating agenda for nonexistent event")
+    void updateAgendaItem_NonExistentEvent_ReturnsNotFound() {
+        UpdateAgendaItemDTO updateAgendaItemDTO = createValidUpdateAgendaItemDTO();
+
+        HttpEntity<UpdateAgendaItemDTO> request = new HttpEntity<>(updateAgendaItemDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_EVENT_ID + "/agenda/" + EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 404 when updating nonexistent agenda item")
+    void updateAgendaItem_NonExistentAgendaItem_ReturnsNotFound() {
+        UpdateAgendaItemDTO updateAgendaItemDTO = createValidUpdateAgendaItemDTO();
+
+        HttpEntity<UpdateAgendaItemDTO> request = new HttpEntity<>(updateAgendaItemDTO, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/" + NON_EXISTENT_AGENDA_ITEM_ID,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+
+
+    @Test
+    @DisplayName("Should delete agenda item successfully")
+    void deleteAgendaItem_WithValidData_ReturnsNoContent() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/"+ EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.DELETE,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 404 when deleting agenda item from non-existent event")
+    void deleteAgendaItem_WithNonExistentEvent_ReturnsNotFound() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_EVENT_ID + "/agenda/" + EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.DELETE,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 404 when deleting non-existent agenda item")
+    void deleteAgendaItem_WithNonExistentAgenda_ReturnsNotFound() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/"+ NON_EXISTENT_AGENDA_ITEM_ID,
+                HttpMethod.DELETE,
+                request,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 401 when deleting agenda item without authentication")
+    void deleteAgendaItem_WithoutAuth_ReturnsUnauthorized() {
+        CreateAgendaItemDTO createAgendaItemDTO = createValidCreateAgendaItemDTO();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<CreateAgendaItemDTO> request = new HttpEntity<>(createAgendaItemDTO, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/"+ EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.DELETE,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should return 403 when creating agenda item with USER role")
+    void deleteAgendaItem_WithUserRole_ReturnsForbidden() {
+        CreateAgendaItemDTO createAgendaItemDTO = createValidCreateAgendaItemDTO();
+
+        HttpEntity<CreateAgendaItemDTO> request = new HttpEntity<>(createAgendaItemDTO, getHeadersWithAuth(userToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda/"+ EXISTING_AGENDA_ITEM_ID,
+                HttpMethod.DELETE,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should get event agenda successfully")
+    void getEventAgenda_WithValidEventId_ReturnsAgenda() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<List<GetAgendaItemDTO>> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/agenda",
+                HttpMethod.GET,
+                request,
+                new ParameterizedTypeReference<List<GetAgendaItemDTO>>() {}
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    @DisplayName("Should return 404 when getting agenda for non-existent event")
+    void getEventAgenda_WithNonExistentEvent_ReturnsNotFound() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_EVENT_ID + "/agenda",
+                HttpMethod.GET,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should get event successfully")
+    void getEvent_WithValidEventId_ReturnsEvent() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<GetEventDTO> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID,
+                HttpMethod.GET,
+                request,
+                GetEventDTO.class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    @DisplayName("Should return 404 when getting non-existent event")
+    void getEvent_WithNonExistentEventId_ReturnsNotFound() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_EVENT_ID,
+                HttpMethod.GET,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }

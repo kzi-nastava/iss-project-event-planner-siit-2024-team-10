@@ -1,14 +1,14 @@
 INSERT INTO location ( city, country, street, house_number) VALUES
-                                                                   ( 'New York', 'USA', '5th Avenue', '101'),
-                                                                   ( 'London', 'UK', 'Baker Street', '221B'),
-                                                                   ( 'Berlin', 'Germany', 'Unter den Linden', '50');
+                                                                ( 'New York', 'USA', '5th Avenue', '101'),
+                                                                ( 'London', 'UK', 'Baker Street', '221B'),
+                                                                ( 'Berlin', 'Germany', 'Unter den Linden', '50');
 
 INSERT INTO account (email, password, role, last_password_reset_date,notifications_silenced, status, user_id) VALUES
-                                                                                                                     ( 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', FALSE, 0, null),
-                                                                                                                     ( 'dummy_user@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 2, null);
+                                                                                                                  ( 'auth@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                  ( 'organizer@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 1,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                  ( 'provider@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 2,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                  ( 'admin@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 3,'2023-12-01 10:00:00', FALSE, 0, null),
+                                                                                                                  ( 'dummy_user@mail.com', '$2a$10$ViS.UAa9KZMu4luKceTt8OP9z6Y35SKmBlE.CxCbGEejVWuDfXpuC', 0,'2023-12-01 10:00:00', FALSE, 2, null);
 
 
 INSERT INTO company ( email, name, phone_number, description, location_id) VALUES
@@ -23,8 +23,8 @@ UPDATE account SET user_id = 1 WHERE id = 3;
 
 INSERT INTO offering_category (name, description, is_deleted, pending, creator_id) VALUES
                                                                                        ('Electronics', 'Category for electronic items.', FALSE, FALSE, 2),
-                                                                                       ( 'Home Services', 'Category for home-related services.', FALSE, TRUE, 2),
-                                                                                       ( 'Nova kategorija', 'Category for home-related services.', FALSE, TRUE, 3);
+                                                                                       ( 'Home Services', 'Category for home-related services.', FALSE, FALSE, 2),
+                                                                                       ( 'Nova kategorija', 'Category for home-related services.', FALSE, FALSE, 3);
 
 INSERT INTO event_type ( name, description, is_active) VALUES
                                                            ( 'Workshop', 'Hands-on learning sessions.', TRUE),
@@ -32,31 +32,31 @@ INSERT INTO event_type ( name, description, is_active) VALUES
 
 
 INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_star_count, five_star_count, participants_count, average_rating) VALUES
-                                                                                                                                     (2,1,5,2,4,14, 3.3),
-                                                                                                                                     (4,2,6,1,1,14, 2.8),
-                                                                                                                                     (1,2,1,0,0,4, 2.0),
-                                                                                                                                     (0,0,2,3,7,12, 4.4),
-                                                                                                                                     (4,2,1,7,1,15, 3.2),
-                                                                                                                                     (4,2,1,7,1,15, 3.2),
-                                                                                                                                     (1, 1, 2, 5, 5, 0, 4.1),
-                                                                                                                                     (0, 0, 0, 3, 12, 15, 4.8),
-                                                                                                                                     (3, 4, 2, 2, 1, 12, 2.6),
-                                                                                                                                     (0, 1, 1, 4, 8, 14, 4.3),
-                                                                                                                                     (2, 2, 3, 3, 5, 15, 3.6);
+                                                                                                                                                     (2,1,5,2,4,14, 3.3),
+                                                                                                                                                     (4,2,6,1,1,14, 2.8),
+                                                                                                                                                     (1,2,1,0,0,4, 2.0),
+                                                                                                                                                     (0,0,2,3,7,12, 4.4),
+                                                                                                                                                     (4,2,1,7,1,15, 3.2),
+                                                                                                                                                     (4,2,1,7,1,15, 3.2),
+                                                                                                                                                     (1, 1, 2, 5, 5, 14, 4.1),
+                                                                                                                                                     (0, 0, 0, 3, 12, 15, 4.8),
+                                                                                                                                                     (3, 4, 2, 2, 1, 12, 2.6),
+                                                                                                                                                     (0, 1, 1, 4, 8, 14, 4.3),
+                                                                                                                                                     (2, 2, 3, 3, 5, 15, 3.6);
 
 
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
-                                                                                                                                                   ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2026-01-15 12:00', FALSE, 1, '2025-03-10', 1),
-                                                                                                                                                   ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2026-03-10 15:00', FALSE, 2, '2025-03-03',2),
-                                                                                                                                                   ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20 09:00', FALSE, 3, '2025-05-01',3),
-                                                                                                                                                   ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
-                                                                                                                                                   ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5),
-                                                                                                                                                   ( 2, 1, 'Some event', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', TRUE, 1, '2021-07-15',6),
-                                                                                                                                                   (2, 1, 'Startup Pitch', 'Pitch your startup idea to investors.', 2, FALSE, '2025-12-01 10:00', FALSE, 1, '2025-07-20', 7),
-                                                                                                                                                   (2, 2, 'Health & Wellness Fair', 'Explore health trends and free check-ups.', 120, TRUE, '2025-11-10 09:00', FALSE, 2, '2025-07-21', 8),
-                                                                                                                                                   (2, 1, 'Gaming Convention', 'Meet gamers and try new releases.', 300, TRUE, '2025-12-15 11:30', FALSE, 3, '2025-07-22', 9),
-                                                                                                                                                   (2, 2, 'Coding Bootcamp', 'Hands-on coding workshop.', 60, TRUE, '2025-08-20 08:00', FALSE, 2, '2025-07-23', 10),
-                                                                                                                                                   (2, 1, 'Photography Meetup', 'Learn and practice photography techniques.', 40, TRUE, '2025-09-12 17:00', FALSE, 1, '2025-07-24', 11);
+                                                                                                                                                         ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2026-01-15 12:00', FALSE, 1, '2025-03-10', 1),
+                                                                                                                                                         ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2026-03-10 15:00', FALSE, 2, '2025-03-03',2),
+                                                                                                                                                         ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20 09:00', FALSE, 3, '2025-05-01',3),
+                                                                                                                                                         ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15 08:30', FALSE, 2, '2025-08-12',4),
+                                                                                                                                                         ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', FALSE, 1, '2025-07-15',5),
+                                                                                                                                                         ( 2, 1, 'Some event', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01 18:00', TRUE, 1, '2021-07-15',6),
+                                                                                                                                                         (2, 1, 'Startup Pitch', 'Pitch your startup idea to investors.', 2, FALSE, '2025-12-01 10:00', FALSE, 1, '2025-07-20', 7),
+                                                                                                                                                         (2, 2, 'Health & Wellness Fair', 'Explore health trends and free check-ups.', 120, TRUE, '2025-11-10 09:00', FALSE, 2, '2025-07-21', 8),
+                                                                                                                                                         (2, 1, 'Gaming Convention', 'Meet gamers and try new releases.', 300, TRUE, '2025-12-15 11:30', FALSE, 3, '2025-07-22', 9),
+                                                                                                                                                         (2, 2, 'Coding Bootcamp', 'Hands-on coding workshop.', 60, TRUE, '2025-08-20 08:00', FALSE, 2, '2025-07-23', 10),
+                                                                                                                                                         (2, 1, 'Photography Meetup', 'Learn and practice photography techniques.', 40, TRUE, '2025-09-12 17:00', FALSE, 1, '2025-07-24', 11);
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted, event_id) VALUES
                                                                                                       ('Opening Session', 'Kick-off of the tech workshop.', 'Main Hall', '09:00:00', '10:00:00', FALSE, 1),
                                                                                                       ('AI Trends', 'Discussion on recent advancements in AI.', 'Tech Room 1', '10:15:00', '11:15:00', FALSE, 1),
@@ -64,10 +64,10 @@ INSERT INTO agenda_item (name, description, location, start_time, end_time, is_d
                                                                                                       ('Panel Discussion', 'Business leaders share insights.', 'Conference Hall', '09:45:00', '11:00:00', FALSE, 2),
                                                                                                       ('Opening Band', 'Local band performance.', 'Outdoor Stage A', '15:00:00', '16:00:00', FALSE, 3),
                                                                                                       ('Headliner', 'Main act of the evening.', 'Main Stage', '20:00:00', '22:00:00', FALSE, 3),
-                                                                                                        ('Dinner', 'Formal dinner with guests.', 'Banquet Hall', '19:00:00', '20:30:00', FALSE, 4),
-                                                                                                        ('Silent Auction', 'Auction of donated items.', 'Main Lobby', '20:30:00', '22:00:00', FALSE, 4),
-                                                                                                        ('Gallery Walkthrough', 'Guided tour of the exhibits.', 'Exhibition Room 1', '10:00:00', '11:00:00', FALSE, 5),
-                                                                                                        ('Artist Q&A', 'Meet the featured artists.', 'Exhibition Room 2', '11:15:00', '12:15:00', FALSE, 5);
+                                                                                                      ('Dinner', 'Formal dinner with guests.', 'Banquet Hall', '19:00:00', '20:30:00', FALSE, 4),
+                                                                                                      ('Silent Auction', 'Auction of donated items.', 'Main Lobby', '20:30:00', '22:00:00', FALSE, 4),
+                                                                                                      ('Gallery Walkthrough', 'Guided tour of the exhibits.', 'Exhibition Room 1', '10:00:00', '11:00:00', FALSE, 5),
+                                                                                                      ('Artist Q&A', 'Meet the featured artists.', 'Exhibition Room 2', '11:15:00', '12:15:00', FALSE, 5);
 
 INSERT INTO guests (event_id,guest_list) VALUES
                                              (2,'guest1@mail.com'),
@@ -176,13 +176,3 @@ INSERT INTO account_notifications (account_id, notifications_id) VALUES
                                                                      (2,3);
 INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
                                                                                               (1,2);
-INSERT INTO budget_item (amount, is_deleted, category_id, event_id) VALUES
-                                                                        (1500.0, false, 1, 1),
-                                                                        (2000.0, false, 2, 1),
-                                                                        (5000.0, false, 3, 3);
-
-INSERT INTO account_report(reportee_id, reporter_id, status, processing_timestamp, description) VALUES
-                                                                                                    (1, 2, 0, NULL, 'Spam behavior'),
-                                                                                                    (1, 3, 0,  NULL, 'Inappropriate messages'),
-                                                                                                    (2, 1, 0, NULL, 'False information'),
-                                                                                                    (5, 1, 1, '2025-12-12 08:00:00', 'False information');

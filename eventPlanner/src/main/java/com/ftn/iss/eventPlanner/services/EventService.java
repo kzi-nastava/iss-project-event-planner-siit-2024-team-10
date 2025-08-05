@@ -212,6 +212,8 @@ public class EventService {
         if(createEventDTO.getEventTypeId()!=0) {
             eventType=eventTypeRepository.findById(createEventDTO.getEventTypeId())
                     .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + createEventDTO.getEventTypeId() + " not found"));
+            if(!eventType.isActive())
+                throw new IllegalArgumentException("Event Type with ID " + createEventDTO.getEventTypeId() + " is not active");
         }
         event.setEventType(eventType);
         event.setBudget(new HashSet<>());
@@ -229,6 +231,8 @@ public class EventService {
     public UpdatedEventDTO update (int eventId, UpdateEventDTO updateEventDTO){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        if(event.isDeleted())
+            throw new IllegalArgumentException("Event with ID " + eventId + " is deleted and cannot be updated");
         event.setName(updateEventDTO.getName());
         event.setDescription(updateEventDTO.getDescription());
         if(updateEventDTO.getMaxParticipants() < event.getStats().getParticipantsCount()) {
@@ -243,6 +247,9 @@ public class EventService {
         if(updateEventDTO.getEventTypeId()!=0) {
             eventType = eventTypeRepository.findById(updateEventDTO.getEventTypeId())
                     .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + updateEventDTO.getEventTypeId() + " not found"));
+            if((event.getEventType() == null || eventType.getId() != event.getEventType().getId()) && !eventType.isActive()) {
+                throw new IllegalArgumentException("Event Type with ID " + updateEventDTO.getEventTypeId() + " is not active");
+            }
         }
         event.setEventType(eventType);
         event= updateEventPublicity(event, updateEventDTO);

@@ -78,7 +78,7 @@ public class EventController {
     @PutMapping(value = "/{eventId}", consumes =  MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedEventDTO> updateEvent(@Valid @RequestBody UpdateEventDTO event, @PathVariable int eventId) {
         UpdatedEventDTO createdEventType = eventService.update(eventId, event);
-        return new ResponseEntity<>(createdEventType, HttpStatus.CREATED);
+        return new ResponseEntity<>(createdEventType, HttpStatus.OK);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
@@ -91,7 +91,7 @@ public class EventController {
     @GetMapping(value = "/{eventId}/agenda", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<GetAgendaItemDTO>> getEventAgenda(@PathVariable int eventId) {
         Collection<GetAgendaItemDTO> agendaItems = eventService.getAgenda(eventId);
-        return new ResponseEntity<>(agendaItems,HttpStatus.CREATED);
+        return new ResponseEntity<>(agendaItems,HttpStatus.OK);
     }
 
     @GetMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -110,7 +110,7 @@ public class EventController {
     @PostMapping(value="/{eventId}/agenda", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreatedAgendaItemDTO> createAgendaItem(@PathVariable int eventId,@Valid @RequestBody CreateAgendaItemDTO agendaItemDto) {
         CreatedAgendaItemDTO createdAgendaItemDTO = eventService.createAgendaItem(eventId, agendaItemDto);
-        return ResponseEntity.ok(createdAgendaItemDTO);
+        return new ResponseEntity<>(createdAgendaItemDTO, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyAuthority('EVENT_ORGANIZER')")
