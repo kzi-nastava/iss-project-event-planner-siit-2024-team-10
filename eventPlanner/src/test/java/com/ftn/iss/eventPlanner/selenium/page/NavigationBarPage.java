@@ -28,6 +28,8 @@ public class NavigationBarPage {
 
     @FindBy(xpath = "//button[.//span[text()='Create event']]")
     private WebElement createEventMenuItem;
+    @FindBy(xpath = "//button[.//span[text()='Budget']]")
+    private WebElement budgetMenuItem;
 
     public void openMenuAndClickCreateEvent() {
         // Click the menu icon
@@ -39,7 +41,13 @@ public class NavigationBarPage {
         // Click on "Create event"
         createEventMenuItem.click();
     }
+    public void openMenuAndClickBudget() {
+        wait.until(ExpectedConditions.elementToBeClickable(menuButton)).click();
 
+        wait.until(ExpectedConditions.visibilityOf(budgetMenuItem));
+
+        budgetMenuItem.click();
+    }
     public void openLoginPage() {
         // Click the login button
         wait.until(ExpectedConditions.elementToBeClickable(loginButton)).click();
