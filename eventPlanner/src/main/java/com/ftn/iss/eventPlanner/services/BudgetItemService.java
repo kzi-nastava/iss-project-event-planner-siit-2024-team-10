@@ -24,6 +24,8 @@ public class BudgetItemService {
     private EventRepository eventRepository;
     @Autowired
     private OfferingRepository offeringRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -34,7 +36,7 @@ public class BudgetItemService {
 
         // Check if event is deleted
         if (event.isDeleted()) {
-            throw new IllegalArgumentException("Event with ID " + eventId + " is deleted and cannot be modified");
+            throw new IllegalArgumentException("Event with ID " + eventId + " is deleted");
         }
 
         // Find category and check if it exists
@@ -64,7 +66,7 @@ public class BudgetItemService {
         if (offeringId != 0) {
             // Find offering and check if it exists
             Offering offering = offeringRepository.findById(offeringId)
-                    .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
 
             // Check if offering is deleted
             if (offering.isDeleted()) {
@@ -80,14 +82,9 @@ public class BudgetItemService {
                 budgetItem.getProducts().add(((com.ftn.iss.eventPlanner.model.Product)offering).getCurrentDetails());
             }
         }
-
-        // Save budget item
         budgetItem = budgetItemRepository.save(budgetItem);
-
-        // Add to event's budget and save event
         event.getBudget().add(budgetItem);
         eventRepository.save(event);
-
         return modelMapper.map(budgetItem, CreatedBudgetItemDTO.class);
     }
 
@@ -163,8 +160,10 @@ public class BudgetItemService {
     public void buy(int eventId, int offeringId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with ID " + eventId + " not found"));
+        if(event.isDeleted()) throw new IllegalArgumentException("Event with ID "+" is deleted");
         Offering offering = offeringRepository.findById(offeringId)
                 .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
+        if(offering.isDeleted()) throw new IllegalArgumentException("Offering with ID "+" is deleted");
 
         boolean addedToExistingBudgetItem = false;
 
