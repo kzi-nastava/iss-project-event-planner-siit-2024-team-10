@@ -9,10 +9,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class SearchAndFilterTest {
+public class EventSearchAndFilterTest {
 
     private WebDriver driver;
     private WebDriverWait wait;
@@ -41,12 +40,12 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(1)
-    public void searchEventByName_DisplayOnlyEventsThatMatchTheQuery() throws InterruptedException {
+    public void searchEventByName_DisplayOnlyEventsThatMatchTheQuery() {
         String query = "Music";
 
+        int previousCount = homePage.getAllEventCards().size();
         homePage.searchEventByName(query);
-
-        Thread.sleep(2000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
         Assertions.assertFalse(homePage.getAllEventCards().isEmpty(),
                 "Expected some events to be shown.");
@@ -60,13 +59,14 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(2)
-    public void filterEventsByLocation_ShouldDisplayOnlyLondonEvents() throws InterruptedException {
+    public void filterEventsByLocation_ShouldDisplayOnlyLondonEvents() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
 
         filterEventsPage.setLocation("London");
+        int previousCount = homePage.getAllEventCards().size();
         filterEventsPage.clickApply();
-        Thread.sleep(3000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
         Assertions.assertFalse(homePage.getAllEventCards().isEmpty(),
                 "Expected some events to be shown.");
@@ -80,13 +80,14 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(3)
-    public void filterEventsByType_ShouldDisplayOnlyConferenceEvents() throws InterruptedException {
+    public void filterEventsByType_ShouldDisplayOnlyConferenceEvents() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
 
         filterEventsPage.selectEventType("Conference");
+        int previousCount = homePage.getAllEventCards().size();
         filterEventsPage.clickApply();
-        Thread.sleep(3000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
         Assertions.assertFalse(homePage.getAllEventCards().isEmpty(),
                 "Expected some events to be shown.");
@@ -100,13 +101,14 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(4)
-    public void filterByDateRange_ShouldDisplayOnlyEventsInRange() throws InterruptedException {
+    public void filterByDateRange_ShouldDisplayOnlyEventsInRange() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
 
         filterEventsPage.setDateRange("10/01/2025", "12/31/2025");
+        int previousCount = homePage.getAllEventCards().size();
         filterEventsPage.clickApply();
-        Thread.sleep(3000);
+        wait.until(driver -> homePage.getAllEventCards().size() < previousCount);
 
         Assertions.assertFalse(homePage.getAllEventCards().isEmpty(),
                 "Expected some events to be shown.");
@@ -122,13 +124,14 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(5)
-    public void filterByMinRating_ShouldDisplayHighRatedEvents() throws InterruptedException {
+    public void filterByMinRating_ShouldDisplayHighRatedEvents() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
 
         filterEventsPage.setMinRating(3.5);
+        int previousCount = homePage.getAllEventCards().size();
         filterEventsPage.clickApply();
-        Thread.sleep(2000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
         Assertions.assertFalse(homePage.getAllEventCards().isEmpty(),
                 "Expected events with rating ≥ 3.5.");
@@ -142,11 +145,12 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(6)
-    public void searchEventByName_NoResults() throws InterruptedException {
+    public void searchEventByName_NoResults() {
         String query = "NonexistentEventName123";
 
+        int previousCount = homePage.getAllEventCards().size();
         homePage.searchEventByName(query);
-        Thread.sleep(2000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
         Assertions.assertTrue(homePage.getAllEventCards().isEmpty(),
                 "Expected no event cards for a nonexistent search query.");
@@ -154,15 +158,16 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(7)
-    public void filterEvents_NoResults() throws InterruptedException {
+    public void filterEvents_NoResults() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
 
         filterEventsPage.selectEventType("Conference");
         filterEventsPage.setLocation("Mars");
 
+        int previousCount = homePage.getAllEventCards().size();
         filterEventsPage.clickApply();
-        Thread.sleep(3000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
         Assertions.assertTrue(homePage.getAllEventCards().isEmpty(),
                 "Expected no event cards for this filter combination.");
@@ -170,17 +175,19 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(8)
-    public void filterThenSearch_CombinedResults() throws InterruptedException {
+    public void filterThenSearch_CombinedResults() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
 
         filterEventsPage.selectEventType("Workshop");
         filterEventsPage.setDateRange("09/01/2025", "09/31/2025");
+        int previousCount = homePage.getAllEventCards().size();
         filterEventsPage.clickApply();
-        Thread.sleep(2000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
+        int previousCount2 = homePage.getAllEventCards().size();
         homePage.searchEventByName("Photo");
-        Thread.sleep(2000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount2);
 
         Assertions.assertFalse(homePage.getAllEventCards().isEmpty(),
                 "Expected filtered and searched events to be displayed.");
@@ -207,7 +214,7 @@ public class SearchAndFilterTest {
 
     @Test
     @Order(9)
-    public void filterWithAllCriteria_ShouldReturnValidEvents() throws InterruptedException {
+    public void filterWithAllCriteria_ShouldReturnValidEvents() {
         homePage.clickEventFilterButton();
         filterEventsPage = new FilterEventsPage(driver);
 
@@ -216,20 +223,19 @@ public class SearchAndFilterTest {
         filterEventsPage.setDateRange("10/01/2025", "11/31/2025");
         filterEventsPage.setMaxParticipants(300);
         filterEventsPage.setMinRating(4.0);
+        int previousCount = homePage.getAllEventCards().size();
         filterEventsPage.clickApply();
-        Thread.sleep(3000);
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
         Assertions.assertFalse(homePage.getAllEventCards().isEmpty(),
                 "Expected at least one event matching all criteria.");
 
-        // Provera lokacije
         Assertions.assertTrue(
                 homePage.getAllEventCards().stream()
                         .allMatch(card -> card.getText().contains("London")),
                 "Some events are not located in London."
         );
 
-        // Provera datuma
         LocalDate start = LocalDate.of(2025, 10, 1);
         LocalDate end = LocalDate.of(2025, 11, 30);
         Assertions.assertTrue(
@@ -243,12 +249,28 @@ public class SearchAndFilterTest {
                 "Some events are not of type 'Conference'."
         );
 
-        // Provera rejtinga
         Assertions.assertTrue(
                 homePage.areAllEventRatingsAbove(4.0),
                 "Some events have rating below 4.0."
         );
     }
 
+    @Test
+    @Order(10)
+    public void clearFilters_ShouldDisplayAllEventsAgain() {
+        homePage.clickEventFilterButton();
+        filterEventsPage = new FilterEventsPage(driver);
+        filterEventsPage.selectEventType("Conference");
+        filterEventsPage.setLocation("London");
+        int previousCount = homePage.getAllEventCards().size();
+        filterEventsPage.clickApply();
+        wait.until(driver -> homePage.getAllEventCards().size() != previousCount);
 
+        int filteredCount = homePage.getAllEventCards().size();
+        homePage.resetEventFilterButton.click();
+        wait.until(driver -> homePage.getAllEventCards().size() != filteredCount);
+
+        Assertions.assertTrue(homePage.getAllEventCards().size() > filteredCount,
+                "Expected more events after clearing filters.");
+    }
 }
