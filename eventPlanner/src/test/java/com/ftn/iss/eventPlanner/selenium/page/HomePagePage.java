@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class HomePagePage {
 
@@ -40,6 +39,8 @@ public class HomePagePage {
     @FindBy(xpath = "//button[contains(.,'Filter') and ancestor::div[contains(@class, 'event-filter')]]")
     public WebElement eventFilterButton;
 
+    @FindBy(xpath = "//button[contains(.,'Reset Filters') and ancestor::div[contains(@class, 'event-filter')]]")
+    public WebElement resetEventFilterButton;
 
     // === ACTIONS ===
 
@@ -63,7 +64,8 @@ public class HomePagePage {
 
         for (WebElement card : cards) {
             List<WebElement> tags = card.findElements(By.cssSelector(".tag"));
-            if (tags.size() >= 2) { // prvi je uvek "EVENT", drugi je tip
+            // First tag is always event, second is the event type
+            if (tags.size() >= 2) {
                 eventTypes.add(tags.get(1).getText().trim());
             }
         }
@@ -110,7 +112,6 @@ public class HomePagePage {
     public void scrollToElement(WebElement element) {
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
     }
-
 
 }
 

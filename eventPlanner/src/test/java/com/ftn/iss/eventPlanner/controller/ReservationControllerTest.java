@@ -35,8 +35,8 @@ public class ReservationControllerTest {
     private static final int SERVICE_ID = 19; // duration 2-4h
     private static final int EXISTING_RESERVATION_ID = 1;
     private static final int NON_EXISTENT_ID = 999;
-    private static final int EXISTING_PENDING_RESERVATION_ACCEPT_ID = 5;
-    private static final int EXISTING_PENDING_RESERVATION_REJECT_ID = 8;
+    private static final int EXISTING_PENDING_RESERVATION_ACCEPT_ID = 3;
+    private static final int EXISTING_PENDING_RESERVATION_REJECT_ID = 4;
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -474,5 +474,35 @@ public class ReservationControllerTest {
         );
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Accept Reservation - Not Found")
+    public void acceptReservation_NotFound() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(providerToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_ID + "/accept",
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Reject Reservation - Not Found")
+    public void rejectReservation_NotFound() {
+        HttpEntity<Void> request = new HttpEntity<>(getHeaders(providerToken));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_ID + "/reject",
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }
