@@ -407,6 +407,22 @@ public class EventServiceTest {
     @DisplayName("Should throw exception when EventType is not found")
     void create_WhenEventTypeNotFound_ThrowsException() {
         when(modelMapper.map(createEventDTO, Event.class)).thenReturn(createMappedEvent);
+        eventType.setActive(false);
+        when(eventTypeRepository.findById(1)).thenReturn(Optional.of(eventType));
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            eventService.create(createEventDTO);
+        });
+
+        assertEquals("Event Type with ID 1 is not active", exception.getMessage());
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when EventType is not active")
+    void create_WhenEventTypeNotActive_ThrowsException() {
+        when(modelMapper.map(createEventDTO, Event.class)).thenReturn(createMappedEvent);
+
         when(eventTypeRepository.findById(1)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -492,6 +508,35 @@ public class EventServiceTest {
         });
 
         assertEquals("Event with ID 1 not found", exception.getMessage());
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when event is deleted")
+    void update_WhenEventDeleted_ThrowsException() {
+        initialUpdateEvent.setDeleted(true);
+        when(eventRepository.findById(1)).thenReturn(Optional.of(initialUpdateEvent));
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            eventService.update(1,updateEventDTO);
+        });
+
+        assertEquals("Event with ID 1 is deleted and cannot be updated", exception.getMessage());
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when new event type is not active")
+    void update_WhenEventTypeNotActive_ThrowsException() {
+        when(eventRepository.findById(1)).thenReturn(Optional.of(initialUpdateEvent));
+        updatedEventType.setActive(false);
+        when(eventTypeRepository.findById(2)).thenReturn(Optional.of(updatedEventType));
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            eventService.update(1,updateEventDTO);
+        });
+
+        assertEquals("Event Type with ID 2 is not active", exception.getMessage());
         verify(eventRepository, never()).save(any());
     }
 
