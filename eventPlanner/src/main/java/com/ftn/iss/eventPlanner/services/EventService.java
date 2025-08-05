@@ -247,7 +247,7 @@ public class EventService {
         if(updateEventDTO.getEventTypeId()!=0) {
             eventType = eventTypeRepository.findById(updateEventDTO.getEventTypeId())
                     .orElseThrow(() -> new IllegalArgumentException("Event Type with ID " + updateEventDTO.getEventTypeId() + " not found"));
-            if(eventType.getId()!= event.getEventType().getId() && !eventType.isActive()) {
+            if((event.getEventType() == null || eventType.getId() != event.getEventType().getId()) && !eventType.isActive()) {
                 throw new IllegalArgumentException("Event Type with ID " + updateEventDTO.getEventTypeId() + " is not active");
             }
         }
