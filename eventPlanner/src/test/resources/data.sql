@@ -43,9 +43,17 @@ INSERT INTO event (organizer_id, event_type_id, name, description, max_participa
                                                                                                                                                          ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20', FALSE, 3, '2025-05-01 09:00',3),
                                                                                                                                                          ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15', FALSE, 2, '2025-08-12 08:30',4),
                                                                                                                                                          ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01', FALSE, 1, '2025-07-15 18:00',5);
-INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted) VALUES
-                                                                                            ( 'Opening Session', 'Kick-off of the event.', 'Main Hall', '09:00:00', '10:00:00', FALSE),
-                                                                                            ( 'Keynote Speech', 'Special guest speaker.', 'Conference Room A', '10:30:00', '11:30:00', FALSE);
+INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted, event_id) VALUES
+                                                                                                      ('Opening Session', 'Kick-off of the tech workshop.', 'Main Hall', '09:00:00', '10:00:00', FALSE, 1),
+                                                                                                      ('AI Trends', 'Discussion on recent advancements in AI.', 'Tech Room 1', '10:15:00', '11:15:00', FALSE, 1),
+                                                                                                      ('Welcome Speech', 'Introduction by organizers.', 'Conference Hall', '09:00:00', '09:30:00', FALSE, 2),
+                                                                                                      ('Panel Discussion', 'Business leaders share insights.', 'Conference Hall', '09:45:00', '11:00:00', FALSE, 2),
+                                                                                                      ('Opening Band', 'Local band performance.', 'Outdoor Stage A', '15:00:00', '16:00:00', FALSE, 3),
+                                                                                                      ('Headliner', 'Main act of the evening.', 'Main Stage', '20:00:00', '22:00:00', FALSE, 3),
+                                                                                                      ('Dinner', 'Formal dinner with guests.', 'Banquet Hall', '19:00:00', '20:30:00', FALSE, 4),
+                                                                                                      ('Silent Auction', 'Auction of donated items.', 'Main Lobby', '20:30:00', '22:00:00', FALSE, 4),
+                                                                                                      ('Gallery Walkthrough', 'Guided tour of the exhibits.', 'Exhibition Room 1', '10:00:00', '11:00:00', FALSE, 5),
+                                                                                                      ('Artist Q&A', 'Meet the featured artists.', 'Exhibition Room 2', '11:15:00', '12:15:00', FALSE, 5);
 
 INSERT INTO comment (content, status, commenter_id, rating) VALUES
                                                                 ('Great event!', 1, 1, 5),
