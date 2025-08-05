@@ -167,9 +167,9 @@ class ReservationServiceTest {
         details.setMaxDuration(4);
         service.setCurrentDetails(details);
 
-        event.setDate(LocalDate.now());
-        createReservationDTO.setStartTime(LocalTime.of(22, 59));
-        createReservationDTO.setEndTime(LocalTime.of(23,59));
+        event.setDate(LocalDate.now().plusDays(1));
+        createReservationDTO.setStartTime(LocalTime.of(18, 0));
+        createReservationDTO.setEndTime(LocalTime.of(20,0));
 
         mockEventAndServiceFound();
         when(reservationRepository.findAll()).thenReturn(List.of());
