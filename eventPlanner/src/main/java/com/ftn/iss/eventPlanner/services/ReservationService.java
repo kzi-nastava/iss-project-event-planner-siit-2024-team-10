@@ -252,6 +252,7 @@ public class ReservationService {
             if ((providedStart.isBefore(reservationStartDateTime) && providedEnd.isAfter(reservationEndDateTime)) ||
                     (providedStart.isBefore(reservationEndDateTime) && providedStart.isAfter(reservationStartDateTime)) ||
                     (providedEnd.isBefore(reservationEndDateTime) && providedEnd.isAfter(reservationStartDateTime)) ||
+                    (providedStart.isBefore(reservationStartDateTime) && providedEnd.isAfter(reservationEndDateTime)) ||
                     (providedStart.isEqual(reservationStartDateTime) || providedEnd.isEqual(reservationEndDateTime))) {
                 throw new IllegalArgumentException("Service not available at selected time.");
             }
@@ -273,7 +274,7 @@ public class ReservationService {
         Event event = eventRepository.findById(reservation.getEvent())
                 .orElseThrow(() -> new NotFoundException("Event with ID " + reservation.getEvent() + " not found"));
         com.ftn.iss.eventPlanner.model.Service service = serviceRepository.findById(reservation.getService())
-                .orElseThrow(() -> new NotFoundException("Service with ID " + reservation.getService() + "not found"));
+                .orElseThrow(() -> new NotFoundException("Service with ID " + reservation.getService() + " not found"));
 
         LocalTime startTime = reservation.getStartTime();
         LocalTime endTime = reservation.getEndTime();
