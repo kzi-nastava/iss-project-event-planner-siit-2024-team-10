@@ -7,6 +7,9 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.*;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -263,5 +266,52 @@ public class BudgetTest {
         reservationPage.fillServiceTimeInputs("1200AM", "0300AM");
         reservationPage.confirmServiceBooking();
         offeringDetailsPage.waitForSnackbarWithText("You've already made a reservation for selected event.");
+    }
+    @Test
+    @Order(16)
+    public void validateBudgetAmount_shouldMatchExpectedValue() {
+        navigationBarPage.openMenuAndClickBudget();
+        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
+        budgetManagerPage.selectEventByName("Tech Workshop");
+
+        double expectedBudget = 160000.00;
+
+        boolean isBudgetCorrect = budgetManagerPage.isTotalBudgetEqualTo(expectedBudget);
+        double actualBudget = budgetManagerPage.getTotalBudgetAmount();
+
+        System.out.println("Expected budget: $" + expectedBudget);
+        System.out.println("Actual budget: $" + actualBudget);
+
+        Assertions.assertTrue(isBudgetCorrect,
+                "Budget should be $" + expectedBudget + " but was $" + actualBudget);
+    }
+    @Test
+    @Order(17)
+    public void checkRecommendedCategories_businessConference_shouldHaveCategories() {
+        navigationBarPage.openMenuAndClickBudget();
+        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
+
+        List<String> expectedCategories = Arrays.asList("Electronics", "Home Services");
+
+        boolean hasCorrectCategories = budgetManagerPage.hasExpectedRecommendedCategories(
+                "Business Conference", expectedCategories);
+
+        Assertions.assertTrue(hasCorrectCategories,
+                "Business Conference should have Electronics and Home Services");
+    }
+
+    @Test
+    @Order(18)
+    public void checkRecommendedCategories_techWorkshop_shouldHaveNoCategories() {
+        navigationBarPage.openMenuAndClickBudget();
+        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
+
+        List<String> expectedCategories = new ArrayList<>();
+
+        boolean hasCorrectCategories = budgetManagerPage.hasExpectedRecommendedCategories(
+                "Tech Workshop", expectedCategories);
+
+        Assertions.assertTrue(hasCorrectCategories,
+                "Tech Workshop should have NO recommended categories");
     }
 }

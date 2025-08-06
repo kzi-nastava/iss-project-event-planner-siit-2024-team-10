@@ -69,6 +69,17 @@ public class BudgetManagerPage {
 
     @FindBy(css = "table.budget-table tr.data-row:nth-child(1) input.currency-input")
     private WebElement firstRowAmountInput;
+    @FindBy(css = ".total-budget-text")
+    private WebElement totalBudgetElement;
+
+    @FindBy(css = ".category-badge")
+    private List<WebElement> categoryElements;
+
+    @FindBy(css = ".recommended-categories .category-badge")
+    private List<WebElement> recommendedCategoryElements;
+    @FindBy(css = ".recommended-categories")
+    private WebElement recommendedCategoriesSection;
+
 
     @FindBy(css = "body")
     private WebElement body;
@@ -220,5 +231,78 @@ public class BudgetManagerPage {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+    public boolean isTotalBudgetEqualTo(double expectedAmount) {
+        try {
+            wait.until(ExpectedConditions.visibilityOf(totalBudgetElement));
+            String budgetText = totalBudgetElement.getText();
+
+            String numericPart = budgetText.replaceAll("[^\\d.,]", "").replace(",", "");
+            double budgetAmount = Double.parseDouble(numericPart);
+
+            System.out.println("Expected budget: $" + expectedAmount + ", Actual budget: $" + budgetAmount);
+            return Math.abs(budgetAmount - expectedAmount) < 0.01;
+        } catch (Exception e) {
+            System.out.println("Error checking budget amount: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public double getTotalBudgetAmount() {
+        try {
+            wait.until(ExpectedConditions.visibilityOf(totalBudgetElement));
+            String budgetText = totalBudgetElement.getText();
+
+            String numericPart = budgetText.replaceAll("[^\\d.,]", "").replace(",", "");
+            return Double.parseDouble(numericPart);
+
+        } catch (Exception e) {
+            System.out.println("Error getting total budget amount: " + e.getMessage());
+            return 0.0;
+        }
+    }
+    public boolean areRecommendedCategoriesDisplayed() {
+        try {
+            return recommendedCategoriesSection.isDisplayed();
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
+    public List<String> getRecommendedCategories() {
+        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+                By.cssSelector(".recommended-categories .category-badge")));
+
+        return recommendedCategoryElements.stream()
+                .map(WebElement::getText)
+                .map(String::trim)
+                .toList();
+    }
+    public boolean hasExpectedRecommendedCategories(String eventName, List<String> expectedCategories) {
+        selectEventByName(eventName);
+        waitForDataLoad();
+
+        boolean hasRecommendedSection = areRecommendedCategoriesDisplayed();
+
+        if (!hasRecommendedSection && expectedCategories.isEmpty()) {
+            return true;
+        }
+
+        if (!hasRecommendedSection && !expectedCategories.isEmpty()) {
+            return false;
+        }
+
+        if (hasRecommendedSection && expectedCategories.isEmpty()) {
+            List<String> actualCategories = getRecommendedCategories();
+            return false;
+        }
+
+        List<String> actualCategories = getRecommendedCategories();
+
+        boolean allFound = expectedCategories.stream().allMatch(expected ->
+                actualCategories.stream().anyMatch(actual ->
+                        actual.toLowerCase().contains(expected.toLowerCase())));
+
+        if (allFound && actualCategories.size() == expectedCategories.size()) return true;
+        return false;
     }
 }
