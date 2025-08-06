@@ -177,6 +177,6 @@ INSERT INTO account_notifications (account_id, notifications_id) VALUES
 INSERT INTO event_type_recommended_categories(event_type_id,recommended_categories_id) VALUES (1,1),
                                                                                               (1,2);
 INSERT INTO budget_item (amount, is_deleted, category_id, event_id) VALUES
-                                                                        (1200.0, false, 1, 1);
-
+                                                                        (1200.0, false, 1, 1),
+                                                                        (100,false,1,2);
 INSERT INTO budget_item_services(budget_item_id,services_id) VALUES  (1,1);

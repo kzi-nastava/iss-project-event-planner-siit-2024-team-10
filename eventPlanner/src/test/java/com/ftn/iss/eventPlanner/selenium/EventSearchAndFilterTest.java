@@ -30,6 +30,7 @@ public class EventSearchAndFilterTest {
         wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
 
         homePage = new HomePagePage(driver);
+        homePage.waitForFetch();
         homePage.scrollToElement(homePage.getSearchEventInput());
     }
 

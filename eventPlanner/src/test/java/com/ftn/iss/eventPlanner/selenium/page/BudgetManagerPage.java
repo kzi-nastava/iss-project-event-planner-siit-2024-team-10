@@ -9,6 +9,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 
 public class BudgetManagerPage {
     private WebDriver driver;
@@ -88,19 +89,46 @@ public class BudgetManagerPage {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         PageFactory.initElements(driver, this);
+        waitForTableFetch();
     }
 
     public void selectEventByName(String eventName) {
         wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
+
+        String text = eventSelect.getText();
+
+        if(Objects.equals(eventSelect.getText(), eventName))
+            return;
+
         eventSelect.click();
 
         WebElement option = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//mat-option[contains(., '" + eventName + "')]")));
         option.click();
+
+        WebElement table = driver.findElement(By.cssSelector(".budget-table"));
+        String oldHtml = table.getAttribute("innerHTML");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(driver -> {
+            WebElement newTable = driver.findElement(By.cssSelector(".budget-table"));
+            return !newTable.getAttribute("innerHTML").equals(oldHtml);
+        });
     }
     public void clickAddBudgetItem() {
         wait.until(ExpectedConditions.elementToBeClickable(addBudgetItemButton));
         addBudgetItemButton.click();
+    }
+
+    public void waitForTableFetch(){
+        WebElement table = driver.findElement(By.cssSelector(".budget-table"));
+        String oldHtml = table.getAttribute("innerHTML");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(driver -> {
+            WebElement newTable = driver.findElement(By.cssSelector(".budget-table"));
+            return !newTable.getAttribute("innerHTML").equals(oldHtml);
+        });
     }
 
     public void waitForDialog() {
@@ -131,7 +159,6 @@ public class BudgetManagerPage {
     }
 
     public boolean isBudgetItemPresent(String amount) {
-        waitForUIRefresh();
         List<WebElement> amounts = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
                 By.cssSelector("td.amount-cell input.currency-input")));
         return amounts.stream().anyMatch(e -> e.getAttribute("value").equals(amount));
@@ -168,7 +195,6 @@ public class BudgetManagerPage {
     }
 
     public boolean findBudgetItemInTable(String categoryKeyword, String offeringKeyword) {
-        waitForDataLoad();
 
         if (budgetTableRows.isEmpty()) {
             if (emptyState != null && emptyState.isDisplayed()) {
@@ -210,28 +236,8 @@ public class BudgetManagerPage {
 
     public void scrollToBottom() {
         ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        try {
-            Thread.sleep(SCROLL_DELAY);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 
-    private void waitForUIRefresh() {
-        try {
-            Thread.sleep(UI_REFRESH_DELAY);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    private void waitForDataLoad() {
-        try {
-            Thread.sleep(DATA_LOAD_DELAY);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
     public boolean isTotalBudgetEqualTo(double expectedAmount) {
         try {
             wait.until(ExpectedConditions.visibilityOf(totalBudgetElement));
@@ -279,7 +285,6 @@ public class BudgetManagerPage {
     }
     public boolean hasExpectedRecommendedCategories(String eventName, List<String> expectedCategories) {
         selectEventByName(eventName);
-        waitForDataLoad();
 
         boolean hasRecommendedSection = areRecommendedCategoriesDisplayed();
 

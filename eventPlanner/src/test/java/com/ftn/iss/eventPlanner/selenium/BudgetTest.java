@@ -105,7 +105,6 @@ public class BudgetTest {
         offeringListPage.searchAndClickOffering("DJ Service", true);
         ReservationPage reservationPage = new ReservationPage(driver);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
-        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForServiceBookingDialog();
         reservationPage.selectEventByName("Charity Gala");
@@ -113,6 +112,7 @@ public class BudgetTest {
         reservationPage.confirmServiceBooking();
         offeringDetailsPage.waitForSnackbarWithText("Reservation successful! Budget updated. Email confirmation has been sent.");
         navigationBarPage.openMenuAndClickBudget();
+        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         budgetManagerPage.selectEventByName("Charity Gala");
         boolean matchFound = budgetManagerPage.findBudgetItemInTable("electronics", "dj service");
         Assertions.assertTrue(matchFound, "No row found with category 'Electronics' and offering 'dj service'.");
@@ -125,13 +125,13 @@ public class BudgetTest {
         OfferingListPage offeringListPage = new OfferingListPage(driver);
         offeringListPage.searchAndClickOffering("Conference Projector", false);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
-        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
         offeringDetailsPage.selectEventByName("Tech Workshop");
         offeringDetailsPage.confirmProductPurchase();
         offeringDetailsPage.waitForSnackbarWithText("Product successfully added to budget.");
         navigationBarPage.openMenuAndClickBudget();
+        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         budgetManagerPage.selectEventByName("Tech Workshop");
         boolean matchFound = budgetManagerPage.findBudgetItemInTable("Home Services", "Conference Projector");
         Assertions.assertTrue(matchFound, "No row found with category 'Home Services' and offering 'Conference Projector'.");
@@ -144,13 +144,13 @@ public class BudgetTest {
         OfferingListPage offeringListPage = new OfferingListPage(driver);
         offeringListPage.searchAndClickOffering("Table Linens", false);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
-        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
         offeringDetailsPage.selectEventByName("Tech Workshop");
         offeringDetailsPage.confirmProductPurchase();
         offeringDetailsPage.waitForSnackbarWithText("Product successfully added to budget.");
         navigationBarPage.openMenuAndClickBudget();
+        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         budgetManagerPage.selectEventByName("Tech Workshop");
         boolean matchFound = budgetManagerPage.findBudgetItemInTable("electronics", "table linens");
         Assertions.assertTrue(matchFound, "No row found with category 'Electronics' and offering 'table linens'.");
@@ -255,7 +255,6 @@ public class BudgetTest {
     @Test
     @Order(15)
     public void reserveService_alreadyBooked_showsAlreadyReservedMessage() {
-        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         OfferingListPage offeringListPage = new OfferingListPage(driver);
         offeringListPage.searchAndClickOffering("Party Balloon Setup", true);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
