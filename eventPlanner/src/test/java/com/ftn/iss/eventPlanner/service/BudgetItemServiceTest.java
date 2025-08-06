@@ -390,7 +390,7 @@ class BudgetItemServiceTest {
         // Act & Assert
         assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Event with ID  is deleted"); // Bug u kodu - nedostaje eventId
+                .hasMessage("Event with ID  is deleted");
 
         // Verify
         verify(eventRepository).findById(VALID_EVENT_ID);
@@ -407,7 +407,7 @@ class BudgetItemServiceTest {
         // Act & Assert
         assertThatThrownBy(() -> budgetItemService.buy(VALID_EVENT_ID, VALID_OFFERING_ID))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Offering with ID  is deleted"); // Bug u kodu - nedostaje offeringId
+                .hasMessage("Offering with ID  is deleted");
 
         // Verify
         verify(eventRepository).findById(VALID_EVENT_ID);
