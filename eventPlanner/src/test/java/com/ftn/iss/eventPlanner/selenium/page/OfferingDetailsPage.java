@@ -71,6 +71,7 @@ public class OfferingDetailsPage {
     public void selectEventByName(String eventName) {
         wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
         eventSelect.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".mat-mdc-select-panel")));
 
         WebElement option = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//mat-option[contains(., '" + eventName + "')]")));

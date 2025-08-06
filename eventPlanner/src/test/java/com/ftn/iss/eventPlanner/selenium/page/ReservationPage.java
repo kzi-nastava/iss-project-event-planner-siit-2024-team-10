@@ -58,7 +58,7 @@ public class ReservationPage {
         wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
         eventSelect.click();
 
-        wait.until(ExpectedConditions.visibilityOfAllElements(eventOptions));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".mat-mdc-select-panel")));
 
         for (WebElement option : eventOptions) {
             if (option.getText().contains(eventName)) {
