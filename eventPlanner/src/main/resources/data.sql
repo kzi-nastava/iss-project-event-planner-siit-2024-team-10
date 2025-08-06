@@ -166,6 +166,10 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                                              ( 'Service',3 ,1,  9, FALSE, FALSE),
                                                                                                              ( 'Service',3 ,1,  10, FALSE, TRUE);
 
+INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
+                                                                                            ( '09:00:00', '17:00:00', 1, 1, 13,'2025-12-12 08:00:00'),
+                                                                                            ( '08:00:00', '20:00:00', 0, 2, 11,'2025-12-12 08:00:00');
+
 INSERT INTO account_notifications (account_id, notifications_id) VALUES
                                                                      (2, 1),
                                                                      (2, 2),
