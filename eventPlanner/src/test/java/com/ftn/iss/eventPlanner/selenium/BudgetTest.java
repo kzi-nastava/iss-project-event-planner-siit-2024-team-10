@@ -128,7 +128,7 @@ public class BudgetTest {
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
-        offeringDetailsPage.selectEventByIndex(0);
+        offeringDetailsPage.selectEventByName("Tech Workshop");
         offeringDetailsPage.confirmProductPurchase();
         offeringDetailsPage.waitForSnackbarWithText("Product successfully added to budget.");
         navigationBarPage.openMenuAndClickBudget();
@@ -147,7 +147,7 @@ public class BudgetTest {
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
-        offeringDetailsPage.selectEventByIndex(0);
+        offeringDetailsPage.selectEventByName("Tech Workshop");
         offeringDetailsPage.confirmProductPurchase();
         offeringDetailsPage.waitForSnackbarWithText("Product successfully added to budget.");
         navigationBarPage.openMenuAndClickBudget();
@@ -165,7 +165,7 @@ public class BudgetTest {
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
-        offeringDetailsPage.selectEventByIndex(0);
+        offeringDetailsPage.selectEventByName("Tech Workshop");
         offeringDetailsPage.confirmProductPurchase();
         offeringDetailsPage.waitForSnackbarWithText("Product already purchased");
     }
@@ -193,7 +193,7 @@ public class BudgetTest {
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
-        offeringDetailsPage.selectEventByIndex(0);
+        offeringDetailsPage.selectEventByName("Tech Workshop");
         offeringDetailsPage.confirmProductPurchase();
         offeringDetailsPage.waitForSnackbarWithText("Insufficient budget for this purchase");
     }

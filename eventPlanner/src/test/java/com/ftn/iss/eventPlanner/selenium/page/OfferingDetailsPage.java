@@ -68,14 +68,13 @@ public class OfferingDetailsPage {
         wait.until(ExpectedConditions.visibilityOf(eventSelectionHeader));
     }
 
-    public void selectEventByIndex(int index) {
+    public void selectEventByName(String eventName) {
         wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
         eventSelect.click();
 
-        wait.until(ExpectedConditions.visibilityOfAllElements(eventOptions));
-        Assertions.assertTrue(eventOptions.size() > index,
-                "Not enough event options available to select index " + index);
-        eventOptions.get(index).click();
+        WebElement option = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//mat-option[contains(., '" + eventName + "')]")));
+        option.click();
     }
     public void confirmProductPurchase() {
         wait.until(ExpectedConditions.elementToBeClickable(confirmButton));
