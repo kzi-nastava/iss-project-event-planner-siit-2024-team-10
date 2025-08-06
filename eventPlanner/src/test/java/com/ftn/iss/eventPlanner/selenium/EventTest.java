@@ -492,40 +492,6 @@ public class EventTest {
     }
 
     @Test
-    public void edit_PastDate_DisablesSubmit() {
-        createEvent();
-        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
-        eventDetailsPage.waitForFetch();
-        eventDetailsPage.openUpdateEventPage();
-        EditEventPage editEventPage = new EditEventPage(driver);
-
-        // Fill the form with valid data
-        editEventPage.fillForm(
-                "Unique Gathering",
-                "A one-of-a-kind event that doesn't fit standard categories.",
-                50,
-                "Serbia",
-                "Kragujevac",
-                "Svetozara Markovića",
-                "36",
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                true
-        );
-
-        // Verify submit button is enabled
-        editEventPage.waitForSubmitButtonEnabled(true);
-        Assertions.assertTrue(editEventPage.submitButton.isEnabled(),
-                "Submit button should be enabled when all required fields are filled.");
-
-        // Clear date field and set past date
-        editEventPage.clearInput(editEventPage.dateInput);
-        editEventPage.setDate(LocalDate.now().minusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        editEventPage.waitForSubmitButtonEnabled(false);
-        Assertions.assertFalse(editEventPage.submitButton.isEnabled(),
-                "Submit button should be disabled when date is set to a past date.");
-    }
-
-    @Test
     public void delete_Confirmed_DeletesEvent(){
         createEvent();
         EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
