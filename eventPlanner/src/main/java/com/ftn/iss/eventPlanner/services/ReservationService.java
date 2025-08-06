@@ -252,6 +252,7 @@ public class ReservationService {
             if ((providedStart.isBefore(reservationStartDateTime) && providedEnd.isAfter(reservationEndDateTime)) ||
                     (providedStart.isBefore(reservationEndDateTime) && providedStart.isAfter(reservationStartDateTime)) ||
                     (providedEnd.isBefore(reservationEndDateTime) && providedEnd.isAfter(reservationStartDateTime)) ||
+                    (providedStart.isBefore(reservationStartDateTime) && providedEnd.isAfter(reservationEndDateTime)) ||
                     (providedStart.isEqual(reservationStartDateTime) || providedEnd.isEqual(reservationEndDateTime))) {
                 throw new IllegalArgumentException("Service not available at selected time.");
             }
@@ -273,7 +274,7 @@ public class ReservationService {
         Event event = eventRepository.findById(reservation.getEvent())
                 .orElseThrow(() -> new NotFoundException("Event with ID " + reservation.getEvent() + " not found"));
         com.ftn.iss.eventPlanner.model.Service service = serviceRepository.findById(reservation.getService())
-                .orElseThrow(() -> new NotFoundException("Service with ID " + reservation.getService() + "not found"));
+                .orElseThrow(() -> new NotFoundException("Service with ID " + reservation.getService() + " not found"));
 
         LocalTime startTime = reservation.getStartTime();
         LocalTime endTime = reservation.getEndTime();
@@ -361,6 +362,11 @@ public class ReservationService {
     public void cancelReservation(int id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + id + " not found"));
+        if (reservation.getStatus().equals(Status.CANCELED) || reservation.getStatus().equals(Status.DENIED)){
+            throw new IllegalArgumentException("Reservation with ID " + id + " is already cancelled or unavailable");
+        } else if(reservation.getStatus().equals(Status.PENDING)){
+            throw new IllegalArgumentException("Cannot cancel a pending reservation with id  " + id);
+        }
         ServiceDetails reservationServiceDetails = findServiceDetailsByReservationId(id);
 
         isDateWithinCancellationPeriod(reservation.getEvent(), reservationServiceDetails);
@@ -371,6 +377,11 @@ public class ReservationService {
     public void acceptReservation(int reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
+        if (reservation.getStatus().equals(Status.CANCELED) || reservation.getStatus().equals(Status.DENIED)){
+            throw new IllegalArgumentException("Reservation with ID " + reservationId + " is already cancelled or unavailable");
+        } else if(reservation.getStatus().equals(Status.ACCEPTED)){
+            throw new IllegalArgumentException("Cannot accept a reservation that's already been accepted");
+        }
         budgetItemService.buy(reservation.getEvent().getId(),reservation.getService().getId());
         reservation.setStatus(Status.ACCEPTED);
         reservationRepository.save(reservation);
@@ -381,6 +392,11 @@ public class ReservationService {
     public void rejectReservation(int reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new NotFoundException("Reservation with ID " + reservationId + " not found"));
+        if (reservation.getStatus().equals(Status.CANCELED) || reservation.getStatus().equals(Status.DENIED)){
+            throw new IllegalArgumentException("Reservation with ID " + reservationId + " is already cancelled or unavailable");
+        } else if(reservation.getStatus().equals(Status.ACCEPTED)){
+            throw new IllegalArgumentException("Cannot reject a reservation that's already been accepted");
+        }
         reservation.setStatus(Status.DENIED);
         reservationRepository.save(reservation);
         notificationService.sendNotification(reservation.getEvent().getOrganizer().getAccount().getId(),"Reservation Denied",

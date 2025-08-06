@@ -200,3 +200,7 @@ INSERT INTO budget_item_services (budget_item_id, services_id) VALUES
 INSERT INTO budget_item_products (budget_item_id, products_id) VALUES
                                                                    (4, 2),
                                                                    (4, 6);
+
+INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
+                                                                                            ( '09:00:00', '17:00:00', 0, 5, 13,'2025-12-12 08:00:00'),
+                                                                                            ( '08:00:00', '20:00:00', 0, 5, 12,'2025-12-12 08:00:00');
