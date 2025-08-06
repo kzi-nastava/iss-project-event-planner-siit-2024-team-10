@@ -44,8 +44,7 @@ public class NavigationBarPage {
     public void openMenuAndClickBudget() {
         wait.until(ExpectedConditions.elementToBeClickable(menuButton)).click();
 
-        wait.until(ExpectedConditions.visibilityOf(budgetMenuItem));
-
+        wait.until(ExpectedConditions.elementToBeClickable(budgetMenuItem));
         budgetMenuItem.click();
     }
     public void openLoginPage() {

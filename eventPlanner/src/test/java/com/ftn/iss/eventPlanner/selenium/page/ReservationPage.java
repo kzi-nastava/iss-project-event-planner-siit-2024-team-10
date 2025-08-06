@@ -54,15 +54,20 @@ public class ReservationPage {
             endTimeInput.sendKeys(endTime);
         }
     }
-
-    public void selectEventByIndex(int index) {
+    public void selectEventByName(String eventName) {
         wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
         eventSelect.click();
 
         wait.until(ExpectedConditions.visibilityOfAllElements(eventOptions));
-        if (eventOptions.size() > index) {
-            eventOptions.get(index).click();
+
+        for (WebElement option : eventOptions) {
+            if (option.getText().contains(eventName)) {
+                option.click();
+                return;
+            }
         }
+
+        throw new RuntimeException("Event with name '" + eventName + "' not found");
     }
 
     public void confirmServiceBooking() {

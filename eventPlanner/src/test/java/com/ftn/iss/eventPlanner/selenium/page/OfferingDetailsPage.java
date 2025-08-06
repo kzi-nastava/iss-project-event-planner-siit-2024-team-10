@@ -77,17 +77,6 @@ public class OfferingDetailsPage {
                 "Not enough event options available to select index " + index);
         eventOptions.get(index).click();
     }
-
-    public void selectEventWithDoubleClick(int index) {
-        wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
-        eventSelect.click();
-        eventSelect.click(); // Double-click workaround
-
-        wait.until(ExpectedConditions.visibilityOfAllElements(eventOptions));
-        Assertions.assertFalse(eventOptions.isEmpty(), "No event options available to select.");
-        eventOptions.get(index).click();
-    }
-
     public void confirmProductPurchase() {
         wait.until(ExpectedConditions.elementToBeClickable(confirmButton));
         confirmButton.click();

@@ -79,28 +79,14 @@ public class BudgetManagerPage {
         PageFactory.initElements(driver, this);
     }
 
-    public void selectFirstEvent() {
+    public void selectEventByName(String eventName) {
         wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
         eventSelect.click();
 
-        wait.until(ExpectedConditions.elementToBeClickable(eventOptions.get(0)));
-        eventOptions.get(0).click();
-
-        wait.until(ExpectedConditions.visibilityOf(budgetTable));
+        WebElement option = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//mat-option[contains(., '" + eventName + "')]")));
+        option.click();
     }
-
-    public void selectEventByIndex(int index) {
-        WebElement eventSelectElement = wait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector("mat-select[formcontrolname='event']")));
-        eventSelectElement.click();
-
-        List<WebElement> options = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
-                By.cssSelector("mat-option")));
-        Assertions.assertTrue(options.size() > index,
-                "Not enough event options available to select index " + index);
-        options.get(index).click();
-    }
-
     public void clickAddBudgetItem() {
         wait.until(ExpectedConditions.elementToBeClickable(addBudgetItemButton));
         addBudgetItemButton.click();
@@ -154,24 +140,6 @@ public class BudgetManagerPage {
         WebElement snackBarElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("//simple-snack-bar[contains(., \"" + expectedText + "\")]")));
         Assertions.assertNotNull(snackBarElement, "Expected snackbar with text '" + expectedText + "' was not shown.");
-    }
-
-    public WebElement selectEventInBudgetPage(int eventIndex) {
-        wait.until(ExpectedConditions.visibilityOf(budgetContainer));
-
-        WebElement eventSelectBudget = findBudgetEventSelect();
-        eventSelectBudget.click();
-
-        List<WebElement> budgetOptions = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
-                By.cssSelector("mat-option")));
-        Assertions.assertTrue(budgetOptions.size() > eventIndex,
-                "Not enough event options available in budget page");
-
-        budgetOptions.get(eventIndex).click();
-
-        wait.until(ExpectedConditions.visibilityOf(budgetTable));
-
-        return eventSelectBudget;
     }
 
     private WebElement findBudgetEventSelect() {

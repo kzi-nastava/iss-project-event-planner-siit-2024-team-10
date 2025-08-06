@@ -15,13 +15,11 @@ public class BudgetTest {
     private WebDriverWait wait;
     private final String BASE_URL = "http://localhost:4200";
 
-    // Constants for test data
     private static final String LOGIN_EMAIL = "organizer@mail.com";
     private static final String LOGIN_PASSWORD = "password123";
     private static final String BUDGET_AMOUNT = "500";
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
 
-    // Page Objects
     private LoginPage loginPage;
     private NavigationBarPage navigationBarPage;
 
@@ -46,13 +44,12 @@ public class BudgetTest {
 
     @Test
     @Order(1)
-    public void testAddNewBudgetItem() {
+    public void addNewBudgetItem_shouldDisplayInTable() {
         navigationBarPage.openMenuAndClickBudget();
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
-        budgetManagerPage.selectFirstEvent();
+        budgetManagerPage.selectEventByName("Tech Workshop");
         budgetManagerPage.clickAddBudgetItem();
         budgetManagerPage.waitForDialog();
-        // select first category
         budgetManagerPage.selectCategory(0);
         budgetManagerPage.enterAmount(BUDGET_AMOUNT);
         budgetManagerPage.clickAddInDialog();
@@ -63,11 +60,10 @@ public class BudgetTest {
 
     @Test
     @Order(2)
-    public void testDeleteBudgetItemFailureDueToReservedOfferings() {
+    public void deleteBudgetItem_withReservedOfferings_shouldShowErrorMessage() {
         navigationBarPage.openMenuAndClickBudget();
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
-
-        budgetManagerPage.selectFirstEvent();
+        budgetManagerPage.selectEventByName("Tech Workshop");
         budgetManagerPage.clickDeleteButton(0);
         String message = budgetManagerPage.getSnackBarMessage();
         Assertions.assertTrue(message.contains("Budget item cannot be deleted because it has offerings"));
@@ -75,12 +71,10 @@ public class BudgetTest {
 
     @Test
     @Order(3)
-    public void testDeleteBudgetItem() {
+    public void deleteBudgetItem_withoutOfferings_shouldSucceed() {
         navigationBarPage.openMenuAndClickBudget();
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
-
-        budgetManagerPage.selectFirstEvent();
-
+        budgetManagerPage.selectEventByName("Tech Workshop");
         budgetManagerPage.clickDeleteButton(1);
         String message = budgetManagerPage.getSnackBarMessage();
         Assertions.assertTrue(message.contains("Budget item deleted"));
@@ -88,44 +82,35 @@ public class BudgetTest {
 
     @Test
     @Order(4)
-    public void testReserveServiceWithCategoryNotInPlannedBudget_Manual() {
+    public void reserveService_notInPlannedBudget_manualConfirmation_shouldSucceed() {
         OfferingListPage offeringListPage = new OfferingListPage(driver);
-        offeringListPage.clickOfferingCardById(12);
-
+        offeringListPage.searchAndClickOffering("Event Catering", true);
         ReservationPage reservationPage = new ReservationPage(driver);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
-
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForServiceBookingDialog();
-
-        reservationPage.selectEventByIndex(2);
+        reservationPage.selectEventByName("Charity Gala");
         reservationPage.fillServiceTimeInputs("1200PM", "0400PM");
         reservationPage.confirmServiceBooking();
-
         offeringDetailsPage.waitForSnackbarWithText("Reservation request is pending! Email confirmation will been sent.");
     }
 
     @Test
     @Order(5)
-    public void testReserveServiceWithCategoryNotInPlannedBudget_Autoconfirm() {
-        driver.get(BASE_URL + "/offering/13");
+    public void reserveService_notInPlannedBudget_autoConfirm_shouldUpdateBudget() {
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("DJ Service", true);
         ReservationPage reservationPage = new ReservationPage(driver);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
-
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForServiceBookingDialog();
-
-        reservationPage.selectEventByIndex(2);
+        reservationPage.selectEventByName("Charity Gala");
         reservationPage.fillServiceTimeInputs("1200AM", "0300AM");
         reservationPage.confirmServiceBooking();
-
         offeringDetailsPage.waitForSnackbarWithText("Reservation successful! Budget updated. Email confirmation has been sent.");
-
-        // Verify budget update
         navigationBarPage.openMenuAndClickBudget();
-        budgetManagerPage.selectEventInBudgetPage(2);
-
+        budgetManagerPage.selectEventByName("Charity Gala");
         boolean matchFound = budgetManagerPage.findBudgetItemInTable("electronics", "dj service");
         Assertions.assertTrue(matchFound, "No row found with category 'Electronics' and offering 'dj service'.");
         budgetManagerPage.scrollToBottom();
@@ -133,42 +118,37 @@ public class BudgetTest {
 
     @Test
     @Order(6)
-    public void testBuyProductWithCategoryNotInPlannedBudget() {
-        driver.get(BASE_URL + "/offering/10");
+    public void buyProduct_notInPlannedBudget_shouldUpdateBudget() {
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("Conference Projector", false);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
-        offeringDetailsPage.selectEventWithDoubleClick(0);
+        offeringDetailsPage.selectEventByIndex(0);
         offeringDetailsPage.confirmProductPurchase();
-        offeringDetailsPage.waitForSnackbarWithText("Product reserved successfully!");
-
-        // Verify budget update
+        offeringDetailsPage.waitForSnackbarWithText("Product successfully added to budget.");
         navigationBarPage.openMenuAndClickBudget();
-        budgetManagerPage.selectFirstEvent();
-
-        boolean matchFound = budgetManagerPage.findBudgetItemInTable("nova kategorija", "funeral memorial kit");
-        Assertions.assertTrue(matchFound, "No row found with category 'Electronics' and offering 'Funeral Memorial Kit'.");
+        budgetManagerPage.selectEventByName("Tech Workshop");
+        boolean matchFound = budgetManagerPage.findBudgetItemInTable("Home Services", "Conference Projector");
+        Assertions.assertTrue(matchFound, "No row found with category 'Home Services' and offering 'Conference Projector'.");
         budgetManagerPage.scrollToBottom();
     }
 
     @Test
     @Order(7)
-    public void testBuyProductWithCategoryInPlannedBudget() {
-        driver.get(BASE_URL + "/offering/5");
+    public void buyProduct_inPlannedBudget_shouldUpdateBudget() {
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("Table Linens", false);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
-
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
-        offeringDetailsPage.selectEventWithDoubleClick(0);
+        offeringDetailsPage.selectEventByIndex(0);
         offeringDetailsPage.confirmProductPurchase();
-        offeringDetailsPage.waitForSnackbarWithText("Product reserved successfully!");
-
-        // Verify budget update
+        offeringDetailsPage.waitForSnackbarWithText("Product successfully added to budget.");
         navigationBarPage.openMenuAndClickBudget();
-        budgetManagerPage.selectFirstEvent();
-
+        budgetManagerPage.selectEventByName("Tech Workshop");
         boolean matchFound = budgetManagerPage.findBudgetItemInTable("electronics", "table linens");
         Assertions.assertTrue(matchFound, "No row found with category 'Electronics' and offering 'table linens'.");
         budgetManagerPage.scrollToBottom();
@@ -176,106 +156,94 @@ public class BudgetTest {
 
     @Test
     @Order(8)
-    public void testBuyAlreadyPurchasedProduct() {
-        driver.get(BASE_URL + "/offering/10");
+    public void buyAlreadyPurchasedProduct_shouldShowAlreadyPurchasedMessage() {
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("Table Linens", false);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
-
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
         offeringDetailsPage.selectEventByIndex(0);
         offeringDetailsPage.confirmProductPurchase();
-        offeringDetailsPage.waitForSnackbarWithText("This product has already been purchased.");
+        offeringDetailsPage.waitForSnackbarWithText("Product already purchased");
     }
 
     @Test
     @Order(9)
-    public void testReserveServicePriceOutOfBudget() {
-        driver.get(BASE_URL + "/offering/14");
+    public void reserveService_exceedsBudget_shouldShowInsufficientBudgetError() {
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("Event Security", true);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
         ReservationPage reservationPage = new ReservationPage(driver);
-
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForServiceBookingDialog();
-
-        reservationPage.selectEventByIndex(2);
+        reservationPage.selectEventByName("Tech Workshop");
         reservationPage.fillServiceTimeInputs("0600PM", "1000PM");
         reservationPage.confirmServiceBooking();
-
-        offeringDetailsPage.waitForSnackbarWithText("Not enough budget to record the purchase.");
+        offeringDetailsPage.waitForSnackbarWithText("Insufficient budget for this purchase");
     }
 
     @Test
     @Order(10)
-    public void testBuyProductWithPriceOutOfBudget() {
-        driver.get(BASE_URL + "/offering/3");
+    public void buyProduct_exceedsBudget_shouldShowInsufficientBudgetError() {
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("Stage Lighting Kit", false);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
-
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForEventSelectionDialog();
         offeringDetailsPage.selectEventByIndex(0);
         offeringDetailsPage.confirmProductPurchase();
-        offeringDetailsPage.waitForSnackbarWithText("Insufficient budget for this purchase.");
+        offeringDetailsPage.waitForSnackbarWithText("Insufficient budget for this purchase");
     }
 
     @Test
     @Order(11)
-    public void testBuyNotAvailableProduct() {
-        driver.get(BASE_URL + "/offering/8");
+    public void buyUnavailableProduct_shouldDisableBookNowButton() {
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("Wedding Decoration Set", false);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
-
         boolean isDisabled = !offeringDetailsPage.isBookNowButtonEnabled();
         Assertions.assertTrue(isDisabled, "Book Now button should be disabled for offering 8.");
     }
 
     @Test
     @Order(12)
-    public void testUpdateToSmallAmount() {
+    public void updateBudgetAmount_tooSmall_shouldShowError() {
         navigationBarPage.openMenuAndClickBudget();
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
-        budgetManagerPage.selectFirstEvent();
-
+        budgetManagerPage.selectEventByName("Tech Workshop");
         budgetManagerPage.updateFirstRowAmount("0");
-        budgetManagerPage.clickBody(); // trigger blur
-
+        budgetManagerPage.clickBody();
         budgetManagerPage.waitForSnackbarWithText("Failed to update amount");
     }
 
     @Test
     @Order(13)
-    public void testUpdateToBigAmount() {
+    public void updateBudgetAmount_largeValue_shouldSucceed() {
         navigationBarPage.openMenuAndClickBudget();
         BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
-        budgetManagerPage.selectFirstEvent();
-
+        budgetManagerPage.selectEventByName("Tech Workshop");
         budgetManagerPage.updateFirstRowAmount("160000");
         budgetManagerPage.pressTab();
-
         String successMessage = budgetManagerPage.getSnackBarMessage();
-        Assertions.assertTrue(successMessage.toLowerCase().contains("updated"),
-                "Expected success message on valid amount");
+        Assertions.assertTrue(successMessage.toLowerCase().contains("updated"), "Expected success message on valid amount");
     }
 
     @Test
     @Order(14)
-    public void testReserveServiceWithCategoryInPlannedBudget_Autoconfirm() {
-        driver.get(BASE_URL + "/offering/19");
+    public void reserveService_inPlannedBudget_autoConfirm_shouldUpdateBudget() {
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("Party Balloon Setup", true);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
         ReservationPage reservationPage = new ReservationPage(driver);
-        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
-
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForServiceBookingDialog();
-
-        reservationPage.selectEventByIndex(0);
+        reservationPage.selectEventByName("Tech Workshop");
         reservationPage.fillServiceTimeInputs("1200AM", "0200AM");
         reservationPage.confirmServiceBooking();
-
         offeringDetailsPage.waitForSnackbarWithText("Reservation successful! Budget updated. Email confirmation has been sent.");
-
-        // Verify budget update
         navigationBarPage.openMenuAndClickBudget();
-        budgetManagerPage.selectEventInBudgetPage(0);
-
+        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
+        budgetManagerPage.selectEventByName("Tech Workshop");
         boolean matchFound = budgetManagerPage.findBudgetItemInTable("nova kategorija", "party balloon setup");
         Assertions.assertTrue(matchFound, "No row found with category 'Nova kategorija' and offering 'Party Balloon Setup'.");
         budgetManagerPage.scrollToBottom();
@@ -283,18 +251,17 @@ public class BudgetTest {
 
     @Test
     @Order(15)
-    public void testReserveAlreadyReservedService() {
-        driver.get(BASE_URL + "/offering/19");
+    public void reserveAlreadyBookedService_shouldShowAlreadyReservedMessage() {
+        BudgetManagerPage budgetManagerPage = new BudgetManagerPage(driver);
+        OfferingListPage offeringListPage = new OfferingListPage(driver);
+        offeringListPage.searchAndClickOffering("Party Balloon Setup", true);
         OfferingDetailsPage offeringDetailsPage = new OfferingDetailsPage(driver);
         ReservationPage reservationPage = new ReservationPage(driver);
-
         offeringDetailsPage.clickBookNowButton();
         offeringDetailsPage.waitForServiceBookingDialog();
-
-        reservationPage.selectEventByIndex(0);
+        reservationPage.selectEventByName("Tech Workshop");
         reservationPage.fillServiceTimeInputs("1200AM", "0300AM");
         reservationPage.confirmServiceBooking();
-
         offeringDetailsPage.waitForSnackbarWithText("You've already made a reservation for selected event.");
     }
 }
