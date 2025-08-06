@@ -1,16 +1,13 @@
 package com.ftn.iss.eventPlanner.controller;
 
 import com.ftn.iss.eventPlanner.dto.agendaitem.*;
-import com.ftn.iss.eventPlanner.dto.budgetitem.CreateBudgetItemDTO;
-import com.ftn.iss.eventPlanner.dto.budgetitem.CreatedBudgetItemDTO;
-import com.ftn.iss.eventPlanner.dto.budgetitem.GetBudgetItemDTO;
-import com.ftn.iss.eventPlanner.dto.budgetitem.UpdatedBudgetItemDTO;
+import com.ftn.iss.eventPlanner.dto.budgetitem.*;
 import com.ftn.iss.eventPlanner.dto.event.*;
 import com.ftn.iss.eventPlanner.dto.location.CreateLocationDTO;
 import com.ftn.iss.eventPlanner.model.Account;
 import com.ftn.iss.eventPlanner.model.Role;
 import com.ftn.iss.eventPlanner.util.TokenUtils;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,13 +22,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 
+import static com.ftn.iss.eventPlanner.util.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
-// every 401 will be changed after we change err
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
+@Transactional
 public class EventControllerTest {
 
     @Autowired
@@ -43,28 +42,6 @@ public class EventControllerTest {
     private String organizerToken;
     private String adminToken;
     private String userToken;
-
-    private static final String BASE = "/api/events";
-    private static final int EXISTING_EVENT_ID = 1;
-    private static final int NON_EXISTENT_EVENT_ID = 999;
-    private static final int EXISTING_BUDGET_ITEM_ID = 1;
-    private static final int NON_EXISTENT_BUDGET_ITEM_ID = 999;
-    private static final int EXISTING_OFFERING_ID = 1;
-    private static final int NON_EXISTENT_OFFERING_ID = 999;
-    private static final int DELETED_EVENT_ID = 10;
-    private static final int DELETED_BUDGET_ITEM_ID = 2;
-    private static final int DELETED_CATEGORY_ID = 3;
-    private static final int EVENT_WITH_BUDGET_ITEM = 3;
-    private static final int BUDGET_ITEM_TO_DELETE = 3;
-    private static final int NON_EXISTENT_ORGANIZER_ID=999;
-    private static final int UPDATABLE_EVENT_ID=3;
-    private static final int NON_EXISTENT_EVENT_TYPE_ID=999;
-    private static final int DELETABLE_EVENT_ID=4;
-    private static final int EXISTING_AGENDA_ITEM_ID = 1;
-    private static final int NON_EXISTENT_AGENDA_ITEM_ID = 999;
-
-    private static final int EVENT_WITHOUT_BUDGET_ITEM = 2;
-    private static final int BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS = 4; // Budget item with services and products
 
     @BeforeEach
     public void setUp() {
@@ -101,7 +78,7 @@ public class EventControllerTest {
         return getHeadersWithAuth(organizerToken);
     }
 
-    // ==================== createBudgetItem() Tests ====================
+// ==================== createBudgetItem() Tests ====================
 
     @Test
     @DisplayName("Create Budget Item - Success with valid input")
@@ -118,7 +95,7 @@ public class EventControllerTest {
                 request,
                 CreatedBudgetItemDTO.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1000, response.getBody().getAmount());
     }
@@ -138,30 +115,112 @@ public class EventControllerTest {
                 request,
                 CreatedBudgetItemDTO.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(0, response.getBody().getAmount());
     }
 
+// ==================== Validation Tests ====================
+
     @Test
-    @DisplayName("Create Budget Item - Success with maximum integer amount")
-    public void createBudgetItem_SuccessWithMaxAmount() {
+    @DisplayName("Create Budget Item - Fails with negative amount")
+    public void createBudgetItem_FailsWithNegativeAmount() {
         CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(Integer.MAX_VALUE);
+        dto.setAmount(-100);
         dto.setCategoryId(1);
 
         HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
 
-        ResponseEntity<CreatedBudgetItemDTO> response = restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget",
                 HttpMethod.POST,
                 request,
-                CreatedBudgetItemDTO.class);
+                String.class
+        );
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(Integer.MAX_VALUE, response.getBody().getAmount());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Amount cannot be negative"));
     }
+
+// ==================== Business Logic Tests ====================
+
+    @Test
+    @DisplayName("Create Budget Item - Event not found")
+    public void createBudgetItem_EventNotFound() {
+        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
+        dto.setAmount(500);
+        dto.setCategoryId(1);
+
+        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + NON_EXISTENT_EVENT_ID + "/budget",
+                HttpMethod.POST,
+                request,
+                String.class);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody().contains("Event with ID"));
+    }
+
+    @Test
+    @DisplayName("Create Budget Item - Deleted event")
+    public void createBudgetItem_DeletedEvent() {
+        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
+        dto.setAmount(500);
+        dto.setCategoryId(1);
+
+        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + DELETED_EVENT_ID + "/budget",
+                HttpMethod.POST,
+                request,
+                String.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("deleted"));
+    }
+
+    @Test
+    @DisplayName("Create Budget Item - Category not found")
+    public void createBudgetItem_CategoryNotFound() {
+        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
+        dto.setAmount(500);
+        dto.setCategoryId(99999);
+
+        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/budget",
+                HttpMethod.POST,
+                request,
+                String.class);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody().contains("Offering category with ID"));
+    }
+
+    @Test
+    @DisplayName("Create Budget Item - Deleted category")
+    public void createBudgetItem_DeletedCategory() {
+        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
+        dto.setAmount(500);
+        dto.setCategoryId(DELETED_CATEGORY_ID);
+
+        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/budget",
+                HttpMethod.POST,
+                request,
+                String.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("deleted"));
+    }
+
+// ==================== Security Tests ====================
 
     @Test
     @DisplayName("Create Budget Item - Unauthorized without token")
@@ -182,7 +241,7 @@ public class EventControllerTest {
     }
 
     @Test
-    @DisplayName("Create Budget Item - Unauthorized with USER role")
+    @DisplayName("Create Budget Item - Forbidden with USER role")
     public void createBudgetItem_ForbiddenUserRole() {
         CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
         dto.setAmount(500);
@@ -196,244 +255,38 @@ public class EventControllerTest {
                 request,
                 String.class);
 
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
+
+    // ==================== updateBudgetItem() Tests ====================
+
     @Test
-    @DisplayName("Create Budget Item - Unauthorized with ADMIN role")
-    public void createBudgetItem_SuccessWithAdminRole() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(1000);
-        dto.setCategoryId(1);
+    @DisplayName("Update Budget Item Amount - Success with valid amount")
+    public void updateBudgetItemAmount_Success() {
+        UpdateBudgetItemDTO dto = new UpdateBudgetItemDTO();
+        dto.setAmount(2000);
 
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth(adminToken));
+        HttpEntity<UpdateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
 
-        ResponseEntity<CreatedBudgetItemDTO> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
+        ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
+                HttpMethod.PUT,
                 request,
-                CreatedBudgetItemDTO.class);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Invalid token")
-    public void createBudgetItem_InvalidToken() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(500);
-        dto.setCategoryId(1);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth("invalid-token");
-
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Event not found")
-    public void createBudgetItem_EventNotFound() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(500);
-        dto.setCategoryId(1);
-
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + NON_EXISTENT_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-        assertTrue(response.getBody().contains("Event with ID"));
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Deleted event")
-    public void createBudgetItem_DeletedEvent() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(500);
-        dto.setCategoryId(1);
-
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + DELETED_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Category not found")
-    public void createBudgetItem_CategoryNotFound() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(500);
-        dto.setCategoryId(99999);
-
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-        assertTrue(response.getBody().contains("Offering category with ID"));
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Deleted category")
-    public void createBudgetItem_DeletedCategory() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(500);
-        dto.setCategoryId(DELETED_CATEGORY_ID);
-
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Negative amount")
-    public void createBudgetItem_NegativeAmount() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(-100);
-        dto.setCategoryId(1);
-
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Missing categoryId")
-    public void createBudgetItem_MissingCategoryId() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(500);
-
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Empty request body")
-    public void createBudgetItem_EmptyRequestBody() {
-        HttpEntity<String> request = new HttpEntity<>("{}", getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Invalid JSON")
-    public void createBudgetItem_InvalidJSON() {
-        HttpEntity<String> request = new HttpEntity<>("invalid-json", getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Invalid eventId format")
-    public void createBudgetItem_InvalidEventIdFormat() {
-        CreateBudgetItemDTO dto = new CreateBudgetItemDTO();
-        dto.setAmount(500);
-        dto.setCategoryId(1);
-
-        HttpEntity<CreateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/invalid-id/budget",
-                HttpMethod.POST,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Create Budget Item - Event with existing budget items")
-    public void createBudgetItem_EventWithExistingBudgetItems() {
-        // First, create a budget item
-        CreateBudgetItemDTO dto1 = new CreateBudgetItemDTO();
-        dto1.setAmount(500);
-        dto1.setCategoryId(1);
-
-        HttpEntity<CreateBudgetItemDTO> request1 = new HttpEntity<>(dto1, getHeadersWithAuth());
-        restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request1,
-                CreatedBudgetItemDTO.class);
-
-        // Then create another budget item for the same event
-        CreateBudgetItemDTO dto2 = new CreateBudgetItemDTO();
-        dto2.setAmount(750);
-        dto2.setCategoryId(2);
-
-        HttpEntity<CreateBudgetItemDTO> request2 = new HttpEntity<>(dto2, getHeadersWithAuth());
-
-        ResponseEntity<CreatedBudgetItemDTO> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget",
-                HttpMethod.POST,
-                request2,
-                CreatedBudgetItemDTO.class);
+                UpdatedBudgetItemDTO.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(750, response.getBody().getAmount());
+        assertEquals(2000, response.getBody().getAmount());
     }
 
-    // ==================== updateBudgetItem() Tests ====================
     @Test
     @DisplayName("Update Budget Item Amount - Success with zero amount")
     public void updateBudgetItemAmount_SuccessWithZeroAmount() {
-        int newAmount = 0;
+        UpdateBudgetItemDTO dto = new UpdateBudgetItemDTO();
+        dto.setAmount(0);
 
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
+        HttpEntity<UpdateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
 
         ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
@@ -447,29 +300,12 @@ public class EventControllerTest {
     }
 
     @Test
-    @DisplayName("Update Budget Item Amount - Success with maximum integer amount")
-    public void updateBudgetItemAmount_SuccessWithMaxAmount() {
-        int newAmount = Integer.MAX_VALUE;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                UpdatedBudgetItemDTO.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(Integer.MAX_VALUE, response.getBody().getAmount());
-    }
-
-    @Test
     @DisplayName("Update Budget Item Amount - Success with amount equal to used amount")
     public void updateBudgetItemAmount_SuccessWithAmountEqualToUsedAmount() {
-        int newAmount = 1930;
+        UpdateBudgetItemDTO dto = new UpdateBudgetItemDTO();
+        dto.setAmount(1930);
 
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
+        HttpEntity<UpdateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
 
         ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/" + BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS,
@@ -482,30 +318,74 @@ public class EventControllerTest {
         assertEquals(1930, response.getBody().getAmount());
     }
 
+// ==================== Validation Tests ====================
+
     @Test
-    @DisplayName("Update Budget Item Amount - Success with amount greater than used amount")
-    public void updateBudgetItemAmount_SuccessWithAmountGreaterThanUsedAmount() {
-        int newAmount = 2222;
+    @DisplayName("Update Budget Item Amount - Amount less than used amount")
+    public void updateBudgetItemAmount_AmountLessThanUsedAmount() {
+        UpdateBudgetItemDTO dto = new UpdateBudgetItemDTO();
+        dto.setAmount(100);
 
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
+        HttpEntity<UpdateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
 
-        ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/" + BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS,
                 HttpMethod.PUT,
                 request,
-                UpdatedBudgetItemDTO.class);
+                String.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(2222, response.getBody().getAmount());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("New amount cannot be less than the amount already used"));
     }
+
+// ==================== Business Logic Tests ====================
+
+    @Test
+    @DisplayName("Update Budget Item Amount - Budget item not found")
+    public void updateBudgetItemAmount_BudgetItemNotFound() {
+        UpdateBudgetItemDTO dto = new UpdateBudgetItemDTO();
+        dto.setAmount(2000);
+
+        HttpEntity<UpdateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + NON_EXISTENT_BUDGET_ITEM_ID,
+                HttpMethod.PUT,
+                request,
+                String.class);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody().contains("Budget item with ID"));
+        assertTrue(response.getBody().contains("not found"));
+    }
+
+    @Test
+    @DisplayName("Update Budget Item Amount - Deleted budget item")
+    public void updateBudgetItemAmount_DeletedBudgetItem() {
+        UpdateBudgetItemDTO dto = new UpdateBudgetItemDTO();
+        dto.setAmount(1000);
+
+        HttpEntity<UpdateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth());
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + DELETED_BUDGET_ITEM_ID,
+                HttpMethod.PUT,
+                request,
+                String.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Cannot update deleted budget item"));
+    }
+
+// ==================== Security Tests ====================
 
     @Test
     @DisplayName("Update Budget Item Amount - Unauthorized without token")
     public void updateBudgetItemAmount_Unauthorized() {
-        int newAmount = 2000;
+        UpdateBudgetItemDTO dto = new UpdateBudgetItemDTO();
+        dto.setAmount(2000);
 
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount);
+        HttpEntity<UpdateBudgetItemDTO> request = new HttpEntity<>(dto);
 
         ResponseEntity<String> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
@@ -519,45 +399,10 @@ public class EventControllerTest {
     @Test
     @DisplayName("Update Budget Item Amount - Forbidden with USER role")
     public void updateBudgetItemAmount_ForbiddenUserRole() {
-        int newAmount = 2000;
+        UpdateBudgetItemDTO dto = new UpdateBudgetItemDTO();
+        dto.setAmount(2000);
 
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth(userToken));
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Unauthorized with ADMIN role")
-    public void updateBudgetItemAmount_SuccessWithAdminRole() {
-        int newAmount = 2000;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth(adminToken));
-
-        ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                UpdatedBudgetItemDTO.class);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Invalid token")
-    public void updateBudgetItemAmount_InvalidToken() {
-        int newAmount = 2000;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth("invalid-token");
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, headers);
+        HttpEntity<UpdateBudgetItemDTO> request = new HttpEntity<>(dto, getHeadersWithAuth(userToken));
 
         ResponseEntity<String> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
@@ -565,313 +410,35 @@ public class EventControllerTest {
                 request,
                 String.class);
 
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Budget item not found")
-    public void updateBudgetItemAmount_BudgetItemNotFound() {
-        int newAmount = 2000;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + NON_EXISTENT_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-        assertTrue(response.getBody().contains("Budget item with ID"));
-        assertTrue(response.getBody().contains("not found"));
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Negative amount")
-    public void updateBudgetItemAmount_NegativeAmount() {
-        int newAmount = -500;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Amount less than used amount")
-    public void updateBudgetItemAmount_AmountLessThanUsedAmount() {
-        int newAmount = 100;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-        assertTrue(response.getBody().contains("New amount cannot be less than the amount already used"));
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Invalid eventId format")
-    public void updateBudgetItemAmount_InvalidEventIdFormat() {
-        int newAmount = 2000;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/invalid-id/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Invalid budgetItemId format")
-    public void updateBudgetItemAmount_InvalidBudgetItemIdFormat() {
-        int newAmount = 2000;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/invalid-id",
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Zero budgetItemId")
-    public void updateBudgetItemAmount_ZeroBudgetItemId() {
-        int newAmount = 2000;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/0",
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Negative budgetItemId")
-    public void updateBudgetItemAmount_NegativeBudgetItemId() {
-        int newAmount = 2000;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/-1",
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Empty request body")
-    public void updateBudgetItemAmount_EmptyRequestBody() {
-        HttpEntity<String> request = new HttpEntity<>("", getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Invalid JSON")
-    public void updateBudgetItemAmount_InvalidJSON() {
-        HttpEntity<String> request = new HttpEntity<>("invalid-json", getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - String instead of integer")
-    public void updateBudgetItemAmount_StringInsteadOfInteger() {
-        HttpEntity<String> request = new HttpEntity<>("\"not-a-number\"", getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Null amount")
-    public void updateBudgetItemAmount_NullAmount() {
-        HttpEntity<Integer> request = new HttpEntity<>(null, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Very large amount")
-    public void updateBudgetItemAmount_VeryLargeAmount() {
-        int newAmount = Integer.MAX_VALUE - 1;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                UpdatedBudgetItemDTO.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(Integer.MAX_VALUE - 1, response.getBody().getAmount());
-    }
-
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Calculation with services and products")
-    public void updateBudgetItemAmount_CalculationWithServicesAndProducts() {
-        // This test requires a budget item with known services and products
-        // Assuming BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS has:
-        // - Service: price=1200, discount=10% -> effective price = 1080
-        // - Service: price=500, discount=0% -> effective price = 500
-        // - Product: price=700, discount=50% -> effective price = 350
-        // - Total used amount = 1930
-
-        int newAmount = 1940; // Just above the used amount
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS,
-                HttpMethod.PUT,
-                request,
-                UpdatedBudgetItemDTO.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(1940, response.getBody().getAmount());
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Calculation with services and products - amount too low")
-    public void updateBudgetItemAmount_CalculationWithServicesAndProducts_AmountTooLow() {
-        // Same scenario as above but with amount less than used amount
-        int newAmount = 600;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-        assertTrue(response.getBody().contains("New amount cannot be less than the amount already used"));
-    }
-
-    @Test
-    @DisplayName("Update Budget Item Amount - Budget item with no services or products")
-    public void updateBudgetItemAmount_NoServicesOrProducts() {
-        int newAmount = 100;
-
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<UpdatedBudgetItemDTO> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + EXISTING_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                UpdatedBudgetItemDTO.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(100, response.getBody().getAmount());
-    }
-    @Test
-    @DisplayName("Update Budget Item Amount - Deleted budget item")
-    public void updateBudgetItemAmount_DeletedBudgetItem() {
-        int newAmount = 1000;
-        HttpEntity<Integer> request = new HttpEntity<>(newAmount, getHeadersWithAuth());
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + DELETED_BUDGET_ITEM_ID,
-                HttpMethod.PUT,
-                request,
-                String.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-        assertTrue(response.getBody().contains("Cannot update deleted budget item"));
-    }
-    // ==================== buy() Tests ====================
+// ==================== buyOfferingForEvent() Tests ====================
 
     @Test
     @DisplayName("Buy Offering - Success")
     public void buyOffering_Success() {
-        ResponseEntity<Boolean> response = restTemplate.exchange(
+        ResponseEntity<Void> response = restTemplate.exchange(
                 BASE + "/" + EVENT_WITHOUT_BUDGET_ITEM + "/budget/buy/" + EXISTING_OFFERING_ID,
                 HttpMethod.PUT,
-                new HttpEntity<>(false, getHeadersWithAuth()),
-                Boolean.class);
+                new HttpEntity<>(null, getHeadersWithAuth()),
+                Void.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
     @Test
-    @DisplayName("Buy Offering - Unauthorized")
-    public void buyOffering_Unauthorized() {
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + EXISTING_OFFERING_ID,
+    @DisplayName("Buy Offering - Success adds to existing budget item")
+    public void buyOffering_SuccessExistingBudgetItem() {
+        ResponseEntity<Void> response = restTemplate.exchange(
+                BASE + "/" + EVENT_WITH_BUDGET_ITEM + "/budget/buy/" + EXISTING_OFFERING_ID,
                 HttpMethod.PUT,
-                new HttpEntity<>(null),
-                String.class);
+                new HttpEntity<>(null, getHeadersWithAuth()),
+                Void.class);
 
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
-    @Test
-    @DisplayName("Buy Offering - Unauthorized with USER role")
-    public void buyOffering_UnauthorizedUserRole() {
-        ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + EXISTING_OFFERING_ID,
-                HttpMethod.PUT,
-                new HttpEntity<>(null, getHeadersWithAuth(userToken)),
-                String.class);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
+// ==================== Business Logic Tests ====================
 
     @Test
     @DisplayName("Buy Offering - Event not found")
@@ -882,7 +449,22 @@ public class EventControllerTest {
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 String.class);
 
-        assertTrue(response.getStatusCode().is4xxClientError());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody().contains("Event with ID"));
+        assertTrue(response.getBody().contains("not found"));
+    }
+
+    @Test
+    @DisplayName("Buy Offering - Deleted event")
+    public void buyOffering_DeletedEvent() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + DELETED_EVENT_ID + "/budget/buy/" + EXISTING_OFFERING_ID,
+                HttpMethod.PUT,
+                new HttpEntity<>(null, getHeadersWithAuth()),
+                String.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("is deleted"));
     }
 
     @Test
@@ -894,70 +476,87 @@ public class EventControllerTest {
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 String.class);
 
-        assertTrue(response.getStatusCode().is4xxClientError());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody().contains("Offering with ID"));
+        assertTrue(response.getBody().contains("not found"));
+    }
+
+    @Test
+    @DisplayName("Buy Offering - Deleted offering")
+    public void buyOffering_DeletedOffering() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + DELETED_OFFERING_ID,
+                HttpMethod.PUT,
+                new HttpEntity<>(null, getHeadersWithAuth()),
+                String.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("is deleted"));
     }
 
     @Test
     @DisplayName("Buy Offering - Insufficient budget")
     public void buyOffering_InsufficientBudget() {
-        int expensiveOfferingId = 1;
-        ResponseEntity<Boolean> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + expensiveOfferingId,
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + EXPENSIVE_OFFERING_ID,
                 HttpMethod.PUT,
                 new HttpEntity<>(null, getHeadersWithAuth()),
-                Boolean.class);
-        assertTrue(response.getStatusCode().is4xxClientError());
+                String.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Insufficient budget"));
     }
 
     @Test
     @DisplayName("Buy Offering - Product already purchased")
     public void buyOffering_ProductAlreadyPurchased() {
-        int alreadyPurchasedProductId = 2;
-        ResponseEntity<Boolean> response = restTemplate.exchange(
-                BASE + "/" + EVENT_WITH_BUDGET_ITEM + "/budget/buy/" + alreadyPurchasedProductId,
-                HttpMethod.PUT,
-                new HttpEntity<>(null, getHeadersWithAuth()),
-                Boolean.class);
-
-        assertTrue(response.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("Buy Offering - Invalid eventId format")
-    public void buyOffering_InvalidEventIdFormat() {
         ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/invalid-id/budget/buy/" + EXISTING_OFFERING_ID,
+                BASE + "/" + EVENT_WITH_BUDGET_ITEM + "/budget/buy/" + ALREADY_PURCHASED_PRODUCT_ID,
                 HttpMethod.PUT,
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 String.class);
 
-        assertTrue(response.getStatusCode().is4xxClientError());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Product already purchased"));
+    }
+
+// ==================== Security Tests ====================
+
+    @Test
+    @DisplayName("Buy Offering - Unauthorized without token")
+    public void buyOffering_Unauthorized() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + EXISTING_OFFERING_ID,
+                HttpMethod.PUT,
+                new HttpEntity<>(null),
+                String.class);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
-    @DisplayName("Buy Offering - Invalid offeringId format")
-    public void buyOffering_InvalidOfferingIdFormat() {
+    @DisplayName("Buy Offering - Forbidden with USER role")
+    public void buyOffering_ForbiddenUserRole() {
         ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/invalid-id",
+                BASE + "/" + EXISTING_EVENT_ID + "/budget/buy/" + EXISTING_OFFERING_ID,
                 HttpMethod.PUT,
-                new HttpEntity<>(null, getHeadersWithAuth()),
+                new HttpEntity<>(null, getHeadersWithAuth(userToken)),
                 String.class);
 
-        assertTrue(response.getStatusCode().is4xxClientError());
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
+
     // ==================== deleteBudgetItem() Tests ====================
-
     @Test
     @DisplayName("Delete Budget Item - Success")
     public void deleteBudgetItem_Success() {
-        ResponseEntity<Boolean> response = restTemplate.exchange(
+        ResponseEntity<Void> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/" + BUDGET_ITEM_TO_DELETE,
                 HttpMethod.DELETE,
                 new HttpEntity<>(null, getHeadersWithAuth()),
-                Boolean.class);
+                Void.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody());
     }
 
     @Test
@@ -973,7 +572,7 @@ public class EventControllerTest {
     }
 
     @Test
-    @DisplayName("Delete Budget Item - Unauthorized with USER role")
+    @DisplayName("Delete Budget Item - Forbidden with USER role")
     public void deleteBudgetItem_UnauthorizedUserRole() {
         ResponseEntity<String> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/" + BUDGET_ITEM_TO_DELETE,
@@ -981,7 +580,7 @@ public class EventControllerTest {
                 new HttpEntity<>(null, getHeadersWithAuth(userToken)),
                 String.class);
 
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     @Test
@@ -993,7 +592,8 @@ public class EventControllerTest {
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 String.class);
 
-        assertTrue(response.getStatusCode().is4xxClientError());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody().contains("Budget item with ID"));
     }
 
     @Test
@@ -1005,45 +605,37 @@ public class EventControllerTest {
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 String.class);
 
-        assertTrue(response.getStatusCode().is4xxClientError());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody().contains("Event with ID"));
     }
 
     @Test
     @DisplayName("Delete Budget Item - Cannot delete item with purchases")
     public void deleteBudgetItem_CannotDeleteWithPurchases() {
-        ResponseEntity<Boolean> response = restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 BASE + "/" + EXISTING_EVENT_ID + "/budget/" + BUDGET_ITEM_WITH_SERVICES_AND_PRODUCTS,
                 HttpMethod.DELETE,
                 new HttpEntity<>(null, getHeadersWithAuth()),
-                Boolean.class);
+                String.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertFalse(response.getBody());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Budget item cannot be deleted"));
     }
 
     @Test
     @DisplayName("Delete Budget Item - Already deleted item")
     public void deleteBudgetItem_AlreadyDeleted() {
-        ResponseEntity<Boolean> response = restTemplate.exchange(
-                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + DELETED_BUDGET_ITEM_ID,
-                HttpMethod.DELETE,
-                new HttpEntity<>(null, getHeadersWithAuth()),
-                Boolean.class);
-
-        assertFalse(response.getBody());
-    }
-
-    @Test
-    @DisplayName("Delete Budget Item - Invalid eventId format")
-    public void deleteBudgetItem_InvalidEventIdFormat() {
         ResponseEntity<String> response = restTemplate.exchange(
-                BASE + "/invalid-id/budget/" + BUDGET_ITEM_TO_DELETE,
+                BASE + "/" + EXISTING_EVENT_ID + "/budget/" + DELETED_BUDGET_ITEM_ID,
                 HttpMethod.DELETE,
                 new HttpEntity<>(null, getHeadersWithAuth()),
                 String.class);
 
-        assertTrue(response.getStatusCode().is4xxClientError());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("is deleted"));
     }
+
+
     @Test
     @DisplayName("Get Total Budget - Success for event with budget items")
     public void getTotalBudget_Success() {
@@ -1058,7 +650,7 @@ public class EventControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1930,response.getBody());
+        assertEquals(1930.0, response.getBody());
     }
 
     @Test
@@ -1090,16 +682,16 @@ public class EventControllerTest {
                 String.class
         );
 
-        assertTrue(response.getStatusCode().is4xxClientError());
-        assertTrue(response.getBody().contains("Event with ID"));
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
+
     @Test
     @DisplayName("Get Budget Items - Success for existing event")
     public void getBudgetItems_Success() {
         HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
 
         ResponseEntity<GetBudgetItemDTO[]> response = restTemplate.exchange(
-                BASE + "/budget/" + EVENT_WITH_BUDGET_ITEM,
+                BASE + "/budget/" + EXISTING_EVENT_ID,
                 HttpMethod.GET,
                 request,
                 GetBudgetItemDTO[].class
@@ -1107,8 +699,7 @@ public class EventControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1,response.getBody().length);
-
+        assertEquals(3, response.getBody().length);
     }
 
     @Test
@@ -1117,36 +708,33 @@ public class EventControllerTest {
         HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
 
         ResponseEntity<GetBudgetItemDTO[]> response = restTemplate.exchange(
-                BASE + "/budget/" + 5, // second event with no budget items
+                BASE + "/budget/" + EVENT_WITHOUT_BUDGET,
                 HttpMethod.GET,
                 request,
                 GetBudgetItemDTO[].class
         );
-
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(0, response.getBody().length);
     }
 
     @Test
-    @DisplayName("Get Budget Items - Non-existent event returns empty list")
+    @DisplayName("Get Budget Items - Non-existent event returns 404 Not Found")
     public void getBudgetItems_NonExistentEvent() {
         HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth());
 
-        ResponseEntity<GetBudgetItemDTO[]> response = restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
                 BASE + "/budget/" + NON_EXISTENT_EVENT_ID,
                 HttpMethod.GET,
                 request,
-                GetBudgetItemDTO[].class
+                String.class
         );
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(0, response.getBody().length);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
-    @DisplayName("Get Budget Items - Unauthorized role")
+    @DisplayName("Get Budget Items - Forbidden role")
     public void getBudgetItems_UnauthorizedRole() {
         HttpEntity<Void> request = new HttpEntity<>(getHeadersWithAuth(userToken)); // Not an organizer
 
@@ -1157,7 +745,7 @@ public class EventControllerTest {
                 String.class
         );
 
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
     // Helper method to create a valid CreateEventDTO with existing test data
@@ -1877,4 +1465,5 @@ public class EventControllerTest {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
+
 }

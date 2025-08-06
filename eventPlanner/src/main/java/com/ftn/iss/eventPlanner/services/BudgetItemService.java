@@ -66,7 +66,7 @@ public class BudgetItemService {
         if (offeringId != 0) {
             // Find offering and check if it exists
             Offering offering = offeringRepository.findById(offeringId)
-                    .orElseThrow(() -> new IllegalArgumentException("Offering with ID " + offeringId + " not found"));
+                    .orElseThrow(() -> new NotFoundException("Offering with ID " + offeringId + " not found"));
 
             // Check if offering is deleted
             if (offering.isDeleted()) {

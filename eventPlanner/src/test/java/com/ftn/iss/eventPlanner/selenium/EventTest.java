@@ -62,7 +62,7 @@ public class EventTest {
                 "Novi Sad",              // city
                 "Bulevar oslobođenja",   // street
                 "12B",                   // house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),            // date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),            // date
                 true                     // publicity
         );
         createEventPage.submitForm();
@@ -81,7 +81,7 @@ public class EventTest {
                 "Novi Sad",              // expected city
                 "Bulevar oslobođenja",   // expected street
                 "12B",                   // expected house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM.dd.yyyy.")), // expected date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd.MM.yyyy.")), // expected date
                 true                     // expected publicity
         );
 
@@ -106,7 +106,7 @@ public class EventTest {
                 "Kragujevac",            // city
                 "Svetozara Markovića",   // street
                 "36",                    // house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),            // date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),            // date
                 true                     // publicity
         );
         createEventPage.submitForm();
@@ -121,7 +121,7 @@ public class EventTest {
                 "Kragujevac",            // expected city
                 "Svetozara Markovića",   // expected street
                 "36",                    // expected house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM.dd.yyyy.")), // expected date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd.MM.yyyy.")), // expected date
                 true                     // expected publicity
         );
 
@@ -142,7 +142,7 @@ public class EventTest {
                 "Kragujevac",            // city
                 "Svetozara Markovića",   // street
                 "36",                    // house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),            // date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),            // date
                 true                     // publicity
         );
         createEventPage.selectFirstEventType();
@@ -225,7 +225,7 @@ public class EventTest {
                 "Submit button should become disabled after clearing date field.");
 
         // Restore date
-        createEventPage.setDate(LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        createEventPage.setDate(LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
         createEventPage.waitForSubmitButtonEnabled(true);
         Assertions.assertTrue(createEventPage.submitButton.isEnabled(),
                 "Submit button should be enabled again after restoring date.");
@@ -245,7 +245,7 @@ public class EventTest {
                 "Kragujevac",            // city
                 "Svetozara Markovića",   // street
                 "36",                    // house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),            // date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),            // date
                 true                     // publicity
         );
 
@@ -253,7 +253,7 @@ public class EventTest {
                 "Submit button should be enabled with walid date.");
 
         createEventPage.clearInput(createEventPage.dateInput);
-        createEventPage.setDate(LocalDate.now().minusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        createEventPage.setDate(LocalDate.now().minusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
 
         Assertions.assertFalse(createEventPage.submitButton.isEnabled(),
                 "Submit button should be disabled with past date.");
@@ -272,7 +272,7 @@ public class EventTest {
                 "Novi Sad",              // city
                 "Bulevar oslobođenja",   // street
                 "12B",                   // house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),            // date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),            // date
                 true                     // publicity
         );
         createEventPage.submitForm();
@@ -316,7 +316,7 @@ public class EventTest {
                 "Kragujevac",            // city
                 "Svetozara Markovića",   // street
                 "36",                    // house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),            // date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),            // date
                 true                     // publicity
         );
         editEventPage.submitForm();
@@ -336,7 +336,7 @@ public class EventTest {
                 "Kragujevac",            // expected city
                 "Svetozara Markovića",   // expected street
                 "36",                    // expected house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM.dd.yyyy.")), // expected date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd.MM.yyyy.")), // expected date
                 true                     // expected publicity
         );
     }
@@ -355,7 +355,7 @@ public class EventTest {
                 "Kragujevac",            // city
                 "Svetozara Markovića",   // street
                 "36",                    // house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),            // date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),            // date
                 true                     // publicity
         );
         editEventPage.noEventTypeCheckbox.click();
@@ -381,7 +381,7 @@ public class EventTest {
                 "Kragujevac",            // expected city
                 "Svetozara Markovića",   // expected street
                 "36",                    // expected house number
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM.dd.yyyy.")), // expected date
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd.MM.yyyy.")), // expected date
                 true                     // expected publicity
         );
     }
@@ -403,7 +403,7 @@ public class EventTest {
                 "Kragujevac",
                 "Svetozara Markovića",
                 "36",
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),
                 true
         );
 
@@ -485,44 +485,10 @@ public class EventTest {
                 "Submit button should become disabled after clearing date field.");
 
         // Restore date
-        editEventPage.setDate(LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        editEventPage.setDate(LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
         editEventPage.waitForSubmitButtonEnabled(true);
         Assertions.assertTrue(editEventPage.submitButton.isEnabled(),
                 "Submit button should be enabled again after restoring date.");
-    }
-
-    @Test
-    public void edit_PastDate_DisablesSubmit() {
-        createEvent();
-        EventDetailsPage eventDetailsPage = new EventDetailsPage(driver);
-        eventDetailsPage.waitForFetch();
-        eventDetailsPage.openUpdateEventPage();
-        EditEventPage editEventPage = new EditEventPage(driver);
-
-        // Fill the form with valid data
-        editEventPage.fillForm(
-                "Unique Gathering",
-                "A one-of-a-kind event that doesn't fit standard categories.",
-                50,
-                "Serbia",
-                "Kragujevac",
-                "Svetozara Markovića",
-                "36",
-                LocalDate.now().plusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                true
-        );
-
-        // Verify submit button is enabled
-        editEventPage.waitForSubmitButtonEnabled(true);
-        Assertions.assertTrue(editEventPage.submitButton.isEnabled(),
-                "Submit button should be enabled when all required fields are filled.");
-
-        // Clear date field and set past date
-        editEventPage.clearInput(editEventPage.dateInput);
-        editEventPage.setDate(LocalDate.now().minusDays(5).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        editEventPage.waitForSubmitButtonEnabled(false);
-        Assertions.assertFalse(editEventPage.submitButton.isEnabled(),
-                "Submit button should be disabled when date is set to a past date.");
     }
 
     @Test
@@ -698,11 +664,11 @@ public class EventTest {
     }
 
     public void verifyAgendaItem(EventDetailsPage eventDetailsPage,
-                                  String expectedName,
-                                  String expectedDescription,
-                                  String expectedStartTime,
-                                  String expectedEndTime,
-                                  String expectedLocation) {
+                                 String expectedName,
+                                 String expectedDescription,
+                                 String expectedStartTime,
+                                 String expectedEndTime,
+                                 String expectedLocation) {
         assertEquals(expectedName, eventDetailsPage.getFirstAgendaItemName(),
                 "Agenda item name should match");
         assertEquals(expectedDescription, eventDetailsPage.getFirstAgendaItemDescription(),

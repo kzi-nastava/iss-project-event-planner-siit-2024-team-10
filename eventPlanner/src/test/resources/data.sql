@@ -35,14 +35,18 @@ INSERT INTO event_stats (one_star_count, two_star_count, three_star_count, four_
                                                                                                                                                      (4,2,6,1,1,14, 2.8),
                                                                                                                                                      (1,2,1,0,0,4, 2.0),
                                                                                                                                                      (0,0,2,3,7,12, 4.4),
+                                                                                                                                                     (4,2,1,7,1,15, 3.2),
                                                                                                                                                      (4,2,1,7,1,15, 3.2);
+
 
 INSERT INTO event (organizer_id, event_type_id, name, description, max_participants, is_open, date, is_deleted, location_id, date_created, stats_id) VALUES
                                                                                                                                                          ( 2, 2, 'Tech Workshop', 'Learn about the latest tech trends.', 50, TRUE, '2026-01-15', FALSE, 1, '2025-03-10 13:20', 1),
                                                                                                                                                          ( 2, 1, 'Business Conference', 'Annual business networking event.', 200, FALSE, '2026-03-10', FALSE, 2, '2025-03-03 15:00',2),
                                                                                                                                                          ( 2, 1, 'Music Festival', 'Enjoy live performances from top artists.', 500, TRUE, '2025-07-20', FALSE, 3, '2025-05-01 09:00',3),
                                                                                                                                                          ( 2, 2, 'Charity Gala', 'Fundraising dinner for a noble cause.', 150, TRUE, '2025-10-15', FALSE, 2, '2025-08-12 08:30',4),
-                                                                                                                                                         ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01', FALSE, 1, '2025-07-15 18:00',5);
+                                                                                                                                                         ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01', FALSE, 1, '2025-07-15 18:00',5),
+                                                                                                                                                         ( 2, 1, 'Art Exhibition', 'Showcasing modern art pieces.', 100, TRUE, '2025-09-01', TRUE, 1, '2025-07-15 18:00',6);
+
 INSERT INTO agenda_item (name, description, location, start_time, end_time, is_deleted, event_id) VALUES
                                                                                                       ('Opening Session', 'Kick-off of the tech workshop.', 'Main Hall', '09:00:00', '10:00:00', FALSE, 1),
                                                                                                       ('AI Trends', 'Discussion on recent advancements in AI.', 'Tech Room 1', '10:15:00', '11:15:00', FALSE, 1),
@@ -103,7 +107,7 @@ INSERT INTO notification (read, content, title, date) VALUES
 INSERT INTO product_details (name, description, price, discount, is_visible, is_available, timestamp) VALUES
                                                                                                           ( 'Wedding Decoration Set', 'Complete set of decorations for weddings, including table centerpieces and backdrops.', 20000000.00, 10.0, TRUE, FALSE, '2023-10-20 15:00:00'),
                                                                                                           ( 'Conference Projector', 'High-resolution projector for conferences and business meetings.', 1200.00, 10.0, TRUE, TRUE, '2023-10-25 10:30:00'),
-                                                                                                          ( 'Sound System', 'Professional sound system for parties and celebrations.', 850.00, 50.0, TRUE, TRUE, '2023-10-28 11:45:00'),
+                                                                                                          ( 'Sound System', 'Professional sound system for parties and celebrations.', 850000.00, 50.0, TRUE, TRUE, '2023-10-28 11:45:00'),
                                                                                                           ( 'Banquet Chairs', 'Comfortable and elegant chairs for formal events.', 25.00, 20.0, TRUE, FALSE, '2023-11-01 09:15:00'),
                                                                                                           ( 'Table Linens', 'High-quality linens for event tables.', 15.00, 10.0, TRUE, TRUE, '2023-11-05 14:00:00'),
                                                                                                           ( 'Stage Lighting Kit', 'Adjustable lighting kit for stage events.', 500.00, 0.0, TRUE, TRUE, '2023-11-08 16:30:00'),
@@ -136,7 +140,7 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_product_details_
                                                                                                              ( 'Product',1 ,1,  7, FALSE, FALSE),
                                                                                                              ( 'Product',1 ,1,  8, FALSE, FALSE),
                                                                                                              ( 'Product',2 ,1,  9, FALSE, FALSE),
-                                                                                                             ( 'Product',1 ,1,  10, FALSE, FALSE);
+                                                                                                             ( 'Product',1 ,1,  10, TRUE, FALSE);
 INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_id, is_deleted, pending) VALUES
                                                                                                              ( 'Service',1 ,1,  1, FALSE, FALSE),
                                                                                                              ( 'Service',2 ,1,  2, FALSE, FALSE),
@@ -147,7 +151,7 @@ INSERT INTO offerings (dtype, category_id, provider_id, current_service_details_
                                                                                                              ( 'Service',1 ,1,  7, FALSE, FALSE),
                                                                                                              ( 'Service',1 ,1,  8, FALSE, FALSE),
                                                                                                              ( 'Service',1 ,1,  9, FALSE, FALSE),
-                                                                                                             ( 'Service',3 ,1,  10, FALSE, TRUE);
+                                                                                                             ( 'Service',3 ,1,  10, TRUE, TRUE);
 
 INSERT INTO reservation (start_time, end_time, status, event_id, service_id, timestamp) VALUES
                                                                                             ( '09:00:00', '17:00:00', 1, 1, 13,'2025-12-12 08:00:00'),
