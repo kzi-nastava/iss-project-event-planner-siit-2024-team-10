@@ -69,7 +69,7 @@ public class OfferingDetailsPage {
     }
 
     public void selectEventByName(String eventName) {
-        wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("mat-select[formcontrolname='event']")));
         eventSelect.click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".mat-mdc-select-panel")));
 

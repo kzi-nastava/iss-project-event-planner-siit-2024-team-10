@@ -46,6 +46,7 @@ public class EventTest {
     public void teardown() {
         if (driver != null) {
             driver.quit();
+            driver = null;
         }
     }
 
