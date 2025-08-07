@@ -93,14 +93,12 @@ public class BudgetManagerPage {
     }
 
     public void selectEventByName(String eventName) {
-        wait.until(ExpectedConditions.elementToBeClickable(eventSelect));
-
-        String text = eventSelect.getText();
-
+        driver.findElement(By.tagName("body")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("mat-select")));
         if(Objects.equals(eventSelect.getText(), eventName))
             return;
 
-        eventSelect.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("mat-select"))).click();
 
         WebElement option = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//mat-option[contains(., '" + eventName + "')]")));

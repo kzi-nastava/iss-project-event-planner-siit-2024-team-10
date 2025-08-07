@@ -36,7 +36,9 @@ public class EventSearchAndFilterTest {
 
     @AfterEach
     public void teardown() {
+
         driver.quit();
+        driver = null;
     }
 
     @Test
